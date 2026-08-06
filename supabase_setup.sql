@@ -264,3 +264,11 @@ notify pgrst, 'reload schema';
 -- Versão 4.2.6: nome completo preservado no registro.
 alter table public.xcmg_registros add column if not exists nome_completo text not null default '';
 notify pgrst, 'reload schema';
+
+
+-- Versão 6.0.5: categoria do RH preservada no registro.
+alter table public.xcmg_registros add column if not exists categoria text not null default '';
+notify pgrst, 'reload schema';
+
+alter table public.xcmg_config add column if not exists categorias_rh jsonb not null default '[]'::jsonb;
+notify pgrst, 'reload schema';

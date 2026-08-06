@@ -1,3 +1,7 @@
+XCMG Control v6.0.6
+
+Correção: o Resumo por categoria agora reconhece registros antigos sem categoria gravada, classificando Férias, Folga compensada, Atestados e Faltas pelo tipo da ocorrência.
+
 XCMG Control v5.0.1
 
 Melhorias:
@@ -90,3 +94,47 @@ VERSÃO 5.0.4
 - Confirmação antes de sair.
 - Usuário conectado visível no cabeçalho.
 - Não requer novo SQL.
+
+ATUALIZAÇÃO 6.0.1 — INTERFACE EXECUTIVA
+- Nova identidade visual clara e corporativa, diferente do XCMG Report.
+- Área principal em cinza-claro, cartões brancos e menu lateral executivo.
+- Dashboard com KPIs compactos, bordas suaves e melhor hierarquia visual.
+- Cabeçalho fixo, mais leve e organizado.
+- Formulários, registros, usuários e login adaptados à nova identidade.
+- Layout responsivo preservado para computador, tablet e celular.
+- Nenhuma regra de negócio ou sincronização foi removida.
+
+
+ATUALIZAÇÃO 6.0.5 — CADASTRO SIMPLIFICADO
+- Removido o campo visível “Tipo da ocorrência”.
+- O tipo passa a ser definido automaticamente pelo motivo escolhido.
+- Mantidos apenas “Motivo para a planilha do RH” e “Informação da mensagem”.
+- A informação da mensagem agora é usada no texto do WhatsApp.
+
+
+NOVIDADE DA VERSÃO 6.0.5
+- O campo “Motivo para a planilha do RH” agora permite selecionar uma sugestão ou digitar livremente um novo motivo.
+- Motivos personalizados ficam salvos no navegador e aparecem automaticamente nas próximas utilizações.
+
+
+VERSÃO 6.0.5
+- Resumo por categoria no Dashboard.
+- Cadastro de categorias e motivos em Configurações.
+- Somente o Administrador geral pode criar, renomear ou excluir categorias e motivos.
+- Execute supabase_migracao_v6.0.5_categorias.sql no SQL Editor para preservar a categoria em cada ocorrência.
+
+
+VERSÃO 6.0.7 — FUNCIONAMENTO OFFLINE
+- Abra uma vez com internet para armazenar o aplicativo e os dados no aparelho.
+- Ocorrências, edições, exclusões, colaboradores, configurações e categorias podem ser salvos sem internet.
+- As alterações ficam em fila e são enviadas automaticamente quando a conexão voltar.
+- O login offline usa a última sessão válida salva no aparelho.
+- Fotos novas precisam de internet; salve a ocorrência offline e anexe a foto depois.
+- Publique em HTTPS e instale como PWA. O modo offline não funciona corretamente ao abrir o index.html diretamente por file://.
+
+
+VERSÃO 6.0.8 - CORREÇÃO DO LOGIN OFFLINE
+- Faça pelo menos um login com internet em cada aparelho.
+- Depois disso, o mesmo usuário e senha poderão ser usados sem internet.
+- Se houver uma sessão salva e o servidor estiver indisponível, o sistema abre pelo cache local.
+- Ao publicar uma nova versão, abra o sistema uma vez online para atualizar o cache.

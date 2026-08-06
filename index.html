@@ -1,15 +1,16 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#041426">
+  <meta name="theme-color" content="#061625">
   <meta name="description" content="Controle de ausências, férias e disponibilidade da Turma D">
   <title>XCMG Control – Turma D</title>
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="css/style.css">
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+  <link rel="stylesheet" href="css/style.css?v=6.0.6">
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -48,7 +49,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 5.0.4</strong><span>Saída no topo</span></div>
+    <div class="version"><strong>Versão 6.0.8</strong><span>Cálculo de categorias corrigido</span></div>
   </aside>
 
   <main>
@@ -59,6 +60,7 @@
       </div>
       <label class="date-control"><span>Data do painel</span><input id="dataPainel" type="date"></label>
       <div class="topbar-actions">
+        <button id="btnTema" class="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar entre tema escuro e claro"><span class="theme-icon">☀</span><span class="theme-label">Claro</span></button>
         <div class="cloud-account"><span id="cloudStatus">Sincronizando...</span><small id="cloudUser">Aguardando login</small></div>
         <div id="usuarioConectado" class="logged-user topbar-user"><strong>—</strong><small>Usuário conectado</small></div>
         <button id="btnSair" class="logout-button topbar-logout" type="button" title="Encerrar sessão">↪ Sair</button>
@@ -88,6 +90,11 @@
             <div id="resumoLocais" class="location-list"></div>
           </article>
 
+          <article class="panel category-panel">
+            <div class="panel-heading"><div><h2><span class="heading-icon">◈</span> Resumo por categoria</h2><p>Ocorrências ativas agrupadas por categoria.</p></div></div>
+            <div id="resumoCategorias" class="category-summary-list"></div>
+          </article>
+
           <article class="panel quick-panel">
             <div class="panel-heading"><div><h2><span class="heading-icon">⚡</span> Ações rápidas</h2></div></div>
             <div class="quick-actions">
@@ -101,10 +108,11 @@
     </section>
 
     <section id="ocorrencias" class="page">
-      <article class="panel form-panel"><h2 id="formTitle">Adicionar ocorrência</h2><p class="section-subtitle">Cadastre férias, atestado, faltas, desligamentos, justificativas e folgas compensadas.</p>
+      <article class="panel form-panel"><h2 id="formTitle">Adicionar ocorrência</h2><p class="section-subtitle">Informe o motivo para o RH e o texto que aparecerá na mensagem.</p>
         <div class="form-grid">
-          <label><span>Tipo da ocorrência</span><select id="tipo"><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select></label>
-          <label><span>Motivo</span><select id="motivo"><option value="">Selecione o motivo</option><option>Atestado Médico</option><option>Casamento</option><option>Exame Periódico</option><option>Falta justificada</option><option>Falta Não Justificada</option><option>Nascimento</option><option>Óbito de familiar</option></select><small class="field-help">Este campo será usado na planilha do RH.</small></label>
+          <input id="tipo" type="hidden" value="Outras justificativas">
+          <label><span>Categoria</span><select id="categoriaMotivo"><option value="">Selecione a categoria</option></select><small class="field-help">A categoria organiza os motivos e facilita os indicadores.</small></label>
+          <label><span>Motivo para a planilha do RH</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Selecione uma sugestão ou digite um motivo novo. O novo motivo ficará salvo na categoria escolhida.</small></label>
           <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o primeiro e o último sobrenome; os demais dados são preenchidos automaticamente.</small></label>
           <label><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
@@ -116,7 +124,7 @@
           <label><span>CID</span><input id="cid" type="text" placeholder="Ex.: K40, N39.0 ou N/A"></label>
           <label><span>Atestado físico?</span><select id="atestadoFisico"><option value="N/A">N/A</option><option value="Entregue">Entregue</option><option value="Não entregue">Não entregue</option></select></label>
           <label><span>Enviado no grupo?</span><select id="enviadoGrupo"><option value="N/A">N/A</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></label>
-          <label class="full"><span>Descrição para o relatório</span><input id="descricao" type="text" placeholder="Ex.: Sem justificativa, problema familiar, consulta médica..."></label>
+          <label class="full"><span>Informação da mensagem</span><input id="descricao" type="text" placeholder="Ex.: Em férias, consulta médica, ausência justificada..."><small class="field-help">Este texto será exibido na mensagem do WhatsApp.</small></label>
           <label class="full"><span>Observações</span><textarea id="observacao" rows="4" placeholder="Digite informações importantes sobre esta ocorrência..."></textarea></label>
           <label class="full photo-field"><span>Foto ou comprovante <small>(opcional)</small></span><input id="foto" type="file" accept="image/*"><small class="field-help">Formatos de imagem, até 5 MB. A foto será sincronizada entre os aparelhos.</small><div id="fotoPreview" class="photo-preview hidden"><img id="fotoPreviewImg" alt="Pré-visualização do anexo"><button id="btnRemoverFoto" type="button" class="secondary">Remover foto</button></div></label>
         </div>
@@ -215,6 +223,16 @@
         <div class="form-grid"><label><span>Nome da turma</span><input id="turma" value="Turma D"></label><label><span>Efetivo total</span><input id="efetivoTotal" type="number" min="0" value="0"></label><label><span>Nome do sistema</span><input id="nomeSistema" value="XCMG Control"></label><label><span>Desenvolvedor</span><input id="desenvolvedor" value="Edson de Oliveira Alves"></label><label><span>Símbolos na mensagem do WhatsApp</span><select id="estiloSimbolos"><option value="completo">Emojis completos</option><option value="simples">Símbolos simples</option><option value="nenhum">Sem símbolos</option></select></label></div>
         <div class="actions"><button id="btnSalvarConfig" class="primary">Salvar configurações</button><button id="btnExportar" class="secondary">Exportar backup</button><label class="file-button secondary">Importar backup<input id="arquivoBackup" type="file" accept="application/json"></label></div><div id="statusConfig" class="status"></div>
       </article>
+      <article id="gestaoCategoriasRH" class="panel admin-category-panel hidden">
+        <div class="panel-heading"><div><h2>📂 Categorias e motivos do RH</h2><p>Somente o administrador pode criar, renomear ou excluir categorias e motivos.</p></div></div>
+        <div class="category-admin-create">
+          <input id="novaCategoriaNome" type="text" placeholder="Nome da nova categoria">
+          <input id="novaCategoriaIcone" type="text" maxlength="4" placeholder="Ícone, ex.: 📚">
+          <button id="btnAdicionarCategoria" class="primary" type="button">Adicionar categoria</button>
+        </div>
+        <div id="listaCategoriasAdmin" class="category-admin-list"></div>
+        <div id="statusCategorias" class="status"></div>
+      </article>
     </section>
 
     <footer class="app-footer"><strong>XCMG Control – Turma D</strong><span>Controle de Ausências e Férias</span><div class="footer-logo"><span>XC</span> XCMG</div></footer>
@@ -222,6 +240,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=5.0.2"></script>
+<script src="js/app.js?v=6.0.8"></script>
 </body>
 </html>
