@@ -138,3 +138,12 @@ VERSÃO 6.0.8 - CORREÇÃO DO LOGIN OFFLINE
 - Depois disso, o mesmo usuário e senha poderão ser usados sem internet.
 - Se houver uma sessão salva e o servidor estiver indisponível, o sistema abre pelo cache local.
 - Ao publicar uma nova versão, abra o sistema uma vez online para atualizar o cache.
+
+VERSÃO 6.0.9 - INTERFACE MÓVEL COMPACTA
+- Menu do celular movido para a parte inferior da tela.
+- Barra inferior fixa com suporte à área segura do iPhone.
+- Cabeçalho, data, status e controles reduzidos.
+- Cartões do dashboard menores e com melhor aproveitamento do espaço.
+- Rodapé ocultado no celular.
+- Campo de formulário mantém 16 px para impedir zoom automático no iPhone.
+- Computador e tablet mantêm o layout tradicional.
