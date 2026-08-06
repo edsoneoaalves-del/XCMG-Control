@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#041426">
+  <meta name="description" content="Controle de ausências, férias e disponibilidade da Turma D">
+  <title>XCMG Control – Turma D</title>
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand"><div class="brand-logo"><span class="brand-mark">XC</span></div><div class="brand-name"><strong>XCMG</strong><span>CONTROL</span></div></div>
+    <h1>Acesso ao sistema</h1><p>Entre com seu usuário e senha.</p>
+    <label><span>Usuário</span><input id="loginUsuario" autocomplete="username" placeholder="Digite o usuário"></label>
+    <label><span>Senha</span><div class="password-field"><input id="loginSenha" type="password" autocomplete="current-password" placeholder="Digite a senha"><button id="btnVerSenhaLogin" type="button" class="password-toggle" aria-label="Mostrar senha" title="Mostrar senha">👁</button></div></label>
+    <button id="btnEntrar" class="primary login-button">Entrar</button>
+    <div id="loginStatus" class="status login-status"></div>
+    <small class="login-help">Primeiro acesso: admin / Admin@123</small>
+  </div>
+</div>
+<div id="appShell" class="app-shell">
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-logo"><span class="brand-mark">XC</span></div>
+      <div class="brand-name"><strong>XCMG</strong><span>CONTROL</span></div>
+      <div class="team-badge" id="teamBadge">Turma D</div>
+      <div class="developer">Desenvolvedor: <span id="developerSidebar">Edson Alves</span></div>
+    </div>
+
+    <nav>
+      <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span></button>
+      <button class="nav-item" data-page="ocorrencias"><span class="nav-icon">▣</span><span>Ocorrências</span></button>
+      <button class="nav-item" data-page="colaboradores"><span class="nav-icon">👥</span><span>Colaboradores</span></button>
+      <button class="nav-item" data-page="registros"><span class="nav-icon">▤</span><span>Registros</span></button>
+      <button class="nav-item" data-page="mensagem"><span class="nav-icon">◉</span><span>WhatsApp</span></button>
+      <button class="nav-item" data-page="configuracoes"><span class="nav-icon">⚙</span><span>Configurações</span></button>
+      <button class="nav-item" data-page="usuarios" data-permission="usuarios_gerenciar"><span class="nav-icon">🔐</span><span>Usuários</span></button>
+    </nav>
+
+    <div class="sidebar-update">
+      <span>◷ Última atualização</span>
+      <strong id="ultimaAtualizacao">—</strong>
+    </div>
+
+    <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
+    <div class="version"><strong>Versão 5.0.4</strong><span>Saída no topo</span></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageSubtitle">Controle de ausências, férias e disponibilidade da Turma D.</p>
+      </div>
+      <label class="date-control"><span>Data do painel</span><input id="dataPainel" type="date"></label>
+      <div class="topbar-actions">
+        <div class="cloud-account"><span id="cloudStatus">Sincronizando...</span><small id="cloudUser">Aguardando login</small></div>
+        <div id="usuarioConectado" class="logged-user topbar-user"><strong>—</strong><small>Usuário conectado</small></div>
+        <button id="btnSair" class="logout-button topbar-logout" type="button" title="Encerrar sessão">↪ Sair</button>
+      </div>
+    </header>
+
+    <section id="dashboard" class="page active dashboard-page">
+      <div class="metrics">
+        <article class="metric metric-blue"><div class="metric-icon">👥</div><div class="metric-content"><span>Efetivo</span><strong id="kpiEfetivo">0</strong><small>colaboradores</small></div><div class="metric-footer">Total do efetivo ativo <b>ⓘ</b></div></article>
+        <article class="metric metric-green"><div class="metric-icon">●</div><div class="metric-content"><span>Disponíveis</span><strong id="kpiDisponiveis">0</strong><small>colaboradores</small></div><div class="metric-footer">Ativos e disponíveis <b>ⓘ</b></div></article>
+        <article class="metric metric-yellow"><div class="metric-icon">☂</div><div class="metric-content"><span>Férias</span><strong id="kpiFerias">0</strong><small>colaboradores</small></div><div class="metric-footer">Em período de férias <b>ⓘ</b></div></article>
+        <article class="metric metric-blue"><div class="metric-icon">✚</div><div class="metric-content"><span>Atestados</span><strong id="kpiAtestados">0</strong><small>colaboradores</small></div><div class="metric-footer">Com atestado médico <b>ⓘ</b></div></article>
+        <article class="metric metric-red"><div class="metric-icon">▯</div><div class="metric-content"><span>Desligamentos</span><strong id="kpiDesligamentos">0</strong><small>colaboradores</small></div><div class="metric-footer">Desligados <b>ⓘ</b></div></article>
+        <article class="metric metric-yellow"><div class="metric-icon">!</div><div class="metric-content"><span>Faltas</span><strong id="kpiFaltas">0</strong><small>colaboradores</small></div><div class="metric-footer">Não justificadas <b>ⓘ</b></div></article>
+      </div>
+
+      <div class="dashboard-main-grid">
+        <article class="panel current-panel">
+          <div class="panel-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências atuais</h2><p>Registros ativos na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todos</button></div>
+          <div id="ocorrenciasAtuais" class="current-list"></div>
+          <div class="occurrence-total"><span>✓</span><strong id="totalOcorrenciasAtuais">0 ocorrência(s) ativa(s) na data selecionada.</strong></div>
+        </article>
+
+        <div class="right-stack">
+          <article class="panel location-panel">
+            <div class="panel-heading"><div><h2><span class="heading-icon">●</span> Resumo por local</h2><p>Resumo de ocorrências por local.</p></div></div>
+            <div id="resumoLocais" class="location-list"></div>
+          </article>
+
+          <article class="panel quick-panel">
+            <div class="panel-heading"><div><h2><span class="heading-icon">⚡</span> Ações rápidas</h2></div></div>
+            <div class="quick-actions">
+              <button class="quick quick-add" data-go="ocorrencias"><span>⊕</span>Adicionar<br>ocorrência</button>
+              <button class="quick quick-whatsapp" data-go="mensagem"><span>◉</span>Gerar mensagem<br>WhatsApp</button>
+              <button class="quick quick-export" id="btnExportarRapido"><span>▤</span>Exportar backup</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="ocorrencias" class="page">
+      <article class="panel form-panel"><h2 id="formTitle">Adicionar ocorrência</h2><p class="section-subtitle">Cadastre férias, atestado, faltas, desligamentos, justificativas e folgas compensadas.</p>
+        <div class="form-grid">
+          <label><span>Tipo da ocorrência</span><select id="tipo"><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select></label>
+          <label><span>Motivo</span><select id="motivo"><option value="">Selecione o motivo</option><option>Atestado Médico</option><option>Casamento</option><option>Exame Periódico</option><option>Falta justificada</option><option>Falta Não Justificada</option><option>Nascimento</option><option>Óbito de familiar</option></select><small class="field-help">Este campo será usado na planilha do RH.</small></label>
+          <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o primeiro e o último sobrenome; os demais dados são preenchidos automaticamente.</small></label>
+          <label><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label><span>Equipamento</span><input id="funcao" type="text" placeholder="Ex.: GD 221, Munck, Prancha"></label>
+          <label><span>Local</span><select id="local"><option value="">Não informado</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></label>
+          <label><span>Data inicial</span><input id="inicio" type="date"></label>
+          <label><span>Data final</span><input id="fim" type="date"></label>
+          <label><span>CID</span><input id="cid" type="text" placeholder="Ex.: K40, N39.0 ou N/A"></label>
+          <label><span>Atestado físico?</span><select id="atestadoFisico"><option value="N/A">N/A</option><option value="Entregue">Entregue</option><option value="Não entregue">Não entregue</option></select></label>
+          <label><span>Enviado no grupo?</span><select id="enviadoGrupo"><option value="N/A">N/A</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></label>
+          <label class="full"><span>Descrição para o relatório</span><input id="descricao" type="text" placeholder="Ex.: Sem justificativa, problema familiar, consulta médica..."></label>
+          <label class="full"><span>Observações</span><textarea id="observacao" rows="4" placeholder="Digite informações importantes sobre esta ocorrência..."></textarea></label>
+          <label class="full photo-field"><span>Foto ou comprovante <small>(opcional)</small></span><input id="foto" type="file" accept="image/*"><small class="field-help">Formatos de imagem, até 5 MB. A foto será sincronizada entre os aparelhos.</small><div id="fotoPreview" class="photo-preview hidden"><img id="fotoPreviewImg" alt="Pré-visualização do anexo"><button id="btnRemoverFoto" type="button" class="secondary">Remover foto</button></div></label>
+        </div>
+        <div class="actions"><button id="btnSalvar" class="primary">Adicionar registro</button><button id="btnCancelar" class="secondary hidden">Cancelar edição</button></div>
+        <div id="statusForm" class="status"></div>
+      </article>
+    </section>
+
+
+    <section id="colaboradores" class="page">
+      <article class="panel">
+        <div class="panel-heading">
+          <div><h2>Cadastro de colaboradores</h2><p>Cadastre manualmente ou substitua a lista completa importando uma planilha.</p></div>
+          <strong id="totalColaboradores" class="records-count">0 colaborador(es)</strong>
+        </div>
+        <div class="collaborator-grid">
+          <div class="collaborator-box">
+            <h3>Cadastro manual</h3>
+            <div class="form-grid compact-grid">
+              <label><span>Matrícula</span><input id="novoColaboradorMatricula" type="text" placeholder="Ex.: 120206"></label>
+              <label><span>Nome completo</span><input id="novoColaboradorNome" type="text" placeholder="Ex.: Edson de Oliveira Alves"></label>
+              <label><span>Função</span><input id="novoColaboradorFuncao" type="text" placeholder="Ex.: Operador de Guindaste I"></label>
+              <label><span>Área</span><input id="novoColaboradorArea" type="text" placeholder="Ex.: Mina ou Usina"></label>
+            </div>
+            <div class="actions"><button id="btnAdicionarColaborador" class="primary">Adicionar colaborador</button></div>
+            <div id="statusColaborador" class="status"></div>
+          </div>
+          <div class="collaborator-box">
+            <h3>Importar planilha completa</h3>
+            <p class="section-subtitle">Aceita XLSX, XLS ou CSV. A nova planilha substitui toda a lista anterior.</p>
+            <label class="file-drop"><span>Selecionar planilha</span><input id="planilhaColaboradores" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
+            <small class="field-help">Use as colunas “Matrícula”, “Nome completo”, “Função” e “Área”. O nome é obrigatório; os demais campos podem ficar vazios.</small>
+            <div class="actions"><button id="btnImportarColaboradores" class="success">Substituir lista pela planilha</button><a class="secondary download-model" href="modelo_colaboradores.csv" download>Baixar modelo</a></div>
+            <div id="statusImportacao" class="status"></div>
+          </div>
+        </div>
+        <div class="filters collaborator-filter"><input id="pesquisaColaborador" placeholder="Pesquisar nome completo ou nome exibido..."></div>
+        <div id="listaColaboradores" class="collaborator-list"></div>
+      </article>
+    </section>
+
+    <section id="registros" class="page">
+      <article class="panel"><div class="panel-heading"><div><h2>Registros cadastrados</h2><p>Pesquise, filtre, edite, exclua ou exporte para o RH.</p></div><div class="actions inline-actions"><button id="btnExportarExcelRegistros" class="success">Gerar planilha Excel</button><button id="btnLimparTudo" class="danger">Limpar todos</button></div></div>
+        <div class="records-view-bar"><label class="toggle-option"><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span><strong>Mostrar todos os registros</strong><small>Desative para exibir somente os ativos na data do painel.</small></span></label><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong></div><div class="filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></div>
+        <div id="listaRegistros" class="records"></div>
+      </article>
+    </section>
+
+    <section id="mensagem" class="page">
+      <article class="panel"><h2>Mensagem para WhatsApp</h2><p class="section-subtitle">Relatório automático da data selecionada.</p><div class="actions"><button id="btnGerar" class="primary">Gerar mensagem</button><button id="btnCopiar" class="success">Copiar texto</button><button id="btnWhatsApp" class="success">Abrir no WhatsApp</button><button id="btnExportarExcel" class="secondary">Gerar planilha Excel</button></div><pre id="mensagemGerada" class="message-box"></pre><div id="statusMensagem" class="status"></div></article>
+    </section>
+
+
+    <section id="usuarios" class="page">
+      <article class="panel">
+        <div class="panel-heading"><div><h2>Usuários e permissões</h2><p>O administrador escolhe exatamente o que cada usuário pode fazer.</p></div></div>
+        <div class="user-admin-grid">
+          <div class="user-form-box">
+            <h3>Novo usuário</h3>
+            <div class="form-grid compact-grid">
+              <label><span>Nome</span><input id="novoUsuarioNome" placeholder="Nome do usuário"></label>
+              <label><span>Login</span><input id="novoUsuarioLogin" placeholder="Ex.: programador.d"></label>
+              <label><span>Senha inicial</span><input id="novoUsuarioSenha" type="password" placeholder="Mínimo 6 caracteres"></label>
+              <label class="permission-master"><input id="novoUsuarioAdmin" type="checkbox"><span>Administrador geral (acesso total)</span></label>
+            </div>
+            <h3>Permissões individuais</h3>
+            <div id="permissoesUsuario" class="permissions-grid">
+              <label><input type="checkbox" value="dashboard_ver"> Visualizar Dashboard</label>
+              <label><input type="checkbox" value="ocorrencias_cadastrar"> Cadastrar ocorrências</label>
+              <label><input type="checkbox" value="ocorrencias_editar"> Editar ocorrências</label>
+              <label><input type="checkbox" value="ocorrencias_excluir"> Excluir ocorrências</label>
+              <label><input type="checkbox" value="ocorrencias_fotos"> Anexar fotos</label>
+              <label><input type="checkbox" value="registros_ver"> Visualizar registros</label>
+              <label><input type="checkbox" value="registros_exportar"> Exportar Excel RH</label>
+              <label><input type="checkbox" value="whatsapp_gerar"> Gerar mensagem WhatsApp</label>
+              <label><input type="checkbox" value="registros_limpar"> Limpar registros</label>
+              <label><input type="checkbox" value="colaboradores_ver"> Visualizar colaboradores</label>
+              <label><input type="checkbox" value="colaboradores_cadastrar"> Cadastrar colaboradores</label>
+              <label><input type="checkbox" value="colaboradores_excluir"> Excluir colaboradores</label>
+              <label><input type="checkbox" value="colaboradores_importar"> Importar planilha</label>
+              <label><input type="checkbox" value="configuracoes_ver"> Visualizar configurações</label>
+              <label><input type="checkbox" value="configuracoes_alterar"> Alterar configurações</label>
+              <label><input type="checkbox" value="backup_gerenciar"> Exportar/importar backup</label>
+              <label><input type="checkbox" value="usuarios_gerenciar"> Gerenciar usuários</label>
+            </div>
+            <div class="actions"><button id="btnCriarUsuario" class="primary">Criar usuário</button></div>
+            <div id="statusUsuario" class="status"></div>
+          </div>
+          <div class="user-list-box"><h3>Usuários cadastrados</h3><div id="listaUsuarios" class="user-list"><div class="empty">Carregando...</div></div></div>
+        </div>
+      </article>
+    </section>
+
+    <section id="configuracoes" class="page">
+      <article class="panel"><h2>Configurações</h2><p class="section-subtitle">Informações gerais usadas nos cálculos e mensagens.</p>
+        <div class="form-grid"><label><span>Nome da turma</span><input id="turma" value="Turma D"></label><label><span>Efetivo total</span><input id="efetivoTotal" type="number" min="0" value="0"></label><label><span>Nome do sistema</span><input id="nomeSistema" value="XCMG Control"></label><label><span>Desenvolvedor</span><input id="desenvolvedor" value="Edson de Oliveira Alves"></label><label><span>Símbolos na mensagem do WhatsApp</span><select id="estiloSimbolos"><option value="completo">Emojis completos</option><option value="simples">Símbolos simples</option><option value="nenhum">Sem símbolos</option></select></label></div>
+        <div class="actions"><button id="btnSalvarConfig" class="primary">Salvar configurações</button><button id="btnExportar" class="secondary">Exportar backup</button><label class="file-button secondary">Importar backup<input id="arquivoBackup" type="file" accept="application/json"></label></div><div id="statusConfig" class="status"></div>
+      </article>
+    </section>
+
+    <footer class="app-footer"><strong>XCMG Control – Turma D</strong><span>Controle de Ausências e Férias</span><div class="footer-logo"><span>XC</span> XCMG</div></footer>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="js/app.js?v=5.0.2"></script>
+</body>
+</html>
