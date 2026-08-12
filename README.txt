@@ -147,3 +147,12 @@ VERSÃO 6.0.9 - INTERFACE MÓVEL COMPACTA
 - Rodapé ocultado no celular.
 - Campo de formulário mantém 16 px para impedir zoom automático no iPhone.
 - Computador e tablet mantêm o layout tradicional.
+
+VERSÃO 6.0.13 - GERENCIAMENTO DE PERÍODOS DE FECHAMENTO
+- Mantido o cálculo automático padrão do dia 10 ao dia 09.
+- Adicionado botão "Gerenciar períodos" na tela de Registros.
+- Permite cadastrar, editar e excluir períodos excepcionais quando o RH antecipar ou alterar o fechamento.
+- O sistema impede sobreposição entre períodos excepcionais.
+- Alterar ou excluir um período NÃO apaga registros; apenas muda a classificação do período conforme a data.
+- A planilha Excel mantém todas as colunas existentes e a coluna "Período".
+- Para sincronizar períodos excepcionais entre todos os dispositivos, execute uma única vez o arquivo supabase_migracao_v6.0.13_periodos.sql no SQL Editor do Supabase.

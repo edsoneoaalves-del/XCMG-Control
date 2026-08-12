@@ -168,7 +168,7 @@
 
     <section id="registros" class="page">
       <article class="panel"><div class="panel-heading"><div><h2>Registros cadastrados</h2><p>Pesquise, filtre, edite, exclua ou exporte para o RH.</p></div><div class="actions inline-actions"><button id="btnExportarExcelRegistros" class="success">Gerar planilha Excel</button><button id="btnLimparTudo" class="danger">Limpar todos</button></div></div>
-        <div class="records-view-bar"><label class="toggle-option"><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span><strong>Mostrar todos os registros</strong><small>Desative para exibir somente os ativos na data do painel.</small></span></label><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong></div><div class="filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></div>
+        <div class="records-view-bar"><label class="toggle-option"><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span><strong>Mostrar todos os registros</strong><small>Desative para exibir somente os ativos na data do painel.</small></span></label><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong></div><div class="filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select><select id="filtroPeriodo"><option value="">Todos os períodos</option></select><button id="btnGerenciarPeriodos" class="secondary period-manage-btn" type="button">⚙️ Gerenciar períodos</button></div>
         <div id="listaRegistros" class="records"></div>
       </article>
     </section>
@@ -235,11 +235,26 @@
       </article>
     </section>
 
+    <div id="modalPeriodos" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal-card period-modal" role="dialog" aria-modal="true" aria-labelledby="tituloModalPeriodos">
+        <div class="modal-header"><div><h2 id="tituloModalPeriodos">⚙️ Gerenciar períodos de fechamento</h2><p>O padrão continua sendo do dia 10 ao dia 09. Cadastre aqui somente períodos excepcionais.</p></div><button id="btnFecharPeriodos" class="icon-button" type="button" aria-label="Fechar">✕</button></div>
+        <div class="period-help"><strong>Proteção dos dados:</strong> alterar ou excluir um período não apaga ocorrências. O período é calculado pela data do registro.</div>
+        <div class="period-form">
+          <label><span>Data inicial</span><input id="periodoInicio" type="date"></label>
+          <label><span>Data final</span><input id="periodoFim" type="date"></label>
+          <div class="period-form-actions"><button id="btnSalvarPeriodo" class="primary" type="button">Adicionar período</button><button id="btnCancelarPeriodo" class="secondary" type="button">Cancelar edição</button></div>
+        </div>
+        <div id="statusPeriodos" class="status"></div>
+        <div class="period-list-title"><h3>Períodos excepcionais cadastrados</h3><small>Ex.: 10/08/2026 a 06/09/2026, quando o RH fechar antes.</small></div>
+        <div id="listaPeriodos" class="period-admin-list"></div>
+      </div>
+    </div>
+
     <footer class="app-footer"><strong>XCMG Control – Turma D</strong><span>Controle de Ausências e Férias</span><div class="footer-logo"><span>XC</span> XCMG</div></footer>
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.0.9"></script>
+<script src="js/app.js?v=6.0.13"></script>
 </body>
 </html>

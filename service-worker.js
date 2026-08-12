@@ -1,4 +1,4 @@
-const CACHE='xcmg-control-icon-v6.0.11';
+const CACHE='xcmg-control-v6.0.13-periodos-gerenciaveis';
 const APP_SHELL=['./','./index.html','./css/style.css','./js/app.js','./manifest.json','./icons/icon-192-v6011.png','./icons/icon-512-v6011.png','./modelo_colaboradores.csv'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
