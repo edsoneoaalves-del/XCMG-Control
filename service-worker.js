@@ -1,4 +1,4 @@
-const CACHE='xcmg-control-v6.5.6-mobile-refinado';
+const CACHE='xcmg-control-v6.5.7-mobile-sticky';
 const APP_SHELL=['./','./index.html','./css/style.css','./js/app.js','./manifest.json','./icons/icon-192-v6011.png','./icons/icon-512-v6011.png','./modelo_colaboradores.csv','./modelo_ferias.csv','./supabase_migracao_v6.4.0_ferias.sql'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

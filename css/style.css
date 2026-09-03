@@ -1056,3 +1056,92 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   .nav-item span[data-mobile-label]::after{font-size:.45rem!important}
   #dashboard .current-row{grid-template-columns:minmax(0,1fr) auto!important}
 }
+
+
+/* v6.5.7 — Dashboard mobile com cabeçalho/KPIs sticky e compactação ao rolar */
+@media (max-width:720px){
+  body.dashboard-sticky-mobile{--mobile-dashboard-topbar:86px}
+  body.dashboard-sticky-mobile .topbar{
+    position:sticky!important;
+    top:0!important;
+    z-index:90!important;
+    margin-bottom:0!important;
+    background:color-mix(in srgb,var(--bg) 94%,transparent)!important;
+    border-bottom:1px solid var(--border-soft)!important;
+    -webkit-backdrop-filter:blur(12px);
+    backdrop-filter:blur(12px);
+    transition:padding .18s ease,min-height .18s ease,box-shadow .18s ease!important;
+  }
+  body.dashboard-sticky-mobile #dashboard .metrics{
+    position:sticky!important;
+    top:var(--mobile-dashboard-topbar)!important;
+    z-index:80!important;
+    margin:0 -10px 10px!important;
+    padding:7px 10px 8px!important;
+    background:color-mix(in srgb,var(--bg) 96%,transparent)!important;
+    border-bottom:1px solid var(--border-soft)!important;
+    -webkit-backdrop-filter:blur(12px);
+    backdrop-filter:blur(12px);
+    box-shadow:0 8px 18px rgba(0,0,0,.12)!important;
+    transition:padding .18s ease,gap .18s ease!important;
+  }
+
+  /* Depois que o usuário começa a rolar, preserva só o essencial. */
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .topbar{
+    grid-template-columns:122px minmax(0,1fr)!important;
+    grid-template-rows:38px!important;
+    align-items:center!important;
+    gap:6px!important;
+    padding:4px 10px!important;
+    min-height:46px!important;
+    box-shadow:0 7px 18px rgba(0,0,0,.16)!important;
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .topbar>div:first-child{display:none!important}
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .date-control{
+    grid-column:1!important;grid-row:1!important;width:122px!important;display:block!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .date-control>span{display:none!important}
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .date-control input{
+    height:32px!important;padding:3px 7px!important;font-size:.62rem!important;border-radius:8px!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .topbar-actions{
+    grid-column:2!important;grid-row:1!important;
+    display:flex!important;justify-content:flex-end!important;align-items:center!important;gap:5px!important;width:100%!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .theme-toggle,
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .topbar-logout,
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .topbar-user{display:none!important}
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .cloud-account{
+    min-width:0!important;padding:0!important;border:0!important;justify-items:end!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .cloud-account>span{
+    font-size:.58rem!important;line-height:1!important;white-space:nowrap!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact .cloud-account small{display:none!important}
+
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metrics{
+    gap:4px!important;padding:5px 10px 6px!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric{
+    height:50px!important;min-height:50px!important;
+    padding:5px 4px 5px 6px!important;
+    grid-template-columns:21px minmax(0,1fr)!important;
+    gap:5px!important;border-radius:8px!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric:after{
+    top:7px!important;bottom:7px!important;width:2px!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric-icon{
+    width:20px!important;height:20px!important;border-radius:6px!important;font-size:.56rem!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric-content{
+    gap:0!important;align-content:center!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric-content span{
+    font-size:.39rem!important;line-height:1!important;letter-spacing:.008em!important;
+    white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important
+  }
+  body.dashboard-sticky-mobile.dashboard-sticky-compact #dashboard .metric-content strong{
+    font-size:.98rem!important;line-height:1!important;margin-top:2px!important
+  }
+}
