@@ -1955,3 +1955,22 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   #dashboard .metric-content span{font-size:.51rem!important}
   #dashboard .metric-content strong{font-size:1.34rem!important}
 }
+/* v6.5.20 — Registros mobile: ações secundárias recolhidas no menu */
+@media (max-width: 760px){
+  #registros .records-toolbar{display:flex!important;align-items:center!important;gap:8px!important;margin-bottom:8px!important;}
+  #registros .records-title{display:flex!important;align-items:baseline!important;gap:8px!important;min-width:0!important;flex:1!important;}
+  #registros .records-title h2{margin:0!important;font-size:20px!important;white-space:nowrap!important;}
+  #registros .records-title p{display:none!important;}
+  #registros .records-toolbar-actions{display:flex!important;align-items:center!important;gap:6px!important;margin-left:auto!important;}
+  #registros .records-count{font-size:13px!important;white-space:nowrap!important;}
+  #registros .records-more{position:relative!important;}
+  #registros .records-more>summary{width:42px!important;height:42px!important;display:grid!important;place-items:center!important;border-radius:12px!important;font-size:25px!important;}
+  #registros .records-more-menu{right:0!important;left:auto!important;min-width:210px!important;z-index:80!important;}
+  #registros .records-more-menu button{width:100%!important;text-align:left!important;justify-content:flex-start!important;white-space:nowrap!important;}
+  #registros .records-filters{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;}
+  #registros #pesquisa{grid-column:1/-1!important;width:100%!important;}
+  #registros #filtroTipo{grid-column:1!important;width:100%!important;min-width:0!important;}
+  #registros .records-view-compact{grid-column:2!important;margin:0!important;min-width:auto!important;}
+  #registros #filtroLocal,#registros #filtroPeriodo{display:none!important;}
+  #registros .records-panel{padding:14px!important;}
+}
