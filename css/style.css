@@ -287,3 +287,663 @@ html[data-theme="light"] .theme-toggle:hover{background:#e8f1fc;border-color:#bf
 .period-admin-list{display:grid;gap:10px}.period-admin-row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 14px;border:1px solid rgba(148,163,184,.16);border-radius:12px;background:rgba(148,163,184,.04)}
 .period-admin-row>div:first-child{display:flex;flex-direction:column;gap:4px}.period-admin-row small{opacity:.7}.period-admin-actions{display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:760px){.period-form{grid-template-columns:1fr}.period-form-actions{width:100%}.period-form-actions button{flex:1}.period-list-title{align-items:flex-start;flex-direction:column}.period-list-title small{text-align:left}.period-admin-row{align-items:flex-start;flex-direction:column}.period-admin-actions{width:100%}.period-admin-actions button{flex:1}.period-manage-btn{width:100%}.modal-overlay{padding:10px}.modal-card{padding:16px;border-radius:14px}}
+
+/* v6.2.0 — Registros em tabela responsiva + modo print */
+#registros .panel{overflow:hidden}
+#registros .filters{grid-template-columns:minmax(260px,1.35fr) minmax(150px,.65fr) minmax(150px,.65fr) minmax(180px,.75fr) auto;align-items:center}
+#registros .records{display:block;min-width:0;overflow:hidden}
+.records-table{width:100%;min-width:0;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface)}
+.records-table-head,.record-row{display:grid;grid-template-columns:minmax(105px,.8fr) minmax(210px,1.35fr) minmax(85px,.6fr) minmax(105px,.72fr) minmax(220px,1.75fr) minmax(82px,.6fr) minmax(138px,.9fr);align-items:center}
+.records-table-head{min-height:40px;background:var(--surface-soft);border-bottom:1px solid var(--border);color:var(--muted);font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.035em}
+.records-table-head>div,.record-cell{min-width:0;padding:9px 12px}
+.record-row{position:relative;min-height:62px;border-bottom:1px solid var(--border);background:var(--surface)}
+.record-row:last-child{border-bottom:0}.record-row:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--type-color,#087cff)}
+.record-row:hover{background:var(--surface-soft)}
+.cell-person{display:grid;gap:3px}.cell-person strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}.cell-person small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted);font-size:.72rem}
+.cell-local,.cell-date,.cell-detail{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cell-detail{color:var(--text-soft)}
+.cell-attachment{text-align:center}.record-attachment{font-weight:800;text-decoration:none;color:var(--primary);white-space:nowrap}
+.cell-actions{display:flex;justify-content:flex-end;gap:6px}.cell-actions button{min-height:34px;padding:7px 10px;font-size:.76rem}
+.print-mode-btn{white-space:nowrap}
+html[data-theme="dark"] .records-table,html[data-theme="dark"] .record-row{background:#0d2940;border-color:#21445f}html[data-theme="dark"] .records-table-head{background:#12324b;border-color:#21445f}html[data-theme="dark"] .record-row:hover{background:#113149}
+@media(max-width:1350px) and (min-width:721px){#registros .filters{grid-template-columns:minmax(220px,1.2fr) repeat(3,minmax(135px,.65fr)) auto}.records-table-head,.record-row{grid-template-columns:minmax(95px,.75fr) minmax(180px,1.25fr) 80px 98px minmax(180px,1.55fr) 75px 126px}.records-table-head>div,.record-cell{padding-left:9px;padding-right:9px}.cell-actions button{padding-left:8px;padding-right:8px}}
+@media(max-width:720px){
+  #registros{padding-left:6px!important;padding-right:6px!important}
+  #registros .panel{padding:8px!important;border-radius:10px!important}
+  #registros .panel-heading{align-items:flex-start;flex-direction:column}
+  #registros .inline-actions{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px;width:100%}
+  #registros #btnLimparTudo{display:none}
+  #registros .records-view-bar{display:grid!important;grid-template-columns:1fr auto;align-items:center!important;padding:8px 9px!important;margin:8px 0!important;gap:8px!important}
+  #registros .toggle-option{gap:7px}.toggle-track{width:38px;height:22px;flex-basis:38px}.toggle-track:after{width:16px;height:16px}.toggle-option input:checked+.toggle-track:after{transform:translateX(16px)}
+  #registros .toggle-option strong{font-size:.72rem}#registros .toggle-option small{display:none}#registros .records-count{font-size:.72rem}
+  #registros .filters{display:grid!important;grid-template-columns:minmax(0,1fr) 105px!important;gap:6px!important;margin:8px 0!important}
+  #registros .filters input,#registros .filters select,#registros .filters button{min-width:0;height:38px!important;min-height:38px!important;padding:6px 8px!important;font-size:.72rem!important}
+  #registros #filtroLocal,#registros #filtroPeriodo{display:none}#registros .period-manage-btn{display:none}
+  #registros .records{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:9px}
+  .records-table{min-width:610px;border-radius:9px}
+  .records-table-head,.record-row{grid-template-columns:92px 150px 62px 76px minmax(150px,1fr) 58px 0px}
+  .records-table-head{font-size:.57rem;min-height:32px}.records-table-head>div,.record-cell{padding:6px 7px}
+  .record-row{min-height:48px;font-size:.68rem}.cell-person{gap:1px}.cell-person strong{font-size:.72rem}.cell-person small{font-size:.57rem}.tag{font-size:.52rem;padding:3px 5px;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cell-detail{font-size:.65rem}.record-attachment{font-size:.62rem}.cell-actions{display:none}.records-table-head>div:last-child{display:none}
+}
+body.records-print-mode .sidebar,body.records-print-mode .topbar-actions,body.records-print-mode #registros .records-view-bar,body.records-print-mode #registros .filters,body.records-print-mode #registros .panel-heading p,body.records-print-mode #registros .inline-actions,body.records-print-mode .app-footer{display:none!important}
+body.records-print-mode .app-shell{display:block!important}body.records-print-mode main{padding:0!important}body.records-print-mode .topbar{position:relative!important;padding:10px 14px!important;margin:0!important}body.records-print-mode .topbar p{display:none!important}body.records-print-mode #registros{padding:8px!important}body.records-print-mode #registros .panel{padding:8px!important;border:0!important;box-shadow:none!important}body.records-print-mode #registros .panel-heading{display:flex!important;margin:0 0 6px!important}body.records-print-mode #registros .panel-heading h2:after{content:' — modo de compartilhamento';font-size:.65em;font-weight:500;color:var(--muted)}body.records-print-mode .cell-actions,body.records-print-mode .records-table-head>div:last-child{display:none!important}body.records-print-mode .records-table-head,body.records-print-mode .record-row{grid-template-columns:minmax(90px,.8fr) minmax(170px,1.35fr) 80px 92px minmax(200px,1.8fr) 72px 0!important}
+@media(max-width:720px){body.records-print-mode{padding-bottom:0!important}body.records-print-mode .topbar{display:flex!important;padding:6px 8px!important}body.records-print-mode .topbar h1{font-size:1rem!important}body.records-print-mode .date-control{margin-left:auto;width:105px!important}body.records-print-mode #registros{padding:3px!important}body.records-print-mode #registros .panel{padding:3px!important}body.records-print-mode #registros .panel-heading h2{font-size:.7rem!important}body.records-print-mode #registros .records{overflow:visible!important}.records-print-mode .records-table{min-width:0!important}.records-print-mode .records-table-head,.records-print-mode .record-row{grid-template-columns:70px minmax(105px,1.25fr) 48px 60px minmax(105px,1.4fr) 42px 0!important}.records-print-mode .records-table-head>div,.records-print-mode .record-cell{padding:4px!important}.records-print-mode .record-row{min-height:40px;font-size:.58rem}.records-print-mode .cell-person strong{font-size:.62rem}.records-print-mode .cell-person small{font-size:.5rem}.records-print-mode .tag{font-size:.45rem;max-width:66px}.records-print-mode .cell-detail,.records-print-mode .record-attachment{font-size:.54rem}}
+@media print{.sidebar,.topbar-actions,#registros .records-view-bar,#registros .filters,#registros .inline-actions,.app-footer{display:none!important}.app-shell{display:block!important}main{padding:0!important}.page{padding:5px!important}.records-table{border-color:#aaa}.record-row{break-inside:avoid}}
+
+/* v6.2.3 — ajuste visual seguro: somente CSS, lógica v6.2.1 preservada */
+@media (min-width:721px){
+#registros .panel-heading{align-items:center;margin-bottom:10px!important}
+#registros .panel-heading h2{font-size:1.05rem!important}
+#registros .panel-heading p{font-size:.72rem!important}
+#registros .inline-actions{gap:7px!important}
+#registros .inline-actions button{min-height:38px!important;padding:8px 12px!important;font-size:.78rem!important}
+#registros .filters{grid-template-columns:minmax(230px,1.3fr) minmax(130px,.65fr) minmax(130px,.65fr) minmax(155px,.72fr) auto!important;gap:8px!important}
+#registros .filters input,#registros .filters select,#registros .filters button{min-height:40px!important;padding-top:8px!important;padding-bottom:8px!important;font-size:.8rem!important}
+.records-table-head,.record-row{grid-template-columns:minmax(105px,.8fr) minmax(205px,1.35fr) minmax(80px,.58fr) 112px minmax(235px,1.9fr) 82px 132px!important}
+.records-table-head>div,.record-cell{padding:8px 10px!important}
+.record-row{min-height:58px!important}
+.cell-date{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+.cell-actions button{min-height:32px!important;padding:6px 8px!important;font-size:.72rem!important}
+}
+
+/* v6.2.4 — refinamento visual seguro da página Registros (somente CSS) */
+@media (min-width:721px){
+  #registros .panel{padding:16px!important}
+  #registros .panel-heading{margin-bottom:7px!important}
+  #registros .panel-heading h2{font-size:1rem!important}
+  #registros .panel-heading p{font-size:.69rem!important;margin-top:2px!important}
+  #registros .inline-actions{gap:6px!important}
+  #registros .inline-actions button{min-height:34px!important;padding:6px 10px!important;font-size:.72rem!important;border-radius:8px!important}
+  #registros .records-view-bar{padding:8px 11px!important;margin:7px 0!important;min-height:48px!important}
+  #registros .toggle-option{gap:9px!important}
+  #registros .toggle-option strong{font-size:.78rem!important}
+  #registros .toggle-option small{font-size:.64rem!important}
+  #registros .toggle-track{width:42px!important;height:23px!important;flex-basis:42px!important}
+  #registros .toggle-track:after{width:17px!important;height:17px!important}
+  #registros .toggle-option input:checked+.toggle-track:after{transform:translateX(19px)!important}
+  #registros .records-count{font-size:.78rem!important}
+  #registros .filters{grid-template-columns:minmax(230px,1.35fr) minmax(120px,.62fr) minmax(120px,.62fr) minmax(150px,.72fr) auto!important;gap:7px!important;margin:7px 0 9px!important}
+  #registros .filters input,#registros .filters select,#registros .filters button{min-height:36px!important;height:36px!important;padding:6px 9px!important;font-size:.74rem!important;border-radius:8px!important}
+  #registros .period-manage-btn{padding-left:10px!important;padding-right:10px!important}
+  .records-table{border-radius:10px!important}
+  .records-table-head,.record-row{grid-template-columns:minmax(100px,.72fr) minmax(190px,1.28fr) minmax(76px,.54fr) 108px minmax(270px,2.12fr) 66px 118px!important}
+  .records-table-head{min-height:34px!important;font-size:.64rem!important;letter-spacing:.025em!important}
+  .records-table-head>div,.record-cell{padding:7px 9px!important}
+  .record-row{min-height:52px!important;font-size:.78rem!important}
+  .cell-person{gap:1px!important}.cell-person strong{font-size:.82rem!important}.cell-person small{font-size:.63rem!important}
+  .cell-detail{font-size:.76rem!important}
+  .cell-attachment{font-size:0!important}.cell-attachment .record-attachment{font-size:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:30px!important;height:30px!important;border-radius:7px!important}
+  .cell-attachment .record-attachment:before{content:'📎';font-size:15px!important;line-height:1!important}
+  .cell-actions{gap:5px!important}.cell-actions button{min-height:29px!important;padding:5px 7px!important;font-size:.66rem!important;border-radius:7px!important}
+  .tag{font-size:.58rem!important;padding:4px 6px!important;max-width:100px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+}
+@media (max-width:720px){
+  #registros .panel-heading h2{font-size:.88rem!important}
+  #registros .inline-actions button{font-size:.66rem!important;min-height:34px!important}
+  #registros .records-view-bar{min-height:42px!important}
+  .records-table-head{min-height:30px!important}
+  .record-row{min-height:44px!important}
+}
+
+/* v6.2.5 — correção de sobreposição TIPO x COLABORADOR (somente CSS) */
+@media (min-width:721px){
+  /* Reserva espaço real para as etiquetas de tipo e impede invasão da próxima coluna */
+  .records-table-head,.record-row{
+    grid-template-columns:minmax(132px,.88fr) minmax(180px,1.18fr) minmax(76px,.52fr) 108px minmax(250px,2fr) 62px 118px!important;
+  }
+  .record-cell{overflow:hidden!important;}
+  .record-cell:first-child{display:flex!important;align-items:center!important;min-width:0!important;overflow:hidden!important;}
+  .record-cell:first-child .tag{
+    display:inline-block!important;
+    width:auto!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+    flex:0 1 auto!important;
+  }
+  .cell-person{padding-left:12px!important;overflow:hidden!important;}
+  .cell-person strong,.cell-person small{display:block!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+}
+
+@media (max-width:1180px) and (min-width:721px){
+  .records-table-head,.record-row{
+    grid-template-columns:minmax(124px,.86fr) minmax(166px,1.12fr) 72px 104px minmax(210px,1.8fr) 58px 112px!important;
+  }
+  .record-cell:first-child .tag{font-size:.54rem!important;padding:4px 5px!important;}
+  .cell-person{padding-left:10px!important;}
+}
+
+/* v6.2.6 — topo compacto da página Registros (UI somente; IDs e lógica preservados) */
+@media (min-width:721px){
+  #registros .records-panel{padding:14px!important;overflow:visible!important}
+  #registros .records-toolbar{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;margin:0 0 9px!important}
+  #registros .records-title{min-width:0}
+  #registros .records-title h2{margin:0!important;font-size:1rem!important;line-height:1.15!important}
+  #registros .records-title p{margin:3px 0 0!important;font-size:.67rem!important;color:var(--muted)!important}
+  #registros .records-toolbar-actions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:7px!important;margin-left:auto!important;white-space:nowrap!important}
+  #registros .records-count{font-size:.76rem!important;margin-right:4px!important;color:var(--success,#16a05d)!important}
+  #registros .records-toolbar-actions>button{height:34px!important;min-height:34px!important;padding:6px 11px!important;border-radius:8px!important;font-size:.72rem!important}
+  #registros .print-mode-btn span{display:inline!important}
+  #registros .records-more{position:relative!important}
+  #registros .records-more summary{list-style:none!important;display:grid!important;place-items:center!important;width:34px!important;height:34px!important;border:1px solid var(--border)!important;border-radius:8px!important;background:var(--surface-soft)!important;color:var(--text)!important;font-size:1.15rem!important;font-weight:900!important;cursor:pointer!important;user-select:none!important}
+  #registros .records-more summary::-webkit-details-marker{display:none!important}
+  #registros .records-more[open] summary{outline:2px solid rgba(8,124,255,.22)!important}
+  #registros .records-more-menu{position:absolute!important;right:0!important;top:40px!important;z-index:50!important;width:210px!important;padding:7px!important;border:1px solid var(--border)!important;border-radius:10px!important;background:var(--surface)!important;box-shadow:0 12px 28px rgba(0,0,0,.24)!important}
+  #registros .records-more-menu button{width:100%!important;min-height:34px!important;padding:7px 9px!important;font-size:.7rem!important;border-radius:8px!important}
+  #registros .records-filters{display:grid!important;grid-template-columns:minmax(250px,1.45fr) minmax(125px,.66fr) minmax(125px,.66fr) minmax(150px,.76fr) 132px 40px!important;align-items:end!important;gap:7px!important;margin:0 0 9px!important}
+  #registros .records-filters>input,#registros .records-filters>select,#registros .records-filters>button{min-width:0!important;height:36px!important;min-height:36px!important;padding:6px 9px!important;font-size:.73rem!important;border-radius:8px!important}
+  #registros .records-view-compact{height:36px!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:7px!important;padding:5px 8px!important;border:1px solid var(--border)!important;border-radius:8px!important;background:var(--surface)!important;color:var(--text)!important;cursor:pointer!important;white-space:nowrap!important}
+  #registros .records-view-compact .view-label{font-size:.61rem!important;color:var(--muted)!important}
+  #registros .records-view-compact input{position:absolute!important;opacity:0!important;pointer-events:none!important}
+  #registros .records-view-compact .toggle-track{width:34px!important;height:18px!important;flex:0 0 34px!important}
+  #registros .records-view-compact .toggle-track:after{top:2px!important;left:2px!important;width:14px!important;height:14px!important}
+  #registros .records-view-compact input:checked+.toggle-track:after{transform:translateX(16px)!important}
+  #registros .records-view-compact .view-state{min-width:34px!important;font-size:.65rem!important;font-weight:800!important}
+  #registros .records-view-compact .view-state:after{content:'Ativos'}
+  #registros .records-view-compact input:checked~.view-state:after{content:'Todos'}
+  #registros .records-period-gear{width:40px!important;padding:0!important;font-size:.9rem!important}
+  #registros .records-table{margin-top:0!important}
+}
+
+@media (max-width:1180px) and (min-width:721px){
+  #registros .records-filters{grid-template-columns:minmax(210px,1.35fr) minmax(110px,.62fr) minmax(110px,.62fr) minmax(135px,.7fr) 118px 38px!important;gap:6px!important}
+  #registros .records-toolbar-actions>button{padding-left:9px!important;padding-right:9px!important}
+  #registros .records-count{font-size:.7rem!important}
+}
+
+@media (max-width:720px){
+  #registros .records-toolbar{display:grid!important;grid-template-columns:1fr auto!important;gap:7px!important;align-items:center!important;margin-bottom:7px!important}
+  #registros .records-title p{display:none!important}
+  #registros .records-toolbar-actions{display:flex!important;align-items:center!important;gap:5px!important}
+  #registros .records-count{font-size:.62rem!important}
+  #registros .records-toolbar-actions>button{height:32px!important;min-height:32px!important;padding:5px 8px!important;font-size:.62rem!important}
+  #registros .print-mode-btn span{display:none!important}
+  #registros .records-more{position:relative!important}
+  #registros .records-more summary{list-style:none!important;display:grid!important;place-items:center!important;width:32px!important;height:32px!important;border:1px solid var(--border)!important;border-radius:8px!important;background:var(--surface-soft)!important;cursor:pointer!important}
+  #registros .records-more summary::-webkit-details-marker{display:none!important}
+  #registros .records-more-menu{position:absolute!important;right:0!important;top:37px!important;z-index:50!important;width:190px!important;padding:6px!important;border:1px solid var(--border)!important;border-radius:9px!important;background:var(--surface)!important;box-shadow:0 12px 28px rgba(0,0,0,.28)!important}
+  #registros .records-more-menu button{width:100%!important;font-size:.66rem!important}
+  #registros .records-filters{display:grid!important;grid-template-columns:minmax(0,1fr) 105px 38px!important;gap:6px!important;margin:6px 0 8px!important}
+  #registros .records-filters>input,#registros .records-filters>select,#registros .records-filters>button{height:36px!important;min-height:36px!important;font-size:.7rem!important}
+  #registros #filtroLocal,#registros #filtroPeriodo{display:none!important}
+  #registros .records-view-compact{height:36px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:4px 6px!important;border:1px solid var(--border)!important;border-radius:8px!important;background:var(--surface)!important;white-space:nowrap!important}
+  #registros .records-view-compact .view-label{display:none!important}
+  #registros .records-view-compact input{position:absolute!important;opacity:0!important;pointer-events:none!important}
+  #registros .records-view-compact .toggle-track{width:30px!important;height:18px!important;flex:0 0 30px!important}
+  #registros .records-view-compact .toggle-track:after{top:2px!important;left:2px!important;width:14px!important;height:14px!important}
+  #registros .records-view-compact input:checked+.toggle-track:after{transform:translateX(12px)!important}
+  #registros .records-view-compact .view-state{font-size:.58rem!important;font-weight:800!important}
+  #registros .records-view-compact .view-state:after{content:'Ativos'}
+  #registros .records-view-compact input:checked~.view-state:after{content:'Todos'}
+  #registros .records-period-gear{display:grid!important;width:38px!important;padding:0!important}
+}
+
+html[data-theme="dark"] #registros .records-more summary,
+html[data-theme="dark"] #registros .records-more-menu,
+html[data-theme="dark"] #registros .records-view-compact{background:#0d2940!important;border-color:#21445f!important;color:#eaf2f8!important}
+
+
+/* v6.3.0 — Dashboard operacional compacto (somente apresentação) */
+#dashboard .metrics{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:9px!important;margin-bottom:12px!important}
+#dashboard .metric{min-height:92px!important;height:92px!important;padding:11px 10px 9px!important;grid-template-columns:36px 1fr!important;border-radius:10px!important;align-items:start!important}
+#dashboard .metric-icon{width:32px!important;height:32px!important;border-radius:9px!important;font-size:.9rem!important}
+#dashboard .metric-content span{font-size:.67rem!important;line-height:1.05!important}
+#dashboard .metric-content strong{font-size:1.55rem!important;line-height:1!important;margin-top:1px!important}
+#dashboard .metric-content small{font-size:.58rem!important}
+#dashboard .metric-footer{display:none!important}
+#dashboard .dashboard-main-grid{grid-template-columns:minmax(0,1.55fr) minmax(300px,.62fr)!important;gap:12px!important}
+#dashboard .panel{padding:12px!important;border-radius:10px!important}
+#dashboard .panel-heading{margin-bottom:7px!important}
+#dashboard .panel-heading h2{font-size:1rem!important;margin-bottom:1px!important}
+#dashboard .panel-heading p{font-size:.7rem!important}
+#dashboard .text-button{padding:7px 12px!important;font-size:.72rem!important}
+#dashboard .current-panel{height:430px!important;min-height:430px!important}
+#dashboard .current-list{max-height:333px!important;grid-auto-rows:44px!important;gap:5px!important}
+#dashboard .current-row{grid-template-columns:minmax(190px,1.35fr) minmax(155px,.95fr) minmax(80px,.55fr) auto!important;min-height:44px!important;padding:4px 8px!important}
+#dashboard .person strong{font-size:.75rem!important}#dashboard .person small,#dashboard .row-meta small{font-size:.6rem!important}#dashboard .row-meta{font-size:.67rem!important}
+#dashboard .right-stack{gap:10px!important;grid-template-rows:auto auto auto 1fr!important}
+#dashboard .availability-panel{display:grid!important;grid-template-columns:1fr!important;gap:8px!important;padding:12px 14px!important}
+#dashboard .availability-copy{display:grid!important;grid-template-columns:1fr auto!important;align-items:end!important;gap:1px 10px!important}
+#dashboard .availability-copy span{font-size:.68rem!important;font-weight:800!important;text-transform:uppercase!important;letter-spacing:.04em!important;color:var(--muted)!important}
+#dashboard .availability-copy strong{grid-column:2;grid-row:1/3;font-size:1.65rem!important;line-height:1!important}
+#dashboard .availability-copy small{font-size:.68rem!important;color:var(--muted)!important}
+#dashboard .availability-track{height:7px!important;border-radius:999px!important;overflow:hidden!important;background:var(--surface-soft)!important;border:1px solid var(--border)!important}
+#dashboard .availability-track span{display:block!important;height:100%!important;width:0;border-radius:999px!important;background:#20a664!important;transition:width .25s ease!important}
+#dashboard .location-row,#dashboard .category-summary-row{padding:8px 9px!important;font-size:.72rem!important}
+#dashboard .location-list,#dashboard .category-summary-list{gap:5px!important}
+#dashboard .quick{min-height:70px!important;padding:7px 5px!important;font-size:.66rem!important}#dashboard .quick span{font-size:1.25rem!important;margin-bottom:2px!important}
+@media(max-width:1450px) and (min-width:1051px){#dashboard .metrics{grid-template-columns:repeat(6,minmax(0,1fr))!important}#dashboard .metric{min-width:0!important}#dashboard .metric-content span{font-size:.6rem!important}#dashboard .metric-content strong{font-size:1.35rem!important}#dashboard .dashboard-main-grid{grid-template-columns:minmax(0,1.4fr) minmax(280px,.65fr)!important}}
+@media(max-width:1050px){#dashboard .metrics{grid-template-columns:repeat(3,1fr)!important}#dashboard .metric{height:88px!important;min-height:88px!important}#dashboard .dashboard-main-grid{grid-template-columns:1fr!important}}
+@media(max-width:720px){#dashboard .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}#dashboard .metric{height:78px!important;min-height:78px!important;padding:8px 6px!important;grid-template-columns:26px 1fr!important}#dashboard .metric-icon{width:24px!important;height:24px!important;font-size:.7rem!important}#dashboard .metric-content span{font-size:.52rem!important}#dashboard .metric-content strong{font-size:1.15rem!important}#dashboard .metric-content small{display:none!important}#dashboard .current-panel{height:auto!important;min-height:360px!important}#dashboard .current-row{grid-template-columns:1fr!important;grid-auto-rows:auto!important;min-height:56px!important}#dashboard .current-row .row-meta,#dashboard .current-row .tag{display:none!important}#dashboard .availability-copy strong{font-size:1.4rem!important}}
+
+/* v6.3.2 - Programação de férias */
+.vacation-import-box{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:18px;align-items:center;margin:4px 0 16px;padding:18px;border:1px solid #21445f;border-radius:12px;background:#0d2940}.vacation-import-box h3{margin:0 0 7px;color:#fff}.vacation-import-box .section-subtitle{margin:0;color:#9bb0c5;line-height:1.45}.vacation-rules{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.vacation-rules span{padding:6px 9px;border-radius:999px;background:#123754;border:1px solid #285371;color:#cbd8e5;font-size:.78rem}.vacation-rules b{color:#fff}.vacation-import-actions{min-width:0}.vacation-file{margin-top:0}.vacation-import-actions .actions{margin-top:10px;flex-wrap:wrap}
+html[data-theme="light"] .vacation-import-box{background:#f8fafc;border-color:#e0e7ef}.vacation-import-box h3{color:#eaf2f8}html[data-theme="light"] .vacation-import-box h3{color:#243149}html[data-theme="light"] .vacation-import-box .section-subtitle{color:#6f7e91}html[data-theme="light"] .vacation-rules span{background:#eef4f9;border-color:#d6e1eb;color:#526178}html[data-theme="light"] .vacation-rules b{color:#243149}
+@media(max-width:900px){.vacation-import-box{grid-template-columns:1fr}.vacation-import-actions{max-width:none}}
+\n\n/* v6.3.3 — alerta de próximas férias no Dashboard */\n#dashboard .vacation-alert-panel{padding:11px 12px!important;border-color:#d9a51d!important;background:linear-gradient(180deg,var(--panel),var(--surface-soft))!important}\n#dashboard .vacation-alert-panel[hidden]{display:none!important}\n#dashboard .vacation-alert-heading{align-items:center!important;margin-bottom:7px!important}\n#dashboard .vacation-alert-heading h2{font-size:.92rem!important;margin:0 0 2px!important}\n#dashboard .vacation-alert-heading p{font-size:.67rem!important}\n#dashboard .vacation-alert-count{display:grid;place-items:center;min-width:29px;height:29px;padding:0 7px;border-radius:9px;background:#fff2bf;color:#8a5b00;font-weight:900;font-size:.82rem;border:1px solid #e5c15b}\n#dashboard .vacation-alert-list{display:grid;gap:5px}\n#dashboard .vacation-alert-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border:1px solid var(--border);border-left:4px solid #d7a10c;border-radius:8px;background:var(--surface-soft)}\n#dashboard .vacation-alert-row.attention{border-left-color:#ef8f12}\n#dashboard .vacation-alert-row.urgent{border-left-color:#df4750;background:rgba(223,71,80,.07)}\n#dashboard .vacation-alert-person{min-width:0;line-height:1.08}\n#dashboard .vacation-alert-person strong{display:block;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n#dashboard .vacation-alert-person small{display:block;margin-top:2px;color:var(--muted);font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n#dashboard .vacation-alert-period{text-align:right;display:grid;gap:2px;white-space:nowrap}\n#dashboard .vacation-alert-period span{font-size:.6rem;color:var(--muted)}\n#dashboard .vacation-alert-period b{font-size:.66rem;color:#a26800}\n#dashboard .vacation-alert-row.attention .vacation-alert-period b{color:#c86c00}\n#dashboard .vacation-alert-row.urgent .vacation-alert-period b{color:#d73742}\n#dashboard .vacation-alert-more{text-align:right;color:var(--muted);font-size:.6rem;padding:2px 3px 0}\nhtml[data-theme="dark"] #dashboard .vacation-alert-panel{border-color:#7a641f!important;background:#0b2033!important}\nhtml[data-theme="dark"] #dashboard .vacation-alert-count{background:#3b3213;color:#ffd86a;border-color:#77631c}\nhtml[data-theme="dark"] #dashboard .vacation-alert-row{background:#0a1c2e}\n@media(max-width:720px){#dashboard .vacation-alert-row{grid-template-columns:1fr!important}#dashboard .vacation-alert-period{text-align:left!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:8px!important}#dashboard .vacation-alert-heading p{display:none!important}}\n
+/* v6.3.4 */
+.vacation-alert-row.future{opacity:.92}
+.vacation-alert-empty{padding:14px 16px;color:var(--muted,#9fb0c3);font-size:14px}
+
+
+/* v6.3.6 — Programação de férias: fonte oficial e conferência visual */
+.vacation-program-box{margin:0 0 16px;padding:14px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+.vacation-program-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.vacation-program-title h3{margin:0 0 3px;font-size:.95rem}.vacation-program-title p{margin:0;color:var(--muted);font-size:.7rem}.vacation-program-title>strong{color:#52a5ff;font-size:.72rem;white-space:nowrap}
+.vacation-program-table{border:1px solid var(--border);border-radius:9px;overflow:hidden}.vacation-program-head,.vacation-program-row{display:grid;grid-template-columns:minmax(220px,1.6fr) 105px 105px 105px 105px;gap:0;align-items:center}.vacation-program-head{min-height:34px;background:var(--surface-soft);color:var(--muted);font-size:.63rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em}.vacation-program-head span,.vacation-program-row>span{padding:7px 9px;min-width:0}.vacation-program-row{min-height:46px;border-top:1px solid var(--border);font-size:.7rem}.vacation-program-row strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vacation-program-row small{display:block;margin-top:2px;color:var(--muted);font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vacation-program-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:.6rem;background:#183b57}.vacation-program-status.programada{color:#70b6ff}.vacation-program-status.em-ferias{background:#493a0b;color:#ffd66a}.vacation-program-status.concluida{background:#123628;color:#63d599}.vacation-program-empty{padding:14px;color:var(--muted);font-size:.72rem;text-align:center}
+@media(max-width:720px){.vacation-program-box{padding:10px}.vacation-program-title{align-items:flex-start}.vacation-program-title p{display:none}.vacation-program-table{overflow-x:auto}.vacation-program-head,.vacation-program-row{min-width:690px;grid-template-columns:260px 100px 100px 100px 105px}}
+
+/* v6.4.0 - status da fonte oficial de férias */
+.vacation-source-status{margin-top:8px;font-size:.82rem;color:var(--muted,#8ba6bd)}
+.vacation-source-status.cloud-error{color:#f4b84a}
+
+/* v6.4.3 — Próximas férias: apresentação limpa e legível */
+#dashboard .vacation-alert-panel{
+  padding:14px 15px!important;
+  overflow:hidden!important;
+}
+#dashboard .vacation-alert-heading{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  margin-bottom:10px!important;
+}
+#dashboard .vacation-alert-heading h2{
+  font-size:1rem!important;
+  line-height:1.15!important;
+  margin:0 0 3px!important;
+}
+#dashboard .vacation-alert-heading p{
+  font-size:.68rem!important;
+  line-height:1.35!important;
+  margin:0!important;
+  max-width:290px!important;
+}
+#dashboard .vacation-alert-count{
+  flex:0 0 auto!important;
+  min-width:32px!important;
+  height:32px!important;
+  border-radius:9px!important;
+  font-size:.82rem!important;
+}
+#dashboard .vacation-alert-list{
+  display:grid!important;
+  gap:7px!important;
+  min-width:0!important;
+}
+#dashboard .vacation-alert-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"person badge" "person dates"!important;
+  column-gap:12px!important;
+  row-gap:4px!important;
+  align-items:center!important;
+  min-width:0!important;
+  padding:9px 10px!important;
+  border:1px solid var(--border)!important;
+  border-left:4px solid #d7a10c!important;
+  border-radius:9px!important;
+  background:var(--surface-soft)!important;
+  overflow:hidden!important;
+}
+#dashboard .vacation-alert-row.attention{border-left-color:#ef8f12!important}
+#dashboard .vacation-alert-row.urgent{border-left-color:#df4750!important;background:rgba(223,71,80,.08)!important}
+#dashboard .vacation-alert-person{
+  grid-area:person!important;
+  min-width:0!important;
+  align-self:center!important;
+  line-height:1.12!important;
+}
+#dashboard .vacation-alert-person strong{
+  display:block!important;
+  margin:0!important;
+  font-size:.78rem!important;
+  line-height:1.15!important;
+  color:var(--text)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#dashboard .vacation-alert-person small{
+  display:block!important;
+  margin-top:3px!important;
+  font-size:.6rem!important;
+  line-height:1.2!important;
+  color:var(--muted)!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+#dashboard .vacation-alert-period{
+  display:contents!important;
+}
+#dashboard .vacation-alert-period span{
+  grid-area:dates!important;
+  justify-self:end!important;
+  font-size:.62rem!important;
+  line-height:1.1!important;
+  color:var(--muted)!important;
+  white-space:nowrap!important;
+}
+#dashboard .vacation-alert-period b{
+  grid-area:badge!important;
+  justify-self:end!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:24px!important;
+  padding:4px 8px!important;
+  border-radius:999px!important;
+  background:#173b57!important;
+  border:1px solid #285371!important;
+  color:#e7f1fb!important;
+  font-size:.62rem!important;
+  line-height:1!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+#dashboard .vacation-alert-row.notice .vacation-alert-period b{
+  background:#4a3b10!important;border-color:#7a641f!important;color:#ffd96b!important;
+}
+#dashboard .vacation-alert-row.attention .vacation-alert-period b{
+  background:#4a2c0c!important;border-color:#8d5716!important;color:#ffbd5a!important;
+}
+#dashboard .vacation-alert-row.urgent .vacation-alert-period b{
+  background:#4b1d22!important;border-color:#85313a!important;color:#ff9ca4!important;
+}
+#dashboard .vacation-alert-more{
+  padding:5px 2px 0!important;
+  text-align:center!important;
+  color:var(--muted)!important;
+  font-size:.61rem!important;
+  line-height:1.25!important;
+}
+html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!important}
+
+@media(max-width:1450px) and (min-width:1051px){
+  #dashboard .vacation-alert-row{grid-template-columns:minmax(0,1fr) auto!important;column-gap:8px!important;padding:8px!important}
+  #dashboard .vacation-alert-person strong{font-size:.72rem!important}
+  #dashboard .vacation-alert-person small{font-size:.56rem!important}
+  #dashboard .vacation-alert-period span{font-size:.57rem!important}
+  #dashboard .vacation-alert-period b{font-size:.58rem!important;padding:4px 7px!important}
+}
+
+@media(max-width:720px){
+  #dashboard .vacation-alert-panel{padding:12px!important}
+  #dashboard .vacation-alert-heading p{display:block!important;font-size:.62rem!important}
+  #dashboard .vacation-alert-row{
+    grid-template-columns:1fr auto!important;
+    grid-template-areas:"person badge" "dates dates"!important;
+    gap:6px 8px!important;
+    padding:9px!important;
+  }
+  #dashboard .vacation-alert-person strong{white-space:normal!important;font-size:.74rem!important}
+  #dashboard .vacation-alert-person small{white-space:normal!important;font-size:.58rem!important}
+  #dashboard .vacation-alert-period{display:contents!important}
+  #dashboard .vacation-alert-period span{grid-area:dates!important;justify-self:start!important;font-size:.6rem!important}
+  #dashboard .vacation-alert-period b{grid-area:badge!important;justify-self:end!important}
+}
+/* v6.4.4 - férias programadas: histórico sintético sem ações */
+.history-only-badge{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:5px 10px;border-radius:9px;background:rgba(255,255,255,.06);color:var(--muted,#9fb0c2);font-size:.78rem;font-weight:800;white-space:nowrap}
+
+/* v6.4.7 — Programação de férias simplificada */
+.vacation-import-compact{
+  grid-template-columns:minmax(0,1fr) minmax(420px,.72fr)!important;
+  padding:14px 16px!important;
+  margin-bottom:12px!important;
+  gap:16px!important;
+}
+.vacation-import-compact .vacation-import-copy h3{margin-bottom:4px!important;font-size:1rem!important}
+.vacation-import-compact .section-subtitle{font-size:.72rem!important;line-height:1.35!important}
+.vacation-import-compact .vacation-import-actions{display:grid!important;grid-template-columns:minmax(210px,1fr) auto;gap:8px 10px;align-items:end!important}
+.vacation-import-compact .vacation-file{grid-column:1/2!important;margin:0!important}
+.vacation-import-compact .actions{grid-column:2/3!important;margin:0!important;align-self:end!important;flex-wrap:nowrap!important}
+.vacation-import-compact .status{grid-column:1/-1!important;margin-top:0!important}
+.vacation-import-compact .compact-model{padding-inline:12px!important}
+.vacation-source-status[hidden]{display:none!important}
+.vacation-program-box{padding:12px 14px!important}
+.vacation-program-title{margin-bottom:8px!important}
+.vacation-program-title h3{font-size:.92rem!important}
+.vacation-program-filters{display:grid;grid-template-columns:minmax(240px,1fr) 190px;gap:10px;margin-bottom:9px}
+.vacation-program-filters input,.vacation-program-filters select{width:100%;height:38px;padding:0 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface-soft);color:var(--text);font:inherit;font-size:.72rem;outline:none}
+.vacation-program-filters input:focus,.vacation-program-filters select:focus{border-color:#2f80ed;box-shadow:0 0 0 2px rgba(47,128,237,.12)}
+.vacation-program-head{min-height:31px!important}
+.vacation-program-row{min-height:42px!important}
+.vacation-program-head span,.vacation-program-row>span{padding:6px 8px!important}
+@media(max-width:900px){.vacation-import-compact{grid-template-columns:1fr!important}.vacation-import-compact .vacation-import-actions{grid-template-columns:1fr auto!important}}
+@media(max-width:620px){.vacation-import-compact .vacation-import-actions{grid-template-columns:1fr!important}.vacation-import-compact .vacation-file,.vacation-import-compact .actions,.vacation-import-compact .status{grid-column:1!important}.vacation-program-filters{grid-template-columns:1fr!important}.vacation-import-compact .actions{justify-content:flex-start!important}}
+
+/* v6.4.9 — Dashboard Executivo: uma tela, sem vazios e sem rolagem interna */
+#dashboard.dashboard-page{padding-bottom:18px!important}
+#dashboard .metrics{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px!important;margin-bottom:14px!important}
+#dashboard .metric{height:96px!important;min-height:96px!important;padding:12px 11px!important;align-items:start!important}
+#dashboard .metric-content span{font-size:.66rem!important}
+#dashboard .metric-content strong{font-size:1.58rem!important}
+#dashboard .dashboard-executive-grid{display:grid!important;grid-template-columns:minmax(0,2.05fr) minmax(310px,.9fr)!important;gap:14px!important;align-items:stretch!important}
+#dashboard .dashboard-primary-panel{height:auto!important;min-height:0!important}
+#dashboard .current-panel{height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important}
+#dashboard .current-list{display:grid!important;grid-auto-rows:54px!important;gap:7px!important;max-height:none!important;overflow:visible!important;padding-right:0!important;scrollbar-gutter:auto!important}
+#dashboard .current-list .current-row:nth-child(n+6){display:none!important}
+#dashboard .current-row{grid-template-columns:minmax(205px,1.35fr) minmax(175px,.95fr) minmax(82px,.55fr) auto!important;min-height:54px!important;padding:6px 10px!important;border-radius:9px!important}
+#dashboard .person strong{font-size:.8rem!important}
+#dashboard .person small,#dashboard .row-meta small{font-size:.61rem!important}
+#dashboard .row-meta{font-size:.69rem!important}
+#dashboard .occurrence-total{margin-top:9px!important}
+#dashboard .vacation-alert-panel{display:flex!important;flex-direction:column!important;min-height:0!important;padding:13px!important}
+#dashboard .vacation-alert-list{gap:7px!important}
+#dashboard .vacation-alert-row{min-height:51px!important;padding:7px 9px!important}
+#dashboard .vacation-alert-person strong{font-size:.73rem!important}
+#dashboard .vacation-alert-person small{font-size:.58rem!important}
+#dashboard .vacation-alert-period span{font-size:.58rem!important}
+#dashboard .vacation-alert-period b{font-size:.65rem!important}
+#dashboard .dashboard-summary-grid{display:grid!important;grid-template-columns:minmax(300px,.72fr) minmax(0,1.28fr)!important;gap:14px!important;margin-top:14px!important;align-items:stretch!important}
+#dashboard .dashboard-summary-panel{margin:0!important}
+#dashboard .availability-panel{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:13px!important;min-height:132px!important;padding:18px 20px!important}
+#dashboard .availability-copy{display:grid!important;grid-template-columns:1fr auto!important;align-items:end!important;gap:5px 12px!important}
+#dashboard .availability-copy span{font-size:.72rem!important}
+#dashboard .availability-copy strong{font-size:2.15rem!important}
+#dashboard .availability-copy small{font-size:.72rem!important}
+#dashboard .availability-track{height:9px!important}
+#dashboard .distribution-panel{min-height:132px!important;padding:13px 15px!important}
+#dashboard .distribution-heading{margin-bottom:9px!important}
+#dashboard .distribution-columns{display:grid!important;grid-template-columns:1fr 1fr!important;gap:18px!important;align-items:start!important}
+#dashboard .distribution-section{min-width:0!important}
+#dashboard .distribution-section h3{margin:0 0 6px!important;color:var(--muted)!important;font-size:.66rem!important;text-transform:uppercase!important;letter-spacing:.05em!important}
+#dashboard .location-list,#dashboard .category-summary-list{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:6px!important}
+#dashboard .location-row,#dashboard .category-summary-row{min-height:36px!important;padding:7px 8px!important;border-radius:8px!important;font-size:.68rem!important}
+#dashboard .location-row{grid-template-columns:20px 1fr auto!important;gap:6px!important}
+#dashboard .location-row strong{min-width:28px!important;padding:3px 5px!important}
+#dashboard .category-summary-row{grid-template-columns:20px 1fr auto!important;gap:6px!important;align-items:center!important}
+#dashboard .dashboard-hidden-quick{display:none!important}
+#dashboard .panel-heading h2{font-size:1rem!important}
+#dashboard .panel-heading p{font-size:.68rem!important}
+#dashboard .text-button{padding:7px 12px!important;font-size:.7rem!important}
+
+@media(max-width:1450px) and (min-width:1051px){
+  #dashboard .dashboard-executive-grid{grid-template-columns:minmax(0,1.75fr) minmax(285px,.82fr)!important}
+  #dashboard .current-row{grid-template-columns:minmax(180px,1.3fr) minmax(150px,.92fr) minmax(72px,.5fr) auto!important}
+  #dashboard .dashboard-summary-grid{grid-template-columns:minmax(280px,.68fr) minmax(0,1.32fr)!important}
+  #dashboard .location-list,#dashboard .category-summary-list{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:1050px){
+  #dashboard .dashboard-executive-grid,#dashboard .dashboard-summary-grid{grid-template-columns:1fr!important}
+  #dashboard .current-list .current-row:nth-child(n+6){display:none!important}
+  #dashboard .distribution-columns{grid-template-columns:1fr 1fr!important}
+}
+@media(max-width:720px){
+  #dashboard .metrics{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important}
+  #dashboard .metric{height:82px!important;min-height:82px!important;padding:8px 7px!important}
+  #dashboard .dashboard-executive-grid,#dashboard .dashboard-summary-grid{gap:10px!important;margin-top:10px!important}
+  #dashboard .current-list{grid-auto-rows:auto!important;gap:6px!important}
+  #dashboard .current-row{grid-template-columns:1fr!important;min-height:58px!important;padding:8px!important}
+  #dashboard .current-row .row-meta:nth-of-type(2){display:none!important}
+  #dashboard .current-row .tag{justify-self:start!important}
+  #dashboard .distribution-columns{grid-template-columns:1fr!important;gap:10px!important}
+  #dashboard .location-list,#dashboard .category-summary-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #dashboard .availability-panel{min-height:112px!important;padding:14px!important}
+  #dashboard .availability-copy strong{font-size:1.75rem!important}
+}
+
+/* v6.5.1 — Dashboard: cabeçalho e KPIs mais compactos */
+@media (min-width:1051px){
+  #dashboard.dashboard-page{padding-top:14px!important}
+  .topbar{
+    padding:11px 28px!important;
+    min-height:82px!important;
+    gap:16px!important;
+  }
+  .topbar h1{font-size:1.48rem!important;margin:0 0 2px!important;line-height:1!important}
+  .topbar p{font-size:.74rem!important;line-height:1.2!important}
+  .date-control{min-width:176px!important;gap:4px!important;font-size:.67rem!important}
+  .date-control input{height:38px!important;padding:7px 10px!important;font-size:.76rem!important}
+  .topbar-actions{gap:8px!important}
+  .theme-toggle{min-height:38px!important;padding:7px 11px!important}
+  .cloud-account{padding:0 7px!important}
+  .cloud-account>span,.cloud-account small{font-size:.66rem!important}
+  .topbar-user{min-width:132px!important;padding:6px 9px!important}
+  .topbar-user strong{font-size:.82rem!important}
+  .topbar-user small{font-size:.64rem!important}
+  .topbar-logout{min-height:38px!important;padding:7px 12px!important}
+
+  #dashboard .metrics{
+    gap:9px!important;
+    margin-bottom:12px!important;
+  }
+  #dashboard .metric{
+    height:82px!important;
+    min-height:82px!important;
+    padding:10px 10px!important;
+    grid-template-columns:38px minmax(0,1fr)!important;
+    gap:7px!important;
+    align-items:center!important;
+    align-content:center!important;
+  }
+  #dashboard .metric:after{top:12px!important;bottom:12px!important}
+  #dashboard .metric-icon{width:36px!important;height:36px!important;border-radius:10px!important;font-size:1rem!important}
+  #dashboard .metric-content{display:grid!important;grid-template-columns:auto 1fr!important;grid-template-rows:auto auto!important;column-gap:7px!important;row-gap:0!important;align-items:center!important;min-width:0!important}
+  #dashboard .metric-content span{grid-column:1/-1!important;font-size:.62rem!important;line-height:1!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;margin:0!important}
+  #dashboard .metric-content strong{grid-column:1!important;font-size:1.55rem!important;line-height:1!important;margin-top:3px!important}
+  #dashboard .metric-content small{display:none!important}
+  #dashboard .metric-footer{display:none!important}
+}
+
+@media (max-width:720px){
+  #dashboard .metric-content small{display:none!important}
+  #dashboard .metric-footer{display:none!important}
+}
+
+/* v6.5.2 — indicador real de conectividade */
+.cloud-account>span.cloud-online{color:#22c97a}.cloud-account>span.cloud-offline{color:#ff5d68}.cloud-account>span.cloud-syncing{color:#f4b84a}
+
+/* v6.5.4 — KPIs Premium: leitura executiva, títulos completos e proporção inteligente */
+@media (min-width:1051px){
+  #dashboard .metrics{
+    display:grid!important;
+    grid-template-columns:minmax(150px,.92fr) minmax(175px,1.08fr) minmax(140px,.84fr) minmax(165px,1fr) minmax(195px,1.18fr) minmax(140px,.84fr)!important;
+    gap:10px!important;
+    align-items:stretch!important;
+  }
+  #dashboard .metric{
+    position:relative!important;
+    height:88px!important;
+    min-height:88px!important;
+    min-width:0!important;
+    padding:11px 12px 11px 14px!important;
+    grid-template-columns:42px minmax(0,1fr)!important;
+    gap:10px!important;
+    align-items:center!important;
+    border-radius:13px!important;
+    overflow:hidden!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.08)!important;
+    transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+  }
+  #dashboard .metric:hover{
+    transform:translateY(-1px)!important;
+    box-shadow:0 11px 28px rgba(0,0,0,.12)!important;
+  }
+  #dashboard .metric-icon{
+    width:40px!important;
+    height:40px!important;
+    border-radius:12px!important;
+    font-size:1.02rem!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.12),0 6px 14px rgba(0,0,0,.16)!important;
+  }
+  #dashboard .metric-content{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto!important;
+    gap:4px!important;
+    align-content:center!important;
+    min-width:0!important;
+  }
+  #dashboard .metric-content span{
+    display:block!important;
+    grid-column:1!important;
+    font-size:.64rem!important;
+    line-height:1.1!important;
+    letter-spacing:.045em!important;
+    font-weight:900!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    margin:0!important;
+    color:var(--muted)!important;
+  }
+  #dashboard .metric-content strong{
+    display:block!important;
+    grid-column:1!important;
+    font-size:1.7rem!important;
+    line-height:.95!important;
+    margin:0!important;
+    letter-spacing:-.035em!important;
+  }
+  #dashboard .metric-content small,#dashboard .metric-footer{display:none!important}
+  #dashboard .metric:after{
+    width:4px!important;
+    top:14px!important;
+    bottom:14px!important;
+    border-radius:0 6px 6px 0!important;
+  }
+}
+
+/* Notebook: preserva todos os nomes sem comprimir demais */
+@media (min-width:1051px) and (max-width:1365px){
+  #dashboard .metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  #dashboard .metric{height:78px!important;min-height:78px!important}
+  #dashboard .metric-content span{font-size:.63rem!important}
+  #dashboard .metric-content strong{font-size:1.55rem!important}
+}
+
+/* Tablet/celular: 3 colunas, títulos completos e sem reticências */
+@media (max-width:1050px){
+  #dashboard .metric-content span{
+    white-space:normal!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    line-height:1.05!important;
+  }
+}
+
+/* v6.5.5 — KPIs compactos em uma linha, sem cortar títulos */
+@media (min-width:1051px){
+  #dashboard .metrics{
+    grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr) minmax(0,.90fr) minmax(0,1fr) minmax(0,1.22fr) minmax(0,.90fr)!important;
+    gap:10px!important;
+    margin-bottom:14px!important;
+  }
+  #dashboard .metric{
+    height:88px!important;
+    min-height:88px!important;
+    padding:10px 9px 10px 11px!important;
+    grid-template-columns:40px minmax(0,1fr)!important;
+    gap:8px!important;
+    border-radius:11px!important;
+  }
+  #dashboard .metric-icon{width:38px!important;height:38px!important;border-radius:11px!important;font-size:.96rem!important}
+  #dashboard .metric-content span{font-size:.60rem!important;letter-spacing:.025em!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important}
+  #dashboard .metric-content strong{font-size:1.62rem!important}
+  #dashboard .metric:hover{transform:none!important}
+}

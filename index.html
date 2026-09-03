@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v6011.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.0.6">
+  <link rel="stylesheet" href="css/style.css?v=6.5.2">
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -49,7 +49,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.0.9</strong><span>Layout móvel compacto</span></div>
+    <div class="version"><strong>Versão 6.5.5</strong><span>Dashboard KPIs Compactos</span></div>
   </aside>
 
   <main>
@@ -61,7 +61,7 @@
       <label class="date-control"><span>Data do painel</span><input id="dataPainel" type="date"></label>
       <div class="topbar-actions">
         <button id="btnTema" class="theme-toggle" type="button" title="Alternar tema" aria-label="Alternar entre tema escuro e claro"><span class="theme-icon">☀</span><span class="theme-label">Claro</span></button>
-        <div class="cloud-account"><span id="cloudStatus">Sincronizando...</span><small id="cloudUser">Aguardando login</small></div>
+        <div class="cloud-account"><span id="cloudStatus" class="cloud-syncing">● SINCRONIZANDO...</span><small id="cloudUser">Aguardando login</small></div>
         <div id="usuarioConectado" class="logged-user topbar-user"><strong>—</strong><small>Usuário conectado</small></div>
         <button id="btnSair" class="logout-button topbar-logout" type="button" title="Encerrar sessão">↪ Sair</button>
       </div>
@@ -69,7 +69,7 @@
 
     <section id="dashboard" class="page active dashboard-page">
       <div class="metrics">
-        <article class="metric metric-blue"><div class="metric-icon">👥</div><div class="metric-content"><span>Efetivo</span><strong id="kpiEfetivo">0</strong><small>colaboradores</small></div><div class="metric-footer">Total do efetivo ativo <b>ⓘ</b></div></article>
+        <article class="metric metric-blue"><div class="metric-icon">👥</div><div class="metric-content"><span>Efetivo</span><strong id="kpiEfetivo">0</strong><small>colaboradores</small></div><div class="metric-footer">Base atualizada pela planilha de colaboradores <b>ⓘ</b></div></article>
         <article class="metric metric-green"><div class="metric-icon">●</div><div class="metric-content"><span>Disponíveis</span><strong id="kpiDisponiveis">0</strong><small>colaboradores</small></div><div class="metric-footer">Ativos e disponíveis <b>ⓘ</b></div></article>
         <article class="metric metric-yellow"><div class="metric-icon">☂</div><div class="metric-content"><span>Férias</span><strong id="kpiFerias">0</strong><small>colaboradores</small></div><div class="metric-footer">Em período de férias <b>ⓘ</b></div></article>
         <article class="metric metric-blue"><div class="metric-icon">✚</div><div class="metric-content"><span>Atestados</span><strong id="kpiAtestados">0</strong><small>colaboradores</small></div><div class="metric-footer">Com atestado médico <b>ⓘ</b></div></article>
@@ -77,34 +77,50 @@
         <article class="metric metric-yellow"><div class="metric-icon">!</div><div class="metric-content"><span>Faltas</span><strong id="kpiFaltas">0</strong><small>colaboradores</small></div><div class="metric-footer">Não justificadas <b>ⓘ</b></div></article>
       </div>
 
-      <div class="dashboard-main-grid">
-        <article class="panel current-panel">
-          <div class="panel-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências atuais</h2><p>Registros ativos na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todos</button></div>
+      <div class="dashboard-main-grid dashboard-executive-grid">
+        <article class="panel current-panel dashboard-primary-panel">
+          <div class="panel-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências atuais</h2><p>Registros ativos na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todas</button></div>
           <div id="ocorrenciasAtuais" class="current-list"></div>
           <div class="occurrence-total"><span>✓</span><strong id="totalOcorrenciasAtuais">0 ocorrência(s) ativa(s) na data selecionada.</strong></div>
         </article>
 
-        <div class="right-stack">
-          <article class="panel location-panel">
-            <div class="panel-heading"><div><h2><span class="heading-icon">●</span> Resumo por local</h2><p>Resumo de ocorrências por local.</p></div></div>
-            <div id="resumoLocais" class="location-list"></div>
-          </article>
-
-          <article class="panel category-panel">
-            <div class="panel-heading"><div><h2><span class="heading-icon">◈</span> Resumo por categoria</h2><p>Ocorrências ativas agrupadas por categoria.</p></div></div>
-            <div id="resumoCategorias" class="category-summary-list"></div>
-          </article>
-
-          <article class="panel quick-panel">
-            <div class="panel-heading"><div><h2><span class="heading-icon">⚡</span> Ações rápidas</h2></div></div>
-            <div class="quick-actions">
-              <button class="quick quick-add" data-go="ocorrencias"><span>⊕</span>Adicionar<br>ocorrência</button>
-              <button class="quick quick-whatsapp" data-go="mensagem"><span>◉</span>Gerar mensagem<br>WhatsApp</button>
-              <button class="quick quick-export" id="btnExportarRapido"><span>▤</span>Exportar backup</button>
-            </div>
-          </article>
-        </div>
+        <article class="panel vacation-alert-panel dashboard-primary-panel" id="painelProximasFerias" hidden>
+          <div class="panel-heading vacation-alert-heading">
+            <div><h2><span class="heading-icon">☂</span> Próximas férias</h2><p></p></div>
+            <span class="vacation-alert-count" id="totalProximasFerias">0</span>
+          </div>
+          <div id="listaProximasFerias" class="vacation-alert-list"></div>
+        </article>
       </div>
+
+      <div class="dashboard-summary-grid">
+        <article class="panel availability-panel dashboard-summary-panel">
+          <div class="availability-copy"><span>Disponibilidade do efetivo</span><strong id="kpiDisponibilidadePct">0%</strong><small id="kpiDisponibilidadeTexto">0 de 0 disponíveis</small></div>
+          <div class="availability-track"><span id="kpiDisponibilidadeBar"></span></div>
+        </article>
+
+        <article class="panel distribution-panel dashboard-summary-panel">
+          <div class="panel-heading distribution-heading"><div><h2><span class="heading-icon">●</span> Distribuição atual</h2><p>Ocorrências por local e categoria.</p></div></div>
+          <div class="distribution-columns">
+            <section class="distribution-section location-panel">
+              <h3>Por local</h3>
+              <div id="resumoLocais" class="location-list"></div>
+            </section>
+            <section class="distribution-section category-panel">
+              <h3>Por categoria</h3>
+              <div id="resumoCategorias" class="category-summary-list"></div>
+            </section>
+          </div>
+        </article>
+      </div>
+
+      <article class="panel quick-panel dashboard-hidden-quick" aria-hidden="true">
+        <div class="quick-actions">
+          <button class="quick quick-add" data-go="ocorrencias"><span>⊕</span>Adicionar ocorrência</button>
+          <button class="quick quick-whatsapp" data-go="mensagem"><span>◉</span>Gerar mensagem WhatsApp</button>
+          <button class="quick quick-export" id="btnExportarRapido"><span>▤</span>Exportar backup</button>
+        </div>
+      </article>
     </section>
 
     <section id="ocorrencias" class="page">
@@ -113,7 +129,7 @@
           <input id="tipo" type="hidden" value="Outras justificativas">
           <label><span>Categoria</span><select id="categoriaMotivo"><option value="">Selecione a categoria</option></select><small class="field-help">A categoria organiza os motivos e facilita os indicadores.</small></label>
           <label><span>Motivo para a planilha do RH</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Selecione uma sugestão ou digite um motivo novo. O novo motivo ficará salvo na categoria escolhida.</small></label>
-          <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o primeiro e o último sobrenome; os demais dados são preenchidos automaticamente.</small></label>
+          <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o nome completo; os demais dados são preenchidos automaticamente.</small></label>
           <label><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
@@ -161,14 +177,30 @@
             <div id="statusImportacao" class="status"></div>
           </div>
         </div>
+        <div class="vacation-import-box vacation-import-compact">
+          <div class="vacation-import-copy">
+            <h3>🏖️ Programação de férias</h3>
+            <p class="section-subtitle">Importe a planilha com Colaborador, Início, Fim e Retorno.</p>
+          </div>
+          <div class="vacation-import-actions">
+            <label class="file-drop vacation-file"><span>Selecionar planilha</span><input id="planilhaFerias" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
+            <div class="actions"><button id="btnImportarFerias" class="success" type="button">Importar férias</button><a class="secondary download-model compact-model" href="modelo_ferias.csv" download>Modelo</a></div>
+            <div id="statusImportacaoFerias" class="status"></div><div id="statusFonteFerias" class="status vacation-source-status" hidden>Fonte: verificando programação de férias...</div>
+          </div>
+        </div>
+        <div class="vacation-program-box">
+          <div class="vacation-program-title"><div><h3>🏖️ Férias programadas</h3></div><strong id="totalProgramacaoFerias">0 programação(ões)</strong></div>
+          <div class="vacation-program-filters"><input id="pesquisaProgramacaoFerias" type="search" placeholder="Pesquisar colaborador..."><select id="filtroStatusFerias"><option value="Todos">Todos os status</option><option value="Em férias">Em férias</option><option value="Programada">Próximas</option><option value="Concluída">Concluídas</option></select></div>
+          <div id="listaProgramacaoFerias"></div>
+        </div>
         <div class="filters collaborator-filter"><input id="pesquisaColaborador" placeholder="Pesquisar nome completo ou nome exibido..."></div>
         <div id="listaColaboradores" class="collaborator-list"></div>
       </article>
     </section>
 
     <section id="registros" class="page">
-      <article class="panel"><div class="panel-heading"><div><h2>Registros cadastrados</h2><p>Pesquise, filtre, edite, exclua ou exporte para o RH.</p></div><div class="actions inline-actions"><button id="btnExportarExcelRegistros" class="success">Gerar planilha Excel</button><button id="btnLimparTudo" class="danger">Limpar todos</button></div></div>
-        <div class="records-view-bar"><label class="toggle-option"><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span><strong>Mostrar todos os registros</strong><small>Desative para exibir somente os ativos na data do painel.</small></span></label><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong></div><div class="filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select><select id="filtroPeriodo"><option value="">Todos os períodos</option></select><button id="btnGerenciarPeriodos" class="secondary period-manage-btn" type="button">⚙️ Gerenciar períodos</button></div>
+      <article class="panel records-panel"><div class="panel-heading records-toolbar"><div class="records-title"><h2>Registros cadastrados</h2><p>Consulta e manutenção dos registros.</p></div><div class="records-toolbar-actions"><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong><button id="btnModoPrint" class="secondary print-mode-btn" type="button" title="Modo Print">📷 <span>Print</span></button><button id="btnExportarExcelRegistros" class="success" type="button" title="Gerar planilha Excel">Excel</button><details class="records-more"><summary title="Mais ações" aria-label="Mais ações">⋮</summary><div class="records-more-menu"><button id="btnLimparTudo" class="danger" type="button">Limpar todos os registros</button></div></details></div></div>
+        <div class="filters records-filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select><select id="filtroPeriodo"><option value="">Todos os períodos</option></select><label class="records-view-compact" title="Ative para mostrar todos os registros; desative para exibir somente os ativos na data do painel."><span class="view-label">Exibição</span><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span class="view-state" aria-hidden="true"></span></label><button id="btnGerenciarPeriodos" class="secondary period-manage-btn records-period-gear" type="button" title="Gerenciar períodos" aria-label="Gerenciar períodos">⚙️</button></div>
         <div id="listaRegistros" class="records"></div>
       </article>
     </section>
@@ -220,7 +252,7 @@
 
     <section id="configuracoes" class="page">
       <article class="panel"><h2>Configurações</h2><p class="section-subtitle">Informações gerais usadas nos cálculos e mensagens.</p>
-        <div class="form-grid"><label><span>Nome da turma</span><input id="turma" value="Turma D"></label><label><span>Efetivo total</span><input id="efetivoTotal" type="number" min="0" value="0"></label><label><span>Nome do sistema</span><input id="nomeSistema" value="XCMG Control"></label><label><span>Desenvolvedor</span><input id="desenvolvedor" value="Edson de Oliveira Alves"></label><label><span>Símbolos na mensagem do WhatsApp</span><select id="estiloSimbolos"><option value="completo">Emojis completos</option><option value="simples">Símbolos simples</option><option value="nenhum">Sem símbolos</option></select></label></div>
+        <div class="form-grid"><label><span>Nome da turma</span><input id="turma" value="Turma D"></label><label><span>Efetivo total</span><input id="efetivoTotal" type="number" min="0" value="0" readonly title="Atualizado automaticamente pela planilha de colaboradores"><small class="field-help">Atualizado automaticamente pela planilha de colaboradores.</small></label><label><span>Nome do sistema</span><input id="nomeSistema" value="XCMG Control"></label><label><span>Desenvolvedor</span><input id="desenvolvedor" value="Edson de Oliveira Alves"></label><label><span>Símbolos na mensagem do WhatsApp</span><select id="estiloSimbolos"><option value="completo">Emojis completos</option><option value="simples">Símbolos simples</option><option value="nenhum">Sem símbolos</option></select></label></div>
         <div class="actions"><button id="btnSalvarConfig" class="primary">Salvar configurações</button><button id="btnExportar" class="secondary">Exportar backup</button><label class="file-button secondary">Importar backup<input id="arquivoBackup" type="file" accept="application/json"></label></div><div id="statusConfig" class="status"></div>
       </article>
       <article id="gestaoCategoriasRH" class="panel admin-category-panel hidden">
@@ -250,11 +282,10 @@
       </div>
     </div>
 
-    <footer class="app-footer"><strong>XCMG Control – Turma D</strong><span>Controle de Ausências e Férias</span><div class="footer-logo"><span>XC</span> XCMG</div></footer>
   </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.0.13"></script>
+<script src="js/app.js?v=6.5.5"></script>
 </body>
 </html>

@@ -1,3 +1,14 @@
+XCMG CONTROL v6.3.2 - PROGRAMAÇÃO AUTOMÁTICA DE FÉRIAS
+
+NOVO:
+- Campo em Colaboradores para importar planilha de férias.
+- Colunas esperadas: Colaborador, Início Férias, Fim e Retorno.
+- O nome é validado contra a base do Efetivo; matrícula, função e área são preenchidas automaticamente.
+- A importação cria registros futuros de Férias. Eles só ficam ativos no Dashboard quando a Data do painel estiver entre Início e Fim.
+- Na data de Retorno, deixam de aparecer em Ocorrências atuais e permanecem em Registros/Histórico.
+- Reimportações idênticas são ignoradas para evitar duplicidade.
+- Se houver nome não encontrado ou data inválida, a importação é bloqueada para correção.
+
 XCMG Control v6.0.6
 
 Correção: o Resumo por categoria agora reconhece registros antigos sem categoria gravada, classificando Férias, Folga compensada, Atestados e Faltas pelo tipo da ocorrência.
@@ -156,3 +167,63 @@ VERSÃO 6.0.13 - GERENCIAMENTO DE PERÍODOS DE FECHAMENTO
 - Alterar ou excluir um período NÃO apaga registros; apenas muda a classificação do período conforme a data.
 - A planilha Excel mantém todas as colunas existentes e a coluna "Período".
 - Para sincronizar períodos excepcionais entre todos os dispositivos, execute uma única vez o arquivo supabase_migracao_v6.0.13_periodos.sql no SQL Editor do Supabase.
+
+
+Versão 6.3.1
+- Efetivo do Dashboard agora é calculado automaticamente pela base de colaboradores importada.
+- Contagem usa matrícula como chave principal e nome como fallback, evitando duplicidades.
+- Importação e sincronização de colaboradores atualizam o Dashboard imediatamente.
+- Campo Efetivo total em Configurações ficou somente leitura para evitar divergência.
+
+
+VERSÃO 6.3.3 — ALERTA DE FÉRIAS
+- Dashboard mostra automaticamente colaboradores que iniciam férias nos próximos 10 dias.
+- Contagem regressiva baseada na Data do painel.
+- Faixas de atenção: 10–7 dias, 6–3 dias e 2–1 dia.
+- No dia do início, o colaborador deixa o alerta e passa a constar como Em férias nas ocorrências atuais.
+
+
+Versão 6.3.7
+- Programação de Férias passa a ser a fonte oficial do painel Próximas férias.
+- Importação grava a programação antes da sincronização dos registros.
+- Dashboard lê diretamente a programação, sem depender do filtro de ocorrências.
+- Nova tabela Férias importadas permite conferir o que foi gravado.
+
+============================================================
+XCMG CONTROL v6.4.0 — PROGRAMAÇÃO DE FÉRIAS NO SUPABASE
+============================================================
+
+1. No Supabase, abra SQL Editor.
+2. Execute o arquivo: supabase_migracao_v6.4.0_ferias.sql
+3. Publique/abra novamente o aplicativo.
+4. Em Colaboradores > Importar programação de férias, importe a planilha.
+5. O status abaixo do botão deve mostrar:
+   "Fonte: Supabase • programação sincronizada entre dispositivos".
+
+A importação agora salva TODAS as linhas válidas da planilha de férias,
+mesmo quando algum nome ainda não estiver presente no Efetivo. Quando o
+nome existir no Efetivo, matrícula, função e área são completados.
+
+Se a migração ainda não tiver sido executada, o aplicativo mantém uma
+cópia local e informa claramente que a fonte em nuvem não está disponível.
+
+XCMG CONTROL v6.4.1 — IMPORTAÇÃO DE FÉRIAS CONFIRMADA
+- Remove duplicidades da planilha antes do upsert.
+- Grava em lotes no Supabase.
+- Falha de gravação agora interrompe a importação e mostra o erro real.
+- Confere no Supabase cada programação após o envio.
+- Informa o projeto Supabase usado pelo aplicativo e o total confirmado.
+
+
+VERSÃO 6.4.4
+- Programação futura de férias aparece somente em Próximas férias/Programação.
+- Durante o período entra no Dashboard/Ocorrências e reduz Disponíveis.
+- A partir do retorno entra em Registros/Histórico.
+- Registros espelho antigos de férias programadas são ignorados nas telas operacionais para evitar duplicidade.
+
+
+VERSÃO 6.4.6
+- Registros consolidados: férias automáticas ativas aparecem na tela Registros mesmo sem lançamento manual.
+- Férias futuras continuam exclusivas da Programação/Próximas férias.
+- Férias concluídas permanecem no histórico.
+- Programação oficial tem prioridade sobre registro manual equivalente.
