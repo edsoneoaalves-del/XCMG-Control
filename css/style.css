@@ -3176,3 +3176,148 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     padding-right:5px!important;
   }
 }
+
+/* v6.5.50 — Mobile: organização definitiva SOMENTE de Ocorrências atuais.
+   Linha 1: Nome + Tipo | Linha 2: Função (dentro de .person) | Linha 3: Área + Período.
+   Não altera Ocorrências do dia (.occurrence-day-row) nem o desktop. */
+@media (max-width:720px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) max-content!important;
+    grid-template-areas:
+      "person tag"
+      "area period"!important;
+    grid-template-rows:auto auto!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    min-height:52px!important;
+    height:52px!important;
+    box-sizing:border-box!important;
+    padding:4px 7px!important;
+    column-gap:6px!important;
+    row-gap:2px!important;
+    align-items:center!important;
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person{
+    grid-area:person!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    align-self:center!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person strong{
+    font-size:.66rem!important;
+    line-height:1.03!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person small{
+    font-size:.47rem!important;
+    line-height:1!important;
+    margin-top:1px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag{
+    grid-area:tag!important;
+    justify-self:end!important;
+    align-self:start!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:132px!important;
+    box-sizing:border-box!important;
+    padding:2px 5px!important;
+    border-radius:7px!important;
+    font-size:.42rem!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  /* 1º row-meta = período */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta{
+    grid-area:period!important;
+    justify-self:end!important;
+    align-self:center!important;
+    display:flex!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:190px!important;
+    margin:0!important;
+    padding:0!important;
+    gap:3px!important;
+    font-size:.49rem!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+
+  /* 2º row-meta = área */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta{
+    grid-area:area!important;
+    justify-self:start!important;
+    align-self:center!important;
+    display:flex!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0 0 0 25px!important;
+    gap:3px!important;
+    font-size:.49rem!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta b{
+    min-width:0!important;
+    max-width:100%!important;
+    font-size:.49rem!important;
+    line-height:1!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta span{
+    flex:0 0 auto!important;
+    font-size:.46rem!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    max-width:132px!important;
+    font-size:.40rem!important;
+    padding:2px 5px!important;
+  }
+}
+
+@media (max-width:390px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    min-height:50px!important;
+    height:50px!important;
+    padding:4px 6px!important;
+    column-gap:5px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    max-width:118px!important;
+    font-size:.38rem!important;
+    padding-left:4px!important;
+    padding-right:4px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person strong{font-size:.62rem!important;}
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person small{font-size:.44rem!important;}
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta b{font-size:.46rem!important;}
+}
