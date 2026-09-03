@@ -2189,3 +2189,23 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
     box-shadow:0 0 4px #fff,0 0 9px #ffb0b0,0 0 14px #ff1a1a;
   }
 }
+
+/* v6.5.26 — Farol de Falta não justificada também no desktop */
+#registros .tag-falta-farol{
+  position:relative!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,#ff3131 0%,#d90000 100%)!important;
+  border:1px solid #ff5a5a!important;
+  box-shadow:0 0 5px rgba(255,0,0,.95),0 0 12px rgba(255,0,0,.72),inset 0 0 7px rgba(255,255,255,.20)!important;
+  text-shadow:0 1px 2px rgba(80,0,0,.65)!important;
+}
+#registros .tag-falta-farol::before{
+  content:'';
+  display:inline-block;
+  width:8px;height:8px;
+  margin-right:6px;
+  border-radius:50%;
+  vertical-align:1px;
+  background:#fff7f7;
+  box-shadow:0 0 4px #fff,0 0 9px #ffb0b0,0 0 14px #ff1a1a;
+}
