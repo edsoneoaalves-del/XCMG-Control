@@ -3567,3 +3567,113 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     padding-right:8px!important;
   }
 }
+
+/* v6.5.54 — Dashboard DESKTOP: Ocorrências atuais com o MESMO padrão de Ocorrências do dia.
+   Escopo isolado: somente #ocorrenciasAtuais no desktop. Mobile e demais telas permanecem intactos. */
+@media (min-width:721px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    display:grid!important;
+    grid-template-columns:minmax(220px,1.45fr) minmax(145px,.75fr) minmax(78px,.42fr) minmax(112px,auto)!important;
+    grid-template-areas:none!important;
+    grid-template-rows:1fr!important;
+    min-height:34px!important;
+    height:auto!important;
+    padding:4px 8px!important;
+    gap:8px!important;
+    align-items:center!important;
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  /* Mesma ordem visual de Ocorrências do dia: Nome/Função | Área | Data | Tipo. */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta{
+    grid-column:3!important; /* período */
+    grid-row:1!important;
+    min-width:145px!important;
+    width:auto!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    justify-self:start!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta{
+    grid-column:2!important; /* área */
+    grid-row:1!important;
+    min-width:78px!important;
+    width:auto!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:0!important;
+    justify-self:start!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    grid-column:4!important;
+    grid-row:1!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+    justify-self:end!important;
+    align-self:center!important;
+    padding:4px 7px!important;
+    font-size:.54rem!important;
+    line-height:1!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person strong{
+    font-size:.72rem!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person small{
+    font-size:.55rem!important;
+    line-height:1.05!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta b{
+    font-size:.64rem!important;
+    line-height:1!important;
+  }
+}
+
+@media (min-width:721px) and (max-width:1180px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    grid-template-columns:minmax(180px,1.2fr) minmax(132px,.72fr) minmax(70px,.40fr) minmax(105px,auto)!important;
+    gap:6px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta{
+    min-width:132px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta{
+    min-width:70px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta b{
+    font-size:.61rem!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    font-size:.51rem!important;
+    padding:3px 6px!important;
+  }
+}

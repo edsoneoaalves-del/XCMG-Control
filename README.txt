@@ -231,3 +231,6 @@ VERSÃO 6.4.6
 
 
 v6.5.43: Corrigida a exibição da Área (Mina/Usina) nos cards de Ocorrências no mobile, preservando o layout compacto de até 10 nomes. A área agora usa o campo do registro e, se necessário, o cadastro do colaborador como fallback.
+
+
+v6.5.54 — Ocorrências atuais no desktop padronizadas com Ocorrências do dia (Nome/Função | Área | Data | Tipo).
