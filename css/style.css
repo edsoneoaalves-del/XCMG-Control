@@ -3060,3 +3060,16 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
   background:#fff;
   box-shadow:0 0 5px #fff,0 0 10px #ff3b30,0 0 15px #ff3b30;
 }
+
+
+/* v6.5.47 — Período da ocorrência com cálculo automático por dias */
+#ocorrencias .occurrence-dates-group{display:grid;grid-template-columns:minmax(0,1fr) minmax(110px,.42fr) minmax(0,1fr);gap:14px;align-items:start}
+#ocorrencias .occurrence-dates-group label{min-width:0}
+#ocorrencias .occurrence-dates-group input{width:100%;min-width:0}
+#ocorrencias .occurrence-days-field input{text-align:center;font-weight:800}
+@media(max-width:720px){
+  #ocorrencias .occurrence-dates-group{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);gap:7px}
+  #ocorrencias .occurrence-dates-group label{font-size:.72rem;gap:5px}
+  #ocorrencias .occurrence-dates-group input{padding-left:7px;padding-right:7px;font-size:.75rem}
+  #ocorrencias .occurrence-days-field .field-help{display:none}
+}

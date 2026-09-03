@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v6011.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.5.46">
+  <link rel="stylesheet" href="css/style.css?v=6.5.47">
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -138,8 +138,11 @@
           <label><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label><span>Equipamento</span><input id="funcao" type="text" placeholder="Ex.: GD 221, Munck, Prancha"></label>
           <label><span>Local</span><select id="local"><option value="">Não informado</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></label>
-          <label><span>Data inicial</span><input id="inicio" type="date"></label>
-          <label><span>Data final</span><input id="fim" type="date"></label>
+          <div class="occurrence-dates-group full">
+            <label><span>Data inicial</span><input id="inicio" type="date"></label>
+            <label class="occurrence-days-field"><span>Dias</span><input id="dias" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex.: 20"><small class="field-help">Calcula o período.</small></label>
+            <label><span>Data final</span><input id="fim" type="date"></label>
+          </div>
           <label><span>CID</span><input id="cid" type="text" placeholder="Ex.: K40, N39.0 ou N/A"></label>
           <label><span>Atestado físico?</span><select id="atestadoFisico"><option value="N/A">N/A</option><option value="Entregue">Entregue</option><option value="Não entregue">Não entregue</option></select></label>
           <label><span>Enviado no grupo?</span><select id="enviadoGrupo"><option value="N/A">N/A</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></label>
@@ -289,6 +292,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.5.46"></script>
+<script src="js/app.js?v=6.5.47"></script>
 </body>
 </html>
