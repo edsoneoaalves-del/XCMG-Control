@@ -1752,3 +1752,37 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   #registros .cell-local,#registros .cell-date::after,#registros .record-mobile-return b{font-size:.51rem!important}
   #registros .record-mobile-attachment{max-width:76px!important;font-size:.46rem!important}
 }
+
+/* v6.5.17 — Registros mobile: remove espaço vazio excessivo no final */
+@media (max-width:720px){
+  body.records-fixed-mobile,
+  body.records-fixed-mobile .app-shell,
+  body.records-fixed-mobile main,
+  body.records-fixed-mobile #registros,
+  body.records-fixed-mobile #registros .records-panel,
+  body.records-fixed-mobile #registros .records{
+    min-height:0!important;
+    height:auto!important;
+  }
+  body.records-fixed-mobile .app-shell{display:block!important}
+  body.records-fixed-mobile main{
+    display:block!important;
+    padding-bottom:0!important;
+  }
+  body.records-fixed-mobile #registros{
+    padding-bottom:8px!important;
+    margin-bottom:0!important;
+  }
+  body.records-fixed-mobile #registros .records-panel{
+    margin-bottom:0!important;
+    padding-bottom:8px!important;
+  }
+  body.records-fixed-mobile #registros .records{
+    align-content:start!important;
+    margin-bottom:0!important;
+    padding-bottom:0!important;
+  }
+  body.records-fixed-mobile #registros .record-row:last-child{
+    margin-bottom:0!important;
+  }
+}
