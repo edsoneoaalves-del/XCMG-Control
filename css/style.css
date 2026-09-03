@@ -2209,3 +2209,333 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   background:#fff7f7;
   box-shadow:0 0 4px #fff,0 0 9px #ffb0b0,0 0 14px #ff1a1a;
 }
+\n/* v6.5.27 — Dashboard: Ocorrências do dia / Ocorrências atuais */
+#dashboard .occurrence-tabs{display:flex;gap:6px;margin:-2px 0 9px;flex:0 0 auto}
+#dashboard .occurrence-tab{border:1px solid #1d4f77;background:#071d31;color:#aebfd1;border-radius:8px;padding:7px 12px;font-size:.7rem;font-weight:800;cursor:pointer;transition:.18s ease}
+#dashboard .occurrence-tab:hover{border-color:#1688e8;color:#fff}
+#dashboard .occurrence-tab.active{background:#0b5fa8;border-color:#1688e8;color:#fff;box-shadow:0 0 0 1px rgba(22,136,232,.12)}
+html:not([data-theme="dark"]) #dashboard .occurrence-tab{background:#f5f8fc;color:#536178;border-color:#d7e0ea}
+html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2ff;color:#0967b5;border-color:#70b7f1}
+@media(max-width:720px){
+ #dashboard .occurrence-heading{margin-bottom:7px!important}
+ #dashboard .occurrence-tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:0 0 8px}
+ #dashboard .occurrence-tab{min-height:34px;padding:6px 5px;font-size:.62rem;white-space:nowrap}
+ #dashboard .occurrence-heading p{font-size:.62rem!important}
+}
+
+/* v6.5.28 — Dashboard: Próximas férias sempre disponível */
+#dashboard #painelProximasFerias{display:flex!important;visibility:visible!important;opacity:1!important;}
+#dashboard #painelProximasFerias[hidden]{display:flex!important;}
+
+
+/* v6.5.31 — Ocorrências do dia: inclui tudo que estiver ativo no dia e mostra início/final */
+#dashboard .occurrence-day-period b{display:flex;align-items:center;gap:5px;min-width:0;white-space:nowrap}
+#dashboard .occ-date-label{font-size:.58rem;text-transform:uppercase;letter-spacing:.03em;color:#7fa4c8;font-weight:900}
+#dashboard .occ-date-arrow{color:#63aef2;font-weight:900}
+@media (max-width:720px){
+  #dashboard .occurrence-day-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:'person tag' 'period period' 'local local'!important;grid-auto-rows:auto!important;min-height:74px!important;padding:7px 8px!important;gap:4px 7px!important}
+  #dashboard .occurrence-day-row .person{grid-area:person!important}
+  #dashboard .occurrence-day-row .tag{grid-area:tag!important}
+  #dashboard .occurrence-day-row .occurrence-day-period{grid-area:period!important;overflow:visible!important;font-size:.68rem!important}
+  #dashboard .occurrence-day-row .row-meta:not(.occurrence-day-period){grid-area:local!important}
+  #dashboard .occurrence-day-period b{gap:4px!important;overflow:visible!important;text-overflow:clip!important}
+  #dashboard .occ-date-label{font-size:.52rem!important}
+}
+
+/* v6.5.32 — Ocorrências do dia: período sem sobreposição no desktop */
+@media (min-width:721px){
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(230px,1.15fr) minmax(270px,1.05fr) minmax(86px,.48fr) auto!important;
+    column-gap:12px!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period{
+    min-width:270px!important;
+    overflow:hidden!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period b{
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    width:100%!important;
+    min-width:0!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+  #dashboard .occurrence-day-row .row-meta:not(.occurrence-day-period){
+    min-width:86px!important;
+    padding-left:2px!important;
+  }
+  #dashboard .occurrence-day-row .tag{margin-left:2px!important;}
+}
+@media (min-width:721px) and (max-width:1180px){
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(190px,1fr) minmax(250px,1fr) minmax(78px,.42fr) auto!important;
+    column-gap:9px!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period{min-width:250px!important;font-size:.69rem!important;}
+  #dashboard .occ-date-label{font-size:.54rem!important;}
+}
+
+/* v6.5.33 — Ocorrências do dia: datas compactas e tipo sempre visível */
+#dashboard .occurrence-day-period b{
+  gap:6px!important;
+  white-space:nowrap!important;
+}
+#dashboard .occurrence-day-tag{
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+@media (min-width:721px){
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(210px,1.35fr) minmax(145px,.72fr) minmax(82px,.46fr) minmax(112px,auto)!important;
+    column-gap:12px!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period{
+    min-width:145px!important;
+    overflow:visible!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-local{
+    min-width:82px!important;
+    overflow:hidden!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-tag{
+    justify-self:end!important;
+    min-width:max-content!important;
+    margin-left:0!important;
+  }
+}
+@media (min-width:721px) and (max-width:1180px){
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(185px,1.15fr) minmax(138px,.70fr) minmax(72px,.40fr) minmax(108px,auto)!important;
+    column-gap:8px!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period{min-width:138px!important;font-size:.68rem!important;}
+  #dashboard .occurrence-day-row .occurrence-day-tag{font-size:.62rem!important;padding-left:8px!important;padding-right:8px!important;}
+}
+@media (max-width:720px){
+  #dashboard .occurrence-day-period b{gap:5px!important;}
+  #dashboard #ocorrenciasPainelSubtitulo:empty{display:none!important;}
+}
+
+/* v6.5.34 — Dashboard proporcional: até 12 ocorrências com rolagem interna */
+@media (min-width:721px){
+  #dashboard .dashboard-executive-grid{
+    align-items:stretch!important;
+  }
+  #dashboard .dashboard-executive-grid > .dashboard-primary-panel{
+    height:520px!important;
+    min-height:520px!important;
+    max-height:520px!important;
+    box-sizing:border-box!important;
+  }
+  #dashboard .current-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #dashboard .current-list{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-right:4px!important;
+    scrollbar-gutter:stable!important;
+    display:grid!important;
+    grid-auto-rows:minmax(34px,auto)!important;
+    gap:5px!important;
+    align-content:start!important;
+  }
+  #dashboard .current-list .current-row:nth-child(n+6){display:grid!important;}
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(220px,1.45fr) minmax(145px,.75fr) minmax(78px,.42fr) minmax(112px,auto)!important;
+    grid-template-areas:none!important;
+    grid-template-rows:1fr!important;
+    min-height:34px!important;
+    padding:4px 8px!important;
+    gap:8px!important;
+    align-items:center!important;
+  }
+  #dashboard .occurrence-day-row .person,
+  #dashboard .occurrence-day-row .occurrence-day-period,
+  #dashboard .occurrence-day-row .occurrence-day-local,
+  #dashboard .occurrence-day-row .occurrence-day-tag{
+    grid-area:auto!important;
+  }
+  #dashboard .occurrence-day-row .person strong{font-size:.72rem!important;}
+  #dashboard .occurrence-day-row .person small{font-size:.55rem!important;}
+  #dashboard .occurrence-day-row .occurrence-day-period{font-size:.64rem!important;min-width:145px!important;}
+  #dashboard .occurrence-day-row .occurrence-day-local{font-size:.64rem!important;min-width:78px!important;justify-self:start!important;}
+  #dashboard .occurrence-day-row .occurrence-day-tag{font-size:.54rem!important;padding:4px 7px!important;justify-self:end!important;}
+  #dashboard .occurrence-total{flex:0 0 auto!important;margin-top:7px!important;}
+
+  #dashboard .vacation-alert-panel{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #dashboard .vacation-alert-list{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-right:3px!important;
+    scrollbar-gutter:stable!important;
+    align-content:start!important;
+  }
+}
+
+@media (min-width:721px) and (max-width:1180px){
+  #dashboard .dashboard-executive-grid > .dashboard-primary-panel{
+    height:500px!important;
+    min-height:500px!important;
+    max-height:500px!important;
+  }
+  #dashboard .occurrence-day-row{
+    grid-template-columns:minmax(180px,1.2fr) minmax(132px,.72fr) minmax(70px,.40fr) minmax(105px,auto)!important;
+    gap:6px!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period{min-width:132px!important;font-size:.61rem!important;}
+  #dashboard .occurrence-day-row .occurrence-day-local{min-width:70px!important;font-size:.61rem!important;}
+  #dashboard .occurrence-day-row .occurrence-day-tag{font-size:.51rem!important;padding:3px 6px!important;}
+}
+
+@media (max-width:720px){
+  #dashboard .current-panel{
+    max-height:470px!important;
+    overflow:hidden!important;
+  }
+  #dashboard .current-list{
+    max-height:340px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-right:3px!important;
+    scrollbar-gutter:stable!important;
+  }
+  #dashboard .current-list .current-row:nth-child(n+6){display:grid!important;}
+  #dashboard .vacation-alert-panel{
+    max-height:390px!important;
+    overflow:hidden!important;
+  }
+  #dashboard .vacation-alert-list{
+    max-height:310px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    padding-right:3px!important;
+  }
+}
+
+
+/* v6.5.35 — Farol vermelho para Falta não justificada também no Dashboard */
+#dashboard .occurrence-day-tag.occurrence-day-falta-farol{
+  position:relative!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,#ef4444 0%,#b91c1c 100%)!important;
+  border:1px solid rgba(255,105,105,.95)!important;
+  box-shadow:0 0 7px rgba(239,68,68,.9),0 0 15px rgba(220,38,38,.55),inset 0 0 7px rgba(255,255,255,.16)!important;
+  text-shadow:0 0 5px rgba(255,255,255,.3)!important;
+  font-weight:900!important;
+}
+#dashboard .occurrence-day-tag.occurrence-day-falta-farol::before{
+  content:'';display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px;
+  background:#fff;box-shadow:0 0 5px #fff,0 0 10px #ff3b30,0 0 15px #ff3b30;
+}
+
+
+/* v6.5.36 — Dashboard dinâmico: até 20 ocorrências sem espaço vazio */
+@media (min-width:721px){
+  #dashboard .dashboard-executive-grid{
+    align-items:start!important;
+  }
+  #dashboard .dashboard-executive-grid > .dashboard-primary-panel{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:start!important;
+  }
+  #dashboard .current-panel{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  #dashboard .current-list{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-right:0!important;
+    scrollbar-gutter:auto!important;
+  }
+  #dashboard .current-list .current-row:nth-child(n+6){display:grid!important;}
+  #dashboard .vacation-alert-panel{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:start!important;
+    overflow:visible!important;
+  }
+  #dashboard .vacation-alert-list{
+    flex:0 0 auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-right:0!important;
+    scrollbar-gutter:auto!important;
+  }
+}
+@media (max-width:720px){
+  #dashboard .current-panel{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+  #dashboard .current-list{
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    overflow:visible!important;
+    padding-right:0!important;
+    scrollbar-gutter:auto!important;
+  }
+  #dashboard .current-list .current-row:nth-child(n+6){display:grid!important;}
+}
+\n\n/* v6.5.37 — Falta não justificada: alerta preservado, nome com respiro e rótulo completo */
+#dashboard .current-row.type-falta .person{
+  grid-template-columns:32px minmax(0,1fr)!important;
+  gap:10px!important;
+}
+#dashboard .current-row.type-falta .occurrence-falta-alert{
+  width:26px!important;height:26px!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,#ef4444 0%,#b91c1c 100%)!important;
+  border:1px solid rgba(255,105,105,.95)!important;
+  box-shadow:0 0 7px rgba(239,68,68,.9),0 0 14px rgba(220,38,38,.5)!important;
+  font-weight:900!important;
+}
+#dashboard .current-row.type-falta .tag.occurrence-day-falta-farol{
+  max-width:none!important;
+  width:auto!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  white-space:nowrap!important;
+  padding-left:9px!important;
+  padding-right:9px!important;
+}
+@media (max-width:720px){
+  #dashboard .current-row.type-falta .person{
+    grid-template-columns:30px minmax(0,1fr)!important;
+    gap:9px!important;
+  }
+  #dashboard .current-row.type-falta .occurrence-falta-alert{
+    width:25px!important;height:25px!important;
+  }
+  #dashboard .current-row.type-falta .tag.occurrence-day-falta-farol{
+    max-width:100%!important;
+  }
+}

@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v6011.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.5.26">
+  <link rel="stylesheet" href="css/style.css?v=6.5.27">
 </head>
 <body>
 <div id="loginScreen" class="login-screen">
@@ -49,7 +49,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.5.26</strong><span>Farol Falta Desktop</span></div>
+    <div class="version"><strong>Versão 6.5.37</strong><span>Alerta de falta ajustado no Dashboard</span></div>
   </aside>
 
   <main>
@@ -79,12 +79,16 @@
 
       <div class="dashboard-main-grid dashboard-executive-grid">
         <article class="panel current-panel dashboard-primary-panel">
-          <div class="panel-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências atuais</h2><p>Registros ativos na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todas</button></div>
+          <div class="panel-heading occurrence-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências</h2><p id="ocorrenciasPainelSubtitulo">Ocorrências iniciadas na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todas</button></div>
+          <div class="occurrence-tabs" role="tablist" aria-label="Visualização das ocorrências">
+            <button type="button" class="occurrence-tab active" id="tabOcorrenciasDia" data-occurrence-view="dia" onclick="selecionarVisualizacaoOcorrencias('dia')">Ocorrências do dia</button>
+            <button type="button" class="occurrence-tab" id="tabOcorrenciasAtuais" data-occurrence-view="atuais" onclick="selecionarVisualizacaoOcorrencias('atuais')">Ocorrências atuais</button>
+          </div>
           <div id="ocorrenciasAtuais" class="current-list"></div>
           <div class="occurrence-total"><span>✓</span><strong id="totalOcorrenciasAtuais">0 ocorrência(s) ativa(s) na data selecionada.</strong></div>
         </article>
 
-        <article class="panel vacation-alert-panel dashboard-primary-panel" id="painelProximasFerias" hidden>
+        <article class="panel vacation-alert-panel dashboard-primary-panel" id="painelProximasFerias">
           <div class="panel-heading vacation-alert-heading">
             <div><h2><span class="heading-icon">☂</span> Próximas férias</h2><p></p></div>
             <span class="vacation-alert-count" id="totalProximasFerias">0</span>
@@ -286,6 +290,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.5.26"></script>
+<script src="js/app.js?v=6.5.32"></script>
 </body>
 </html>
