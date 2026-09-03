@@ -321,9 +321,12 @@ window.selecionarVisualizacaoOcorrencias=selecionarVisualizacaoOcorrencias;
 function dataCurtaDashboard(v){const br=dataBR(v);return br?`${br.slice(0,6)}${br.slice(-2)}`:'—'}
 function ocorrenciasDoDia(data){const ref=dataISOFlex(data);if(!ref)return[];return ativosNaData(ref)}
 function renderizarOcorrenciasPainel(ativos,data){
-  const lista=visualizacaoOcorrenciasDashboard==='dia'?ocorrenciasDoDia(data):ativos;
-  // v6.5.55: as duas abas usam exatamente o mesmo renderizador visual.
-  // A única diferença permanece sendo a lista de dados selecionada por cada aba.
+  // v6.5.56: o layout continua 100% igual nas duas abas, mas a fonte dos dados é independente.
+  // 'Ocorrências do dia' respeita a data selecionada no Dashboard.
+  // 'Ocorrências atuais' sempre considera o que está ativo HOJE, sem depender da data selecionada.
+  const lista=visualizacaoOcorrenciasDashboard==='dia'
+    ? ocorrenciasDoDia(data)
+    : ativosNaData(hoje());
   renderizarOcorrenciasDia(lista);
   document.querySelectorAll('[data-occurrence-view]').forEach(b=>b.classList.toggle('active',b.dataset.occurrenceView===visualizacaoOcorrenciasDashboard));
   const sub=$('ocorrenciasPainelSubtitulo');

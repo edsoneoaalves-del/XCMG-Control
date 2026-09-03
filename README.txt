@@ -236,3 +236,6 @@ v6.5.43: Corrigida a exibição da Área (Mina/Usina) nos cards de Ocorrências 
 v6.5.55 — Ocorrências atuais no desktop padronizadas com Ocorrências do dia (Nome/Função | Área | Data | Tipo).
 
 v6.5.55 — Ocorrências atuais e Ocorrências do dia usam 100% o mesmo renderizador visual; muda somente a lista de dados da aba.
+
+
+v6.5.56 — Corrigida a lógica das abas do Dashboard: Ocorrências do dia usa a data selecionada; Ocorrências atuais usa sempre a data de hoje. Layout permanece 100% igual.
