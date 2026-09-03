@@ -698,11 +698,24 @@ function atualizarStickyMobileDashboard(){
   document.body.classList.remove('dashboard-sticky-mobile','dashboard-sticky-compact');
   document.body.classList.toggle('dashboard-fixed-mobile',ativo);
 
+  const registrosAtivo=!!(mobile&&document.getElementById('registros')?.classList.contains('active'));
+  document.body.classList.toggle('records-fixed-mobile',registrosAtivo);
+
   if(!ativo){
     document.body.style.removeProperty('--dashboard-fixed-topbar-h');
     document.body.style.removeProperty('--dashboard-fixed-metrics-h');
-    return;
   }
+
+  if(registrosAtivo){
+    requestAnimationFrame(()=>{
+      const topbar=document.querySelector('.topbar');
+      if(topbar) document.body.style.setProperty('--records-fixed-topbar-h',`${Math.ceil(topbar.getBoundingClientRect().height)}px`);
+    });
+  }else{
+    document.body.style.removeProperty('--records-fixed-topbar-h');
+  }
+
+  if(!ativo) return;
 
   requestAnimationFrame(()=>{
     const topbar=document.querySelector('.topbar');
