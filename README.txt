@@ -228,3 +228,6 @@ VERSÃO 6.4.6
 - Férias futuras continuam exclusivas da Programação/Próximas férias.
 - Férias concluídas permanecem no histórico.
 - Programação oficial tem prioridade sobre registro manual equivalente.
+
+
+v6.5.43: Corrigida a exibição da Área (Mina/Usina) nos cards de Ocorrências no mobile, preservando o layout compacto de até 10 nomes. A área agora usa o campo do registro e, se necessário, o cadastro do colaborador como fallback.
