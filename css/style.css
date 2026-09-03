@@ -1485,3 +1485,37 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   body.dashboard-fixed-mobile #dashboard .metric-icon{width:31px!important;height:31px!important}
   body.dashboard-fixed-mobile #dashboard .metric-content span{font-size:.53rem!important}
 }
+
+/* v6.5.11 — Registros mobile em no máximo 2 linhas */
+.record-mobile-menu,.record-mobile-auto{display:none}
+@media(max-width:720px){
+  #registros .records{overflow-x:hidden!important;width:100%!important}
+  #registros .records-table{min-width:0!important;width:100%!important;border-radius:10px!important}
+  #registros .records-table-head{display:none!important}
+  #registros .records-table-body{display:block!important;width:100%!important}
+  #registros .record-row{
+    display:grid!important;
+    grid-template-columns:minmax(72px,.82fr) minmax(0,2.25fr) 46px 68px 28px!important;
+    grid-template-rows:28px 25px!important;
+    min-height:54px!important;height:54px!important;
+    align-items:center!important;position:relative!important;
+    padding:0 5px 0 8px!important;overflow:visible!important;
+  }
+  #registros .record-cell{padding:0 5px!important;min-width:0!important;overflow:hidden!important}
+  #registros .cell-type{grid-column:1;grid-row:1 / span 2;display:flex!important;align-items:center!important}
+  #registros .cell-type .tag{max-width:100%!important;font-size:.52rem!important;padding:4px 5px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #registros .cell-person{grid-column:2;grid-row:1 / span 2;display:grid!important;grid-template-rows:26px 22px!important;align-content:center!important;gap:0!important}
+  #registros .cell-person strong{font-size:.70rem!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #registros .cell-person small{font-size:.54rem!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #registros .cell-local{grid-column:3;grid-row:1 / span 2;font-size:.62rem!important;text-align:left!important;white-space:nowrap!important}
+  #registros .cell-date{grid-column:4;grid-row:1 / span 2;font-size:.60rem!important;text-align:right!important;white-space:nowrap!important;padding-right:2px!important}
+  #registros .cell-date{font-size:0!important}
+  #registros .cell-date::after{content:attr(data-short-date);font-size:.60rem!important}
+  #registros .cell-detail,#registros .cell-attachment,#registros .cell-actions{display:none!important}
+  #registros .record-mobile-menu{display:block!important;grid-column:5;grid-row:1 / span 2;position:relative!important;justify-self:end!important;z-index:6!important}
+  #registros .record-mobile-menu summary{list-style:none!important;width:25px!important;height:34px!important;display:grid!important;place-items:center!important;border:0!important;background:transparent!important;color:var(--muted)!important;font-size:1.05rem!important;font-weight:900!important;cursor:pointer!important}
+  #registros .record-mobile-menu summary::-webkit-details-marker{display:none!important}
+  #registros .record-mobile-menu>div{position:absolute!important;right:0!important;top:34px!important;display:grid!important;gap:5px!important;padding:6px!important;background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:9px!important;box-shadow:0 8px 22px rgba(0,0,0,.28)!important;min-width:92px!important;z-index:50!important}
+  #registros .record-mobile-menu button{min-height:30px!important;padding:5px 8px!important;font-size:.62rem!important}
+  #registros .record-mobile-auto{display:block!important;grid-column:5;grid-row:1 / span 2;font-size:.48rem!important;color:var(--muted)!important;overflow:hidden!important;text-overflow:ellipsis!important}
+}
