@@ -3039,3 +3039,24 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     color:#7fa4c8!important;
   }
 }
+
+/* v6.5.45 — Falta não justificada: selo vermelho também em Ocorrências atuais */
+#dashboard .current-row.type-falta .tag.occurrence-day-falta-farol{
+  position:relative!important;
+  color:#fff!important;
+  background:linear-gradient(180deg,#ef4444 0%,#b91c1c 100%)!important;
+  border:1px solid rgba(255,105,105,.95)!important;
+  box-shadow:0 0 7px rgba(239,68,68,.9),0 0 15px rgba(220,38,38,.55),inset 0 0 7px rgba(255,255,255,.16)!important;
+  text-shadow:0 0 5px rgba(255,255,255,.3)!important;
+  font-weight:900!important;
+}
+#dashboard .current-row.type-falta .tag.occurrence-day-falta-farol::before{
+  content:'';
+  display:inline-block;
+  width:7px;height:7px;
+  border-radius:50%;
+  margin-right:5px;
+  vertical-align:1px;
+  background:#fff;
+  box-shadow:0 0 5px #fff,0 0 10px #ff3b30,0 0 15px #ff3b30;
+}
