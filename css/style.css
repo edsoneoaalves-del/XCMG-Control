@@ -2124,3 +2124,24 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
 @media(max-width:390px){
   #registros .record-mobile-return{margin-left:57px!important;gap:3px!important}
 }
+
+/* v6.5.24 — farol vermelho para Falta não justificada (desktop + mobile) */
+.type-falta .tag::before{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  margin-right:6px;
+  border-radius:50%;
+  background:#ff2d2d;
+  box-shadow:0 0 0 2px rgba(255,45,45,.16),0 0 7px rgba(255,45,45,.55);
+  flex:0 0 auto;
+  vertical-align:middle;
+}
+.type-falta .tag{
+  display:inline-flex;
+  align-items:center;
+}
+@media(max-width:720px){
+  .type-falta .tag::before{width:7px;height:7px;margin-right:5px}
+}
