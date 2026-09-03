@@ -1520,7 +1520,7 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   #registros .record-mobile-auto{display:block!important;grid-column:5;grid-row:1 / span 2;font-size:.48rem!important;color:var(--muted)!important;overflow:hidden!important;text-overflow:ellipsis!important}
 }
 
-/* v6.5.12 — Registros mobile compactos em 3 linhas */
+/* v6.5.13 — Registros mobile compactos em 3 linhas */
 @media(max-width:720px){
   #registros .record-row{
     grid-template-columns:minmax(74px,.86fr) minmax(0,2.5fr) 50px 68px 27px!important;
@@ -1550,4 +1550,27 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   #registros .record-mobile-menu summary{width:24px!important;height:23px!important;font-size:1rem!important}
   #registros .record-mobile-menu>div{top:24px!important}
   #registros .record-mobile-auto{grid-column:5;grid-row:3;align-self:center!important;font-size:.46rem!important}
+}
+
+/* v6.5.13 — Tipo completo nos Registros mobile */
+@media(max-width:720px){
+  #registros .record-row{
+    grid-template-columns:max-content minmax(0,1fr) 50px 68px 27px!important;
+  }
+  #registros .cell-type{
+    grid-column:1;grid-row:1;min-width:0!important;overflow:visible!important;padding-right:3px!important;
+  }
+  #registros .cell-type .tag{
+    width:max-content!important;max-width:none!important;
+    font-size:.48rem!important;line-height:1!important;padding:4px 6px!important;
+    white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
+  }
+  #registros .cell-person strong{
+    grid-column:2 / 6;grid-row:1;min-width:0!important;
+  }
+  #registros .cell-person small{grid-column:1 / 5;grid-row:2}
+}
+@media(max-width:390px){
+  #registros .cell-type .tag{font-size:.45rem!important;padding:4px 5px!important}
+  #registros .cell-person strong{font-size:.66rem!important}
 }
