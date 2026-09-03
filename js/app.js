@@ -630,7 +630,7 @@ async function redefinirSenhaUsuario(id){const senha=prompt('Digite a nova senha
 
 
 
-// v6.6.0 — barra-resumo mobile fixa. Em vez de prender os elementos originais
+// v6.5.9 — barra-resumo mobile fixa. Em vez de prender os elementos originais
 // (comportamento inconsistente no Safari/PWA), cria uma camada fixa independente.
 let mobileDashboardSummary=null;
 function garantirMobileDashboardSummary(){
@@ -675,7 +675,7 @@ function atualizarMobileDashboardSummary(){
   });
   const metrics=document.querySelector('#dashboard .metrics');
   const limiar=metrics ? metrics.getBoundingClientRect().bottom : 180;
-  const show=limiar < 20; // mostra quando os KPIs originais já saíram da tela
+  const show=false; // v6.5.10: o bloco original fica congelado; resumo substituto desativado
   el.classList.toggle('is-visible',show);
   el.setAttribute('aria-hidden',show?'false':'true');
 }
