@@ -3005,4 +3005,37 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     padding:2px 4px!important;
   }
 }
-\n\n/* v6.5.43 — área garantida no mobile (Mina/Usina) sem alterar o padrão compacto */\n@media (max-width:720px){\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-bottom{\n    display:flex!important;\n    align-items:center!important;\n    gap:4px!important;\n    overflow:hidden!important;\n  }\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-local{\n    display:flex!important;\n    flex:0 0 auto!important;\n    width:auto!important;\n    min-width:0!important;\n    max-width:62px!important;\n    overflow:hidden!important;\n  }\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-local b{\n    display:block!important;\n    overflow:hidden!important;\n    text-overflow:ellipsis!important;\n    white-space:nowrap!important;\n  }\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-separator{\n    display:inline-block!important;\n    flex:0 0 auto!important;\n  }\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-period{\n    display:flex!important;\n    flex:0 1 auto!important;\n    min-width:0!important;\n    overflow:hidden!important;\n  }\n}\n@media (max-width:390px){\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-local{max-width:54px!important;}\n  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-bottom{gap:3px!important;}\n}\n
+
+
+/* v6.5.44 — correção exclusiva da Área em Ocorrências do dia no mobile.
+   A linha usa r.local (mesma fonte exibida em Registros) e mantém o desktop inalterado. */
+#dashboard #ocorrenciasAtuais .occurrence-day-area-mobile{display:none;}
+@media (max-width:720px){
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-local,
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-separator{
+    display:none!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period{
+    display:flex!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period b{
+    display:block!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-area-mobile{
+    display:inline!important;
+    font:inherit!important;
+    color:inherit!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-area-dot{
+    color:#7fa4c8!important;
+  }
+}
