@@ -719,7 +719,17 @@ window.addEventListener('resize',agendarMobileDashboardSummary,{passive:true});
 function atualizarStickyMobileDashboard(){
   const mobile=window.matchMedia('(max-width:720px)').matches;
   const dashboardAtivo=document.getElementById('dashboard')?.classList.contains('active');
+  const registrosPaginaAtiva=!!document.getElementById('registros')?.classList.contains('active');
   const ativo=!!(mobile&&dashboardAtivo);
+
+  // v6.5.52: Registros desktop sem deslocamento horizontal residual.
+  // A classe existe apenas enquanto a página Registros está aberta no computador.
+  const registrosDesktopAtivo=!!(!mobile&&registrosPaginaAtiva);
+  document.body.classList.toggle('records-desktop-active',registrosDesktopAtivo);
+  if(registrosDesktopAtivo){
+    document.documentElement.scrollLeft=0;
+    document.body.scrollLeft=0;
+  }
 
   // v6.5.8: em iPhone/PWA usamos FIXED real. `position: sticky` pode falhar
   // conforme o contêiner de rolagem/browser. Aqui o topo e os KPIs ficam presos
@@ -727,7 +737,7 @@ function atualizarStickyMobileDashboard(){
   document.body.classList.remove('dashboard-sticky-mobile','dashboard-sticky-compact');
   document.body.classList.toggle('dashboard-fixed-mobile',ativo);
 
-  const registrosAtivo=!!(mobile&&document.getElementById('registros')?.classList.contains('active'));
+  const registrosAtivo=!!(mobile&&registrosPaginaAtiva);
   document.body.classList.toggle('records-fixed-mobile',registrosAtivo);
 
   if(!ativo){
