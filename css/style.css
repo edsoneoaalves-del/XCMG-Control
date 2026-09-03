@@ -1974,3 +1974,64 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   #registros #filtroLocal,#registros #filtroPeriodo{display:none!important;}
   #registros .records-panel{padding:14px!important;}
 }
+
+/* v6.5.21 — Registros mobile: data, tema, sair e status na mesma linha */
+@media (max-width:720px){
+  body.records-fixed-mobile{
+    --records-fixed-topbar-h:104px;
+  }
+  body.records-fixed-mobile .topbar{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto 40px!important;
+    min-height:104px!important;
+    padding:calc(env(safe-area-inset-top,0px) + 7px) 10px 7px!important;
+    gap:6px!important;
+  }
+  body.records-fixed-mobile .topbar>div:first-child{
+    grid-column:1!important;grid-row:1!important;
+  }
+  body.records-fixed-mobile .topbar h1{
+    font-size:1.34rem!important;
+  }
+  body.records-fixed-mobile .date-control{
+    grid-column:1!important;grid-row:2!important;
+    width:136px!important;max-width:136px!important;
+    justify-self:start!important;align-self:center!important;
+  }
+  body.records-fixed-mobile .date-control input{
+    width:136px!important;height:36px!important;min-height:36px!important;
+    padding:4px 7px!important;font-size:.74rem!important;border-radius:10px!important;
+  }
+  body.records-fixed-mobile .topbar-actions{
+    grid-column:1!important;grid-row:2!important;
+    justify-self:end!important;align-self:center!important;
+    display:flex!important;flex-direction:row!important;align-items:center!important;
+    gap:5px!important;width:auto!important;
+  }
+  body.records-fixed-mobile .theme-toggle,
+  body.records-fixed-mobile .topbar-logout{
+    flex:0 0 36px!important;width:36px!important;height:36px!important;min-height:36px!important;
+    border-radius:10px!important;
+  }
+  body.records-fixed-mobile .cloud-account{
+    display:block!important;order:3!important;min-width:52px!important;width:auto!important;
+    padding:0 1px!important;border:0!important;
+  }
+  body.records-fixed-mobile .cloud-account>span{
+    display:block!important;font-size:.58rem!important;line-height:1!important;
+    white-space:nowrap!important;text-align:left!important;
+  }
+  body.records-fixed-mobile .cloud-account small,
+  body.records-fixed-mobile .topbar-user{display:none!important}
+}
+@media (max-width:390px){
+  body.records-fixed-mobile{--records-fixed-topbar-h:100px!important}
+  body.records-fixed-mobile .topbar{min-height:100px!important;padding-left:8px!important;padding-right:8px!important}
+  body.records-fixed-mobile .date-control,
+  body.records-fixed-mobile .date-control input{width:126px!important;max-width:126px!important}
+  body.records-fixed-mobile .topbar-actions{gap:4px!important}
+  body.records-fixed-mobile .theme-toggle,
+  body.records-fixed-mobile .topbar-logout{width:34px!important;height:34px!important;min-height:34px!important}
+  body.records-fixed-mobile .cloud-account{min-width:48px!important}
+  body.records-fixed-mobile .cloud-account>span{font-size:.54rem!important}
+}
