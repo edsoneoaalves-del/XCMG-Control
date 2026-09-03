@@ -1637,3 +1637,48 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   body.records-fixed-mobile #registros .records-period-gear{grid-column:4;grid-row:2;width:34px!important;height:30px!important;min-height:30px!important}
   body.records-fixed-mobile #registros .records-table{margin-top:0!important}
 }
+
+/* v6.5.15 — Registros mobile completos: início, retorno e anexo */
+.record-mobile-return,.record-mobile-attachment{display:none}
+@media(max-width:720px){
+  #registros .record-row{
+    grid-template-columns:max-content minmax(0,1fr) auto auto 25px!important;
+    grid-template-rows:25px 22px 24px 22px!important;
+    min-height:94px!important;height:94px!important;
+    padding:0 6px 0 8px!important;
+  }
+  #registros .cell-type{grid-column:1;grid-row:1!important;align-self:center!important}
+  #registros .cell-person strong{grid-column:2 / 6;grid-row:1!important;align-self:end!important;padding-left:5px!important}
+  #registros .cell-person small{grid-column:1 / 6;grid-row:2!important;padding:0 5px!important}
+  #registros .cell-local{
+    grid-column:1;grid-row:3!important;align-self:center!important;
+    font-size:.57rem!important;padding-left:5px!important;white-space:nowrap!important;
+  }
+  #registros .cell-date{
+    grid-column:2;grid-row:3!important;align-self:center!important;text-align:left!important;
+    padding:0 4px!important;font-size:0!important;white-space:nowrap!important;
+  }
+  #registros .cell-date::before{content:'Início ';font-size:.49rem!important;color:var(--muted)!important;margin-right:2px}
+  #registros .cell-date::after{font-size:.56rem!important;font-weight:700!important}
+  #registros .record-mobile-return{
+    display:flex!important;grid-column:3 / 5;grid-row:3!important;align-items:center!important;justify-content:flex-end!important;
+    gap:3px!important;min-width:0!important;padding-right:3px!important;white-space:nowrap!important;
+  }
+  #registros .record-mobile-return span{font-size:.49rem!important;color:var(--muted)!important}
+  #registros .record-mobile-return b{font-size:.56rem!important;color:var(--text)!important;font-weight:700!important}
+  #registros .record-mobile-attachment{
+    display:flex!important;grid-column:1 / 5;grid-row:4!important;align-items:center!important;
+    width:max-content!important;max-width:100%!important;margin-left:5px!important;
+    color:var(--primary)!important;text-decoration:none!important;font-size:.55rem!important;font-weight:800!important;white-space:nowrap!important;
+  }
+  #registros .record-mobile-attachment.is-empty{color:var(--muted)!important;font-weight:600!important;opacity:.75!important}
+  #registros .record-mobile-menu{grid-column:5;grid-row:3 / 5!important;align-self:center!important}
+  #registros .record-mobile-menu summary{height:34px!important}
+  #registros .record-mobile-menu>div{top:34px!important}
+  #registros .record-mobile-auto{grid-column:5;grid-row:3 / 5!important;align-self:center!important}
+}
+@media(max-width:390px){
+  #registros .record-row{grid-template-columns:max-content minmax(0,1fr) auto auto 23px!important}
+  #registros .cell-date::before,#registros .record-mobile-return span{font-size:.45rem!important}
+  #registros .cell-date::after,#registros .record-mobile-return b{font-size:.52rem!important}
+}
