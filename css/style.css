@@ -2539,3 +2539,27 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     max-width:100%!important;
   }
 }
+
+/* v6.5.38 — Mobile: exibe somente o período em datas nas Ocorrências do dia */
+@media (max-width:720px){
+  #dashboard .occurrence-day-row .occurrence-day-period{
+    display:flex!important;
+    grid-area:period!important;
+    visibility:visible!important;
+    opacity:1!important;
+    min-height:14px!important;
+    align-items:center!important;
+    justify-self:start!important;
+    overflow:visible!important;
+  }
+  #dashboard .occurrence-day-row .occurrence-day-period b{
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    font-size:.68rem!important;
+    line-height:1.15!important;
+  }
+}
