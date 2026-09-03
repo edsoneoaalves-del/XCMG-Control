@@ -3321,3 +3321,125 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
   #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta,
   #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .row-meta b{font-size:.46rem!important;}
 }
+
+/* v6.5.51 — Registros DESKTOP: contém toda a página em 100% sem rolagem horizontal.
+   Escopo isolado: somente #registros e somente telas acima de 760px. */
+@media (min-width:761px){
+  #registros{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow-x:clip!important;
+  }
+  #registros .records-panel,
+  #registros .records-toolbar,
+  #registros .records-filters,
+  #registros .records,
+  #registros .records-table{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+  #registros .records-panel{
+    overflow:visible!important;
+  }
+  #registros .records-toolbar{
+    flex-wrap:wrap!important;
+  }
+  #registros .records-toolbar-actions{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  #registros .records-more{
+    position:relative!important;
+    flex:0 0 auto!important;
+  }
+  #registros .records-more-menu{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:6px!important;
+    position:absolute!important;
+    top:40px!important;
+    right:0!important;
+    left:auto!important;
+    width:250px!important;
+    max-width:calc(100vw - 32px)!important;
+    min-width:0!important;
+    padding:7px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    z-index:120!important;
+  }
+  #registros .records-more-menu button{
+    display:flex!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    justify-content:flex-start!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+  }
+  #registros .records-filters{
+    grid-template-columns:minmax(220px,1.45fr) minmax(120px,.7fr) minmax(120px,.7fr) minmax(145px,.8fr) minmax(112px,.62fr)!important;
+  }
+  #registros .records-filters>*{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #registros .records{
+    overflow-x:hidden!important;
+  }
+  #registros .records-table{
+    table-layout:fixed!important;
+  }
+  #registros .records-table-head,
+  #registros .record-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-template-columns:minmax(112px,.82fr) minmax(185px,1.35fr) minmax(72px,.52fr) minmax(98px,.7fr) minmax(190px,1.65fr) 62px 126px!important;
+    box-sizing:border-box!important;
+  }
+  #registros .records-table-head>div,
+  #registros .record-cell{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  #registros .record-cell,
+  #registros .record-cell *{
+    max-width:100%;
+  }
+  #registros .cell-detail,
+  #registros .cell-person strong,
+  #registros .cell-person small{
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  #registros .cell-actions{
+    display:flex!important;
+    gap:5px!important;
+    justify-content:flex-end!important;
+    min-width:0!important;
+  }
+  #registros .cell-actions button{
+    min-width:0!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+}
+
+@media (min-width:761px) and (max-width:1180px){
+  #registros .records-filters{
+    grid-template-columns:minmax(180px,1.3fr) minmax(105px,.72fr) minmax(105px,.72fr) minmax(125px,.8fr) 108px!important;
+  }
+  #registros .records-table-head,
+  #registros .record-row{
+    grid-template-columns:minmax(100px,.78fr) minmax(155px,1.2fr) 66px 92px minmax(160px,1.5fr) 54px 112px!important;
+  }
+}
