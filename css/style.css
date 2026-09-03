@@ -2566,14 +2566,14 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
 
 /* v6.5.39 — Mobile: garante carregamento e exibição do período de datas */
 @media (max-width:720px){
-  #dashboard #ocorrenciasLista .current-row.occurrence-day-row{
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row{
     grid-template-columns:minmax(0,1fr) auto!important;
     grid-template-areas:'person tag' 'period period' 'local local'!important;
     grid-template-rows:auto auto auto!important;
     height:auto!important;
     min-height:82px!important;
   }
-  #dashboard #ocorrenciasLista .current-row.occurrence-day-row .occurrence-day-period{
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period{
     display:flex!important;
     grid-area:period!important;
     width:100%!important;
@@ -2586,7 +2586,7 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     color:var(--muted)!important;
     overflow:visible!important;
   }
-  #dashboard #ocorrenciasLista .current-row.occurrence-day-row .occurrence-day-period b{
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period b{
     display:block!important;
     width:auto!important;
     max-width:100%!important;
@@ -2597,8 +2597,56 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     overflow:visible!important;
     text-overflow:clip!important;
   }
-  #dashboard #ocorrenciasLista .current-row.occurrence-day-row .occurrence-day-local{
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-local{
     display:flex!important;
     grid-area:local!important;
+  }
+}
+
+/* v6.5.40 — Correção definitiva: data visível no container real #ocorrenciasAtuais */
+@media (max-width:720px){
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-areas:'person tag' 'period period' 'local local'!important;
+    grid-template-rows:auto auto auto!important;
+    height:auto!important;
+    min-height:82px!important;
+    row-gap:4px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period{
+    display:flex!important;
+    grid-area:period!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:16px!important;
+    margin:1px 0 0!important;
+    padding:0!important;
+    visibility:visible!important;
+    opacity:1!important;
+    overflow:visible!important;
+    align-items:center!important;
+    justify-self:start!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-period b{
+    display:flex!important;
+    align-items:center!important;
+    gap:5px!important;
+    width:auto!important;
+    max-width:100%!important;
+    font-size:.64rem!important;
+    line-height:1.2!important;
+    font-weight:700!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-local{
+    display:flex!important;
+    grid-area:local!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row .occurrence-day-tag{
+    display:inline-flex!important;
+    grid-area:tag!important;
   }
 }
