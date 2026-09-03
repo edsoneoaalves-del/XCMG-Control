@@ -633,16 +633,30 @@ function atualizarStickyMobileDashboard(){
   const mobile=window.matchMedia('(max-width:720px)').matches;
   const dashboardAtivo=document.getElementById('dashboard')?.classList.contains('active');
   const ativo=!!(mobile&&dashboardAtivo);
-  document.body.classList.toggle('dashboard-sticky-mobile',ativo);
+
+  // v6.5.8: em iPhone/PWA usamos FIXED real. `position: sticky` pode falhar
+  // conforme o contêiner de rolagem/browser. Aqui o topo e os KPIs ficam presos
+  // ao viewport e o espaço ocupado é compensado no fluxo da página.
+  document.body.classList.remove('dashboard-sticky-mobile','dashboard-sticky-compact');
+  document.body.classList.toggle('dashboard-fixed-mobile',ativo);
+
   if(!ativo){
-    document.body.classList.remove('dashboard-sticky-compact');
-    document.documentElement.style.removeProperty('--mobile-dashboard-topbar');
+    document.body.style.removeProperty('--dashboard-fixed-topbar-h');
+    document.body.style.removeProperty('--dashboard-fixed-metrics-h');
     return;
   }
-  document.body.classList.toggle('dashboard-sticky-compact',window.scrollY>105);
+
   requestAnimationFrame(()=>{
     const topbar=document.querySelector('.topbar');
-    if(topbar)document.body.style.setProperty('--mobile-dashboard-topbar',`${Math.ceil(topbar.getBoundingClientRect().height)}px`);
+    const metrics=document.querySelector('#dashboard .metrics');
+    if(topbar){
+      const h=Math.ceil(topbar.getBoundingClientRect().height);
+      document.body.style.setProperty('--dashboard-fixed-topbar-h',`${h}px`);
+    }
+    if(metrics){
+      const h=Math.ceil(metrics.getBoundingClientRect().height);
+      document.body.style.setProperty('--dashboard-fixed-metrics-h',`${h}px`);
+    }
   });
 }
 let stickyMobileRaf=0;
@@ -650,9 +664,9 @@ function agendarStickyMobileDashboard(){
   if(stickyMobileRaf)return;
   stickyMobileRaf=requestAnimationFrame(()=>{stickyMobileRaf=0;atualizarStickyMobileDashboard()});
 }
-window.addEventListener('scroll',agendarStickyMobileDashboard,{passive:true});
 window.addEventListener('resize',agendarStickyMobileDashboard,{passive:true});
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>abrirPagina(b.dataset.page)));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>abrirPagina(b.dataset.go)));
+window.addEventListener('orientationchange',()=>setTimeout(atualizarStickyMobileDashboard,120),{passive:true});
+document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{abrirPagina(b.dataset.page);requestAnimationFrame(atualizarStickyMobileDashboard)}));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{abrirPagina(b.dataset.go);requestAnimationFrame(atualizarStickyMobileDashboard)}));
 $('nome').addEventListener('change',preencherDadosColaborador);$('foto').addEventListener('change',()=>{const f=$('foto').files[0];removerFotoAtual=false;if(!f){mostrarFoto(fotoAtual.url);return}if(!f.type.startsWith('image/')||f.size>5*1024*1024){alert('Selecione uma imagem de até 5 MB.');$('foto').value='';mostrarFoto(fotoAtual.url);return}mostrarFoto(URL.createObjectURL(f))});$('btnRemoverFoto').addEventListener('click',()=>{removerFotoAtual=true;$('foto').value='';mostrarFoto('')});
 carregarCategoriasLocais();atualizarSelectCategorias();$('categoriaMotivo').addEventListener('change',()=>{$('motivo').value='';atualizarListaMotivos();sincronizarTipoComMotivo()});$('motivo').addEventListener('input',sincronizarTipoComMotivo);$('motivo').addEventListener('change',()=>{sincronizarTipoComMotivo();salvarMotivoPersonalizado($('motivo').value)});$('btnAdicionarColaborador').addEventListener('click',adicionarColaborador);$('novoColaboradorNome').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarColaborador()}});$('btnImportarColaboradores').addEventListener('click',importarColaboradores);$('btnImportarFerias')?.addEventListener('click',importarFerias);$('planilhaFerias')?.addEventListener('change',e=>{const st=$('statusImportacaoFerias');if(st)st.textContent=e.target.files?.[0]?`Arquivo selecionado: ${e.target.files[0].name}. Clique em Importar férias.`:''});$('pesquisaProgramacaoFerias')?.addEventListener('input',renderizarProgramacaoFerias);$('filtroStatusFerias')?.addEventListener('change',renderizarProgramacaoFerias);$('pesquisaColaborador').addEventListener('input',renderizarColaboradores);$('listaColaboradores').addEventListener('click',e=>{const id=e.target.dataset.deleteColaborador;if(id&&exigirPermissao('colaboradores_excluir'))excluirColaborador(id)});$('btnVerTodos').addEventListener('click',()=>abrirPagina('registros'));$('btnExportarRapido').addEventListener('click',exportar);$('btnSalvar').addEventListener('click',salvarRegistro);$('btnCancelar').addEventListener('click',limparForm);$('btnSalvarConfig').addEventListener('click',salvarConfig);$('btnGerenciarPeriodos').addEventListener('click',abrirGestaoPeriodos);$('btnFecharPeriodos').addEventListener('click',fecharGestaoPeriodos);$('btnSalvarPeriodo').addEventListener('click',salvarPeriodoFechamento);$('btnCancelarPeriodo').addEventListener('click',cancelarEdicaoPeriodo);$('listaPeriodos').addEventListener('click',e=>{const ed=e.target.dataset.editPeriodo,del=e.target.dataset.deletePeriodo;if(ed)editarPeriodoFechamento(ed);if(del)excluirPeriodoFechamento(del)});$('modalPeriodos').addEventListener('click',e=>{if(e.target===$('modalPeriodos'))fecharGestaoPeriodos()});$('btnGerar').addEventListener('click',gerarMensagem);$('btnCopiar').addEventListener('click',async()=>{const t=gerarMensagem();try{await navigator.clipboard.writeText(t)}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}$('statusMensagem').textContent='Mensagem copiada com sucesso.';setTimeout(()=>$('statusMensagem').textContent='',2500)});$('btnWhatsApp').addEventListener('click',()=>window.open('https://wa.me/?text='+encodeURIComponent(gerarMensagem()),'_blank'));$('btnExportarExcel').addEventListener('click',gerarPlanilhaExcel);$('btnModoPrint').addEventListener('click',()=>{document.body.classList.toggle('records-print-mode');$('btnModoPrint').textContent=document.body.classList.contains('records-print-mode')?'✕ Sair do Print':'📷 Modo Print'});$('btnExportarExcelRegistros').addEventListener('click',gerarPlanilhaExcel);$('btnLimparTudo').addEventListener('click',async()=>{if(confirm('Deseja apagar todos os registros?')){const {error}=await db.from('xcmg_registros').delete().neq('id',0);if(error)alert('Não foi possível apagar os registros.');else await carregarNuvem(true)}});$('dataPainel').addEventListener('change',atualizarTudo);$('mostrarTodosRegistros').checked=localStorage.getItem(VIEW_KEY)!=='0';$('mostrarTodosRegistros').addEventListener('change',()=>{localStorage.setItem(VIEW_KEY,$('mostrarTodosRegistros').checked?'1':'0');renderizarRegistros()});$('pesquisa').addEventListener('input',renderizarRegistros);$('filtroTipo').addEventListener('change',renderizarRegistros);$('filtroLocal').addEventListener('change',renderizarRegistros);$('filtroPeriodo').addEventListener('change',renderizarRegistros);$('listaRegistros').addEventListener('click',e=>{const ed=e.target.dataset.edit,del=e.target.dataset.delete;if(ed&&exigirPermissao('ocorrencias_editar'))editar(ed);if(del&&exigirPermissao('ocorrencias_excluir'))excluir(del)});$('btnExportar').addEventListener('click',exportar);$('arquivoBackup').addEventListener('change',e=>{if(e.target.files[0])importar(e.target.files[0]);e.target.value=''});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInstalacao=e;$('btnInstalar').classList.remove('hidden')});$('btnInstalar').addEventListener('click',async()=>{if(!promptInstalacao)return;promptInstalacao.prompt();await promptInstalacao.userChoice;promptInstalacao=null;$('btnInstalar').classList.add('hidden')});if(location.protocol.startsWith('http')&&'serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
