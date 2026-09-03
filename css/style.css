@@ -1786,3 +1786,133 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
     margin-bottom:0!important;
   }
 }
+
+/* v6.5.18 — Registros mobile: cabeçalho compacto e título junto à lista */
+@media (max-width:720px){
+  body.records-fixed-mobile{
+    --records-fixed-topbar-h:136px;
+    --records-fixed-query-h:124px;
+  }
+
+  /* Cabeçalho superior mais baixo e organizado */
+  body.records-fixed-mobile .topbar{
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+    gap:7px 10px!important;
+    min-height:136px!important;
+  }
+  body.records-fixed-mobile .topbar>div:first-child{
+    grid-column:1!important;grid-row:1!important;align-self:center!important;
+  }
+  body.records-fixed-mobile .topbar h1{
+    font-size:1.38rem!important;line-height:1!important;margin:0!important;
+  }
+  body.records-fixed-mobile .date-control{
+    grid-column:1!important;grid-row:2!important;
+    width:148px!important;max-width:148px!important;
+    justify-self:start!important;margin:0!important;
+  }
+  body.records-fixed-mobile .date-control input{
+    width:148px!important;height:38px!important;min-height:38px!important;
+    padding:4px 9px!important;font-size:.78rem!important;
+    border-radius:10px!important;text-align:center!important;
+  }
+  body.records-fixed-mobile .topbar-actions{
+    grid-column:2!important;grid-row:1/3!important;
+    grid-template-columns:40px 40px!important;
+    grid-template-rows:40px 22px!important;
+    gap:4px 6px!important;align-content:center!important;
+  }
+  body.records-fixed-mobile .theme-toggle,
+  body.records-fixed-mobile .topbar-logout{
+    width:40px!important;height:40px!important;min-height:40px!important;
+    border-radius:10px!important;
+  }
+  body.records-fixed-mobile .theme-toggle .theme-icon{font-size:1.05rem!important}
+  body.records-fixed-mobile .cloud-account{grid-column:1/3!important;grid-row:2!important}
+  body.records-fixed-mobile .cloud-account>span{font-size:.62rem!important;line-height:1!important}
+
+  /* Bloco congelado de consulta: filtros primeiro; título imediatamente acima da lista */
+  body.records-fixed-mobile #registros{
+    padding-top:calc(var(--records-fixed-query-h) + 6px)!important;
+  }
+  body.records-fixed-mobile #registros .records-filters{
+    top:var(--records-fixed-topbar-h)!important;
+    height:72px!important;
+    padding:7px 9px!important;
+    border-top:1px solid var(--border)!important;
+    border-bottom:0!important;
+    border-radius:12px 12px 0 0!important;
+    box-shadow:none!important;
+    grid-template-columns:minmax(0,1fr) 95px 68px 34px!important;
+    grid-template-rows:34px 28px!important;
+    gap:5px!important;
+  }
+  body.records-fixed-mobile #registros #pesquisa{
+    grid-column:1/5!important;grid-row:1!important;
+    height:34px!important;min-height:34px!important;
+    font-size:.70rem!important;padding:6px 10px!important;
+  }
+  body.records-fixed-mobile #registros #filtroTipo{
+    grid-column:1/3!important;grid-row:2!important;
+    height:28px!important;min-height:28px!important;font-size:.66rem!important;
+  }
+  body.records-fixed-mobile #registros .records-view-compact{
+    grid-column:3!important;grid-row:2!important;
+    height:28px!important;min-height:28px!important;font-size:.60rem!important;
+    padding:1px 3px!important;
+  }
+  body.records-fixed-mobile #registros .records-period-gear{
+    grid-column:4!important;grid-row:2!important;
+    width:34px!important;height:28px!important;min-height:28px!important;
+  }
+
+  body.records-fixed-mobile #registros .records-toolbar{
+    top:calc(var(--records-fixed-topbar-h) + 72px)!important;
+    height:52px!important;
+    padding:6px 9px!important;
+    border-top:0!important;border-bottom:1px solid var(--border)!important;
+    border-radius:0 0 12px 12px!important;
+    box-shadow:0 8px 18px rgba(0,0,0,.14)!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    align-items:center!important;gap:5px!important;
+  }
+  body.records-fixed-mobile #registros .records-title{
+    display:flex!important;align-items:baseline!important;gap:7px!important;min-width:0!important;
+  }
+  body.records-fixed-mobile #registros .records-title h2{
+    font-size:.94rem!important;line-height:1!important;margin:0!important;white-space:nowrap!important;
+  }
+  body.records-fixed-mobile #registros .records-title p{display:none!important}
+  body.records-fixed-mobile #registros .records-toolbar-actions{
+    display:flex!important;align-items:center!important;gap:4px!important;
+  }
+  body.records-fixed-mobile #registros .records-count{
+    font-size:.55rem!important;white-space:nowrap!important;margin-right:2px!important;
+  }
+  body.records-fixed-mobile #registros .records-toolbar-actions>button,
+  body.records-fixed-mobile #registros .records-more summary{
+    width:29px!important;height:29px!important;min-height:29px!important;padding:0!important;border-radius:8px!important;
+  }
+  body.records-fixed-mobile #registros #btnExportarExcelRegistros{
+    width:45px!important;font-size:.58rem!important;
+  }
+  body.records-fixed-mobile #registros .print-mode-btn span{display:none!important}
+
+  /* A lista começa imediatamente após o cabeçalho congelado */
+  body.records-fixed-mobile #registros .records{margin-top:0!important;padding-top:0!important}
+}
+
+@media (max-width:390px){
+  body.records-fixed-mobile{--records-fixed-topbar-h:132px;--records-fixed-query-h:120px}
+  body.records-fixed-mobile .topbar{min-height:132px!important;padding-left:10px!important;padding-right:10px!important}
+  body.records-fixed-mobile .topbar h1{font-size:1.28rem!important}
+  body.records-fixed-mobile .date-control,
+  body.records-fixed-mobile .date-control input{width:138px!important;max-width:138px!important}
+  body.records-fixed-mobile #registros .records-filters{height:70px!important;grid-template-columns:minmax(0,1fr) 88px 64px 32px!important}
+  body.records-fixed-mobile #registros .records-toolbar{top:calc(var(--records-fixed-topbar-h) + 70px)!important;height:50px!important}
+  body.records-fixed-mobile #registros .records-title h2{font-size:.86rem!important}
+  body.records-fixed-mobile #registros .records-count{font-size:.50rem!important}
+}
