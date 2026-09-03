@@ -3100,3 +3100,79 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     justify-self:end!important;
   }
 }
+
+/* v6.5.49 — Correção definitiva e isolada do painel Ocorrências no desktop.
+   Mantém o mobile intacto e garante que a coluna Tipo permaneça dentro do card em 100% de zoom. */
+@media (min-width:721px){
+  #dashboard .dashboard-primary-panel.current-panel,
+  #dashboard .dashboard-primary-panel.current-panel #ocorrenciasAtuais,
+  #dashboard .dashboard-primary-panel.current-panel #ocorrenciasAtuais .current-row{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row,
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    grid-template-columns:
+      minmax(0,1.45fr)
+      minmax(0,.72fr)
+      minmax(0,1.02fr)
+      188px!important;
+    column-gap:8px!important;
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row > *,
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row > *{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row .person,
+  #dashboard #ocorrenciasAtuais .current-row .row-meta,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-local,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-period{
+    width:auto!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row .tag,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-tag{
+    width:100%!important;
+    min-width:0!important;
+    max-width:188px!important;
+    justify-self:stretch!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+}
+
+/* Em desktops mais estreitos, preserva a grade dentro do painel sem tocar no layout mobile. */
+@media (min-width:721px) and (max-width:1050px){
+  #dashboard #ocorrenciasAtuais .current-row,
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row{
+    grid-template-columns:
+      minmax(0,1.35fr)
+      minmax(0,.62fr)
+      minmax(0,.98fr)
+      168px!important;
+    column-gap:7px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row .tag,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-tag{
+    max-width:168px!important;
+    font-size:.54rem!important;
+    padding-left:5px!important;
+    padding-right:5px!important;
+  }
+}
