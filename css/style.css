@@ -3677,3 +3677,7 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     padding:3px 6px!important;
   }
 }
+
+
+/* v6.5.55 — DEFINITIVO: Ocorrências atuais usa o MESMO componente/markup de Ocorrências do dia.
+   Não há layout desktop paralelo para a aba atual; ambas são .occurrence-day-row. */

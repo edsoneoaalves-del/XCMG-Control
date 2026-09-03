@@ -322,12 +322,14 @@ function dataCurtaDashboard(v){const br=dataBR(v);return br?`${br.slice(0,6)}${b
 function ocorrenciasDoDia(data){const ref=dataISOFlex(data);if(!ref)return[];return ativosNaData(ref)}
 function renderizarOcorrenciasPainel(ativos,data){
   const lista=visualizacaoOcorrenciasDashboard==='dia'?ocorrenciasDoDia(data):ativos;
-  if(visualizacaoOcorrenciasDashboard==='dia')renderizarOcorrenciasDia(lista);else renderizarAtuais(lista);
+  // v6.5.55: as duas abas usam exatamente o mesmo renderizador visual.
+  // A única diferença permanece sendo a lista de dados selecionada por cada aba.
+  renderizarOcorrenciasDia(lista);
   document.querySelectorAll('[data-occurrence-view]').forEach(b=>b.classList.toggle('active',b.dataset.occurrenceView===visualizacaoOcorrenciasDashboard));
   const sub=$('ocorrenciasPainelSubtitulo');
-  if(sub){sub.textContent=visualizacaoOcorrenciasDashboard==='dia'?'':'Registros ativos na data selecionada.';sub.style.display=visualizacaoOcorrenciasDashboard==='dia'?'none':'';}
+  if(sub){sub.textContent='';sub.style.display='none';}
   const total=$('totalOcorrenciasAtuais');
-  if(total){const n=lista.length;total.textContent=visualizacaoOcorrenciasDashboard==='dia'?`${n} ocorrência${n===1?'':'s'} no dia selecionado.`:(window.innerWidth<=720?`${n} ocorrência${n===1?' ativa':'s ativas'}`:`${n} ocorrência(s) ativa(s) na data selecionada.`)}
+  if(total){const n=lista.length;total.textContent=visualizacaoOcorrenciasDashboard==='dia'?`${n} ocorrência${n===1?'':'s'} no dia selecionado.`:`${n} ocorrência${n===1?' atual':'s atuais'}.`}
 }
 function renderizarOcorrenciasDia(lista){
   const visiveis=lista.slice(0,20),el=$('ocorrenciasAtuais');if(!el)return;
