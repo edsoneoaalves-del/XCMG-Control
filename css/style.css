@@ -3488,3 +3488,82 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
     overflow-x:hidden!important;
   }
 }
+
+/* v6.5.53 — Dashboard DESKTOP: reorganização isolada de Ocorrências atuais.
+   Não altera Ocorrências do dia, mobile, Registros ou demais telas. */
+@media (min-width:721px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    grid-template-columns:
+      minmax(235px,1.35fr)
+      minmax(220px,1.05fr)
+      minmax(82px,.48fr)
+      minmax(170px,200px)!important;
+    column-gap:10px!important;
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) > *{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person{
+    overflow:hidden!important;
+  }
+
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person strong,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person small{
+    display:block!important;
+    max-width:100%!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+
+  /* Período: espaço próprio e sem reticências. */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta{
+    overflow:visible!important;
+    white-space:nowrap!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta b{
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+  }
+
+  /* Área permanece compacta. */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .person + .row-meta + .row-meta{
+    overflow:hidden!important;
+    white-space:nowrap!important;
+  }
+
+  /* Tipo ocupa apenas o necessário, sem o bloco exageradamente largo. */
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    width:auto!important;
+    min-width:0!important;
+    max-width:200px!important;
+    justify-self:end!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+}
+
+@media (min-width:721px) and (max-width:900px){
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row){
+    grid-template-columns:minmax(200px,1.2fr) minmax(205px,1fr) minmax(72px,.42fr) minmax(150px,180px)!important;
+    column-gap:7px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row) .tag,
+  #dashboard #ocorrenciasAtuais .current-row:not(.occurrence-day-row).type-falta .tag.occurrence-day-falta-farol{
+    max-width:180px!important;
+    padding-left:8px!important;
+    padding-right:8px!important;
+  }
+}
