@@ -2084,3 +2084,43 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   body:not(.records-fixed-mobile) .cloud-account{min-width:48px!important;}
   body:not(.records-fixed-mobile) .cloud-account>span{font-size:.54rem!important;}
 }
+\n\n/* v6.5.23 — Registros mobile: período unido e anexo somente quando existir */
+@media(max-width:720px){
+  #registros .record-row{
+    grid-template-columns:max-content minmax(0,1fr) auto 23px!important;
+  }
+  #registros .cell-local{
+    grid-column:1!important;
+    grid-row:3!important;
+    margin-right:5px!important;
+  }
+  #registros .cell-date{
+    grid-column:2!important;
+    grid-row:3!important;
+    justify-self:start!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  #registros .record-mobile-return{
+    grid-column:2!important;
+    grid-row:3!important;
+    justify-self:start!important;
+    margin-left:62px!important;
+    padding:0!important;
+    gap:4px!important;
+  }
+  #registros .record-mobile-return span::after{
+    content:'→'!important;
+    font-size:.60rem!important;
+  }
+  #registros .record-mobile-attachment{
+    grid-column:3!important;
+    grid-row:2!important;
+    justify-self:end!important;
+    margin:0 3px 0 5px!important;
+  }
+  #registros .record-mobile-attachment.is-empty{display:none!important}
+}
+@media(max-width:390px){
+  #registros .record-mobile-return{margin-left:57px!important;gap:3px!important}
+}

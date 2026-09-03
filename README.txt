@@ -1,3 +1,4 @@
+Versão visual: v6.5.23
 XCMG CONTROL v6.3.2 - PROGRAMAÇÃO AUTOMÁTICA DE FÉRIAS
 
 NOVO:
