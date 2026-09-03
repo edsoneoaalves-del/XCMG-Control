@@ -3073,3 +3073,30 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
   #ocorrencias .occurrence-dates-group input{padding-left:7px;padding-right:7px;font-size:.75rem}
   #ocorrencias .occurrence-days-field .field-help{display:none}
 }
+
+/* v6.5.48 — Desktop 100%: mais espaço para o tipo da ocorrência, sem alterar mobile */
+@media (min-width:721px){
+  #dashboard #ocorrenciasAtuais .current-row,
+  #dashboard #ocorrenciasAtuais .current-row.occurrence-day-row{
+    grid-template-columns:minmax(250px,1.45fr) minmax(165px,.92fr) minmax(78px,.52fr) minmax(150px,auto)!important;
+    column-gap:8px!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row .person{
+    min-width:0!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-period,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-local,
+  #dashboard #ocorrenciasAtuais .current-row .row-meta{
+    min-width:0!important;
+  }
+  #dashboard #ocorrenciasAtuais .current-row .tag,
+  #dashboard #ocorrenciasAtuais .current-row .occurrence-day-tag{
+    min-width:max-content!important;
+    max-width:none!important;
+    width:auto!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    white-space:nowrap!important;
+    justify-self:end!important;
+  }
+}
