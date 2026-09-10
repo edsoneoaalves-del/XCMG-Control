@@ -3681,3 +3681,1553 @@ html:not([data-theme="dark"]) #dashboard .occurrence-tab.active{background:#e6f2
 
 /* v6.5.55 — DEFINITIVO: Ocorrências atuais usa o MESMO componente/markup de Ocorrências do dia.
    Não há layout desktop paralelo para a aba atual; ambas são .occurrence-day-row. */
+/* v6.6.0 — módulo Efetivo */
+.effective-list-section{margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}.effective-list-heading{display:flex;align-items:center;justify-content:space-between}.effective-list-heading h3{margin:0}.effective-list-heading .section-subtitle{margin:5px 0 0}
+.effective-table tbody td{text-transform:uppercase}
+.effective-summary{display:flex;align-items:flex-end;gap:10px;flex-direction:column}.effective-summary>strong{color:#30d873;font-size:1.05rem}.effective-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:18px}.effective-toolbar .collaborator-filter{flex:1;display:grid;grid-template-columns:minmax(240px,1.7fr) repeat(3,minmax(140px,1fr));margin:0}.effective-actions{flex-wrap:nowrap;margin:0}.effective-table-wrap{margin-top:12px;overflow:auto;border:1px solid var(--border);border-radius:14px;background:var(--panel)}.effective-table{width:100%;min-width:1320px;border-collapse:separate;border-spacing:0;font-size:.82rem}.effective-table th{position:sticky;top:0;z-index:2;padding:12px 10px;background:#36cc59;color:#06170c;text-align:left;white-space:nowrap}.effective-table td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;white-space:nowrap}.effective-table tbody tr:hover{background:rgba(56,204,89,.07)}.effective-table .effective-name{font-weight:750;min-width:230px}.effective-row-actions{display:flex;gap:6px}.effective-status{display:inline-flex;padding:5px 9px;border-radius:999px;font-weight:800;font-size:.72rem;white-space:nowrap}.effective-status-ativo{background:#baf4ca;color:#075d22}.effective-status-inss-afastado,.effective-status-mudanca-de-turma{background:#ffe99b;color:#765500}.effective-status-desligado{background:#ffb5b5;color:#870b0b}.effective-status-inativo{background:#d9dee7;color:#3e4654}.effective-history-modal{width:min(760px,94vw);max-height:85vh;overflow:auto}.effective-history-row{display:flex;justify-content:space-between;gap:16px;padding:13px 4px;border-bottom:1px solid var(--border)}.effective-history-row>div{display:grid;gap:4px}.effective-history-row span,.effective-history-row small{color:var(--muted)}.effective-history-row time{white-space:nowrap;color:var(--muted);font-size:.78rem}
+@media(max-width:900px){.effective-toolbar{align-items:stretch;flex-direction:column}.effective-toolbar .collaborator-filter{grid-template-columns:1fr 1fr}.effective-actions{width:100%}.effective-actions button{flex:1}.effective-summary{align-items:flex-start}.effective-table-wrap{margin-left:-4px;margin-right:-4px}.effective-table{min-width:1180px;font-size:.78rem}.effective-table th,.effective-table td{padding:9px 8px}.effective-history-row{flex-direction:column;gap:6px}}
+@media(max-width:520px){.effective-toolbar .collaborator-filter{grid-template-columns:1fr}.effective-actions{flex-direction:column}.effective-actions button{width:100%}.effective-table-wrap{max-height:62vh}.effective-table th{top:0}}
+/* v6.7.0 — módulo independente de Férias */
+.vacation-kpis{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px;margin:16px 0}.vacation-kpis>div{background:var(--panel-2,#0d2b40);border:1px solid var(--border);border-radius:12px;padding:14px}.vacation-kpis span{display:block;color:var(--muted);font-size:.8rem;text-transform:uppercase}.vacation-kpis strong{display:block;margin-top:6px;font-size:1.55rem;color:#32d06a}.vacation-control-grid{display:grid;grid-template-columns:minmax(520px,1.25fr) minmax(390px,.75fr);gap:14px;align-items:stretch}.vacation-control-grid>.vacation-import-box{margin:0}.vacation-form-alert{margin:12px 0;padding:12px 14px;border:1px solid #f0ad35;background:rgba(240,173,53,.12);color:#ffd27a;border-radius:10px;line-height:1.5}.vacation-control-table{overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:12px}.vacation-control-table table{width:100%;min-width:2450px;border-collapse:collapse}.vacation-control-table th{background:#35d05a;color:#061625;text-align:left;padding:11px 9px;position:sticky;top:0;white-space:nowrap}.vacation-control-table td{padding:10px 9px;border-bottom:1px solid var(--border);text-transform:uppercase;font-size:.82rem;white-space:nowrap}.vacation-control-table th:nth-child(3),.vacation-control-table td:nth-child(3){min-width:260px}.vacation-control-table th:nth-child(4),.vacation-control-table td:nth-child(4){min-width:260px}.vacation-alert-cell{color:#ffbd4a;font-weight:800}.vacation-control-table .effective-row-actions{display:flex;gap:6px;white-space:nowrap}
+@media(max-width:900px){.vacation-kpis{grid-template-columns:repeat(2,1fr)}.vacation-control-grid{grid-template-columns:1fr}.vacation-module{padding:12px}.vacation-control-table table{min-width:2450px}}
+
+/* v6.10.9 — estabilidade de rolagem + correção visual dos filtros/selects */
+html,body{
+  min-height:100%!important;
+  height:auto!important;
+  overflow-y:auto!important;
+}
+.app-shell,main,.page,.page.active{
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+
+/* Efetivo: a relação volta a rolar normalmente, com cabeçalho fixo. */
+#colaboradores .effective-list-section{
+  min-height:0!important;
+  overflow:visible!important;
+}
+#colaboradores .effective-table-wrap{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  max-height:calc(100vh - 360px)!important;
+  min-height:220px!important;
+  overflow-x:auto!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  scrollbar-gutter:stable both-edges;
+  -webkit-overflow-scrolling:touch;
+}
+#colaboradores .effective-table th{
+  position:sticky!important;
+  top:0!important;
+  z-index:4!important;
+}
+
+/* Férias: tabela e página continuam roláveis sem prender a tela. */
+#ferias{
+  min-height:100%!important;
+  overflow:visible!important;
+}
+#ferias .vacation-control-table{
+  max-width:100%!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* Corrige o menu branco do filtro no Windows/Edge/Chrome. */
+select{
+  color-scheme:dark;
+}
+select option,
+select optgroup{
+  background:#0b2033!important;
+  color:#f5f8fb!important;
+}
+html[data-theme="light"] select{
+  color-scheme:light;
+}
+html[data-theme="light"] select option,
+html[data-theme="light"] select optgroup{
+  background:#ffffff!important;
+  color:#243149!important;
+}
+#ferias #filtroStatusFerias,
+#colaboradores #filtroEfetivoArea,
+#colaboradores #filtroEfetivoTurma,
+#colaboradores #filtroEfetivoStatus{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+
+@media(max-width:900px){
+  #colaboradores .effective-table-wrap{
+    max-height:58vh!important;
+  }
+}
+
+/* v6.10.10 — correção definitiva: rolagem natural do Efetivo + filtro de Férias sem menu nativo branco */
+html, body{
+  height:auto!important;
+  min-height:100%!important;
+  overflow-y:auto!important;
+}
+main{
+  min-height:100vh!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+
+/* Efetivo: sem altura travada. A tabela cresce e a rolagem vertical é da própria página. */
+#colaboradores,
+#colaboradores.panel,
+#colaboradores .effective-list-section{
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+#colaboradores .effective-table-wrap{
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  min-height:0!important;
+  overflow-x:auto!important;
+  overflow-y:visible!important;
+  overscroll-behavior:auto!important;
+  scrollbar-gutter:auto!important;
+}
+#colaboradores .effective-table{
+  margin-bottom:2px;
+}
+
+/* O select original continua existindo para a lógica, mas o usuário vê um dropdown HTML controlado pelo app. */
+#filtroStatusFerias.vacation-native-select-hidden{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.vacation-status-dropdown{
+  position:relative;
+  min-width:180px;
+  width:100%;
+}
+.vacation-status-trigger{
+  width:100%;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid #214566;
+  border-radius:9px;
+  background:#06172b;
+  color:#f5f8ff;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.vacation-status-trigger:focus-visible{
+  outline:none;
+  border-color:#087eff;
+  box-shadow:0 0 0 3px rgba(8,126,255,.12);
+}
+.vacation-status-trigger::after{
+  content:'⌄';
+  flex:0 0 auto;
+  font-size:16px;
+  line-height:1;
+  color:#cfe0f6;
+}
+.vacation-status-dropdown.is-open .vacation-status-trigger::after{content:'⌃';}
+.vacation-status-menu{
+  position:absolute;
+  z-index:5000;
+  top:calc(100% + 5px);
+  right:0;
+  left:0;
+  display:none;
+  max-height:310px;
+  overflow-y:auto;
+  padding:6px;
+  border:1px solid #2a557a;
+  border-radius:10px;
+  background:#071b2d;
+  box-shadow:0 16px 36px rgba(0,0,0,.45);
+}
+.vacation-status-dropdown.is-open .vacation-status-menu{display:block;}
+.vacation-status-option{
+  width:100%;
+  display:block;
+  border:0;
+  border-radius:7px;
+  padding:9px 10px;
+  background:transparent;
+  color:#f5f8ff;
+  text-align:left;
+  font-size:.82rem;
+  cursor:pointer;
+}
+.vacation-status-option:hover,
+.vacation-status-option:focus-visible,
+.vacation-status-option.is-selected{
+  background:#0d4f94;
+  color:#fff;
+  outline:none;
+}
+html[data-theme="light"] .vacation-status-trigger{
+  background:#fff;
+  color:#243149;
+  border-color:#cbd5e1;
+}
+html[data-theme="light"] .vacation-status-menu{
+  background:#fff;
+  border-color:#cbd5e1;
+  box-shadow:0 16px 36px rgba(15,23,42,.2);
+}
+html[data-theme="light"] .vacation-status-option{color:#243149;}
+html[data-theme="light"] .vacation-status-option:hover,
+html[data-theme="light"] .vacation-status-option:focus-visible,
+html[data-theme="light"] .vacation-status-option.is-selected{
+  background:#e8f1ff;
+  color:#0b4f9c;
+}
+
+/* evita que o dropdown seja cortado pelo módulo de férias */
+#ferias .vacation-module,
+#ferias .vacation-control-table,
+#ferias .vacation-program-filters{
+  overflow:visible;
+}
+#ferias .vacation-control-table{
+  overflow-x:auto!important;
+}
+
+
+/* v6.10.14 — contrato final de rolagem e estabilidade do módulo Férias/Efetivo */
+@media (min-width:901px){
+  html,body{height:100%!important;min-height:100%!important;overflow:hidden!important;}
+  .app-shell{height:100vh!important;min-height:100vh!important;overflow:hidden!important;}
+  .sidebar{height:100vh!important;overflow:hidden!important;position:relative!important;top:auto!important;}
+  main{height:100vh!important;min-height:0!important;overflow:hidden!important;padding-bottom:0!important;display:flex!important;flex-direction:column!important;}
+  .topbar{flex:0 0 auto!important;position:relative!important;z-index:30!important;}
+  main>.page{display:none!important;}
+  main>.page.active{display:block!important;flex:1 1 auto!important;min-height:0!important;height:auto!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;padding-right:8px!important;padding-bottom:28px!important;scrollbar-gutter:stable!important;overscroll-behavior:contain!important;}
+  #colaboradores .effective-list-section,#ferias .vacation-module{overflow:visible!important;height:auto!important;max-height:none!important;}
+  #colaboradores .effective-table-wrap{height:auto!important;max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+  #ferias .vacation-control-table{height:auto!important;max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+  #ferias .vacation-control-table th,#colaboradores .effective-table th{position:sticky!important;top:0!important;z-index:5!important;}
+}
+@media (max-width:900px){
+  html,body{height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  .app-shell,main{height:auto!important;min-height:100vh!important;overflow:visible!important;}
+  main>.page.active{height:auto!important;max-height:none!important;overflow:visible!important;}
+  #colaboradores .effective-table-wrap,#ferias .vacation-control-table{max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;}
+}
+
+/* v6.10.15 — rolagem vertical natural e independente (desktop) */
+@media (min-width:901px){
+  html{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;}
+  body{height:auto!important;min-height:100vh!important;overflow-x:hidden!important;overflow-y:visible!important;}
+  .app-shell{height:auto!important;min-height:100vh!important;overflow:visible!important;align-items:start!important;}
+  .sidebar{position:sticky!important;top:0!important;height:100vh!important;max-height:100vh!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  main{height:auto!important;min-height:100vh!important;overflow:visible!important;display:block!important;padding-bottom:32px!important;}
+  .topbar{position:sticky!important;top:0!important;z-index:40!important;background:var(--bg,#03111f)!important;padding-top:14px!important;padding-bottom:10px!important;}
+  main>.page{display:none!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;}
+  main>.page.active{display:block!important;height:auto!important;max-height:none!important;min-height:0!important;overflow:visible!important;padding-right:0!important;padding-bottom:28px!important;overscroll-behavior:auto!important;scrollbar-gutter:auto!important;}
+  #ferias,#colaboradores{height:auto!important;max-height:none!important;overflow:visible!important;}
+  #ferias .vacation-module,#colaboradores .effective-list-section{height:auto!important;max-height:none!important;overflow:visible!important;}
+  #ferias .vacation-control-table,#colaboradores .effective-table-wrap{height:auto!important;max-height:none!important;overflow-x:auto!important;overflow-y:visible!important;overscroll-behavior-x:contain!important;}
+}
+
+
+/* v6.10.20 — Efetivo de férias preservado fora da relação do efetivo */
+.vacation-only-effective-section{margin-top:18px;}
+.vacation-outside-badge{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);font-size:11px;font-weight:800;white-space:nowrap;}
+
+/* v6.10.27 — Férias: tela de gestão compacta para desktop em zoom 100% */
+#ferias .vacation-manager-layout{padding:18px 20px!important}
+#ferias .vacation-main-heading{margin-bottom:10px!important}
+#ferias .vacation-heading-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end}
+#ferias .vacation-new-btn{min-height:38px;padding:8px 14px!important;white-space:nowrap}
+#ferias .vacation-kpis{grid-template-columns:repeat(7,minmax(115px,1fr))!important;gap:8px!important;margin:10px 0 12px!important}
+#ferias .vacation-kpis>div{padding:10px 12px!important;border-radius:10px!important;min-height:72px}
+#ferias .vacation-kpis span{font-size:.66rem!important;line-height:1.15}
+#ferias .vacation-kpis strong{font-size:1.3rem!important;margin-top:4px!important}
+#ferias .vacation-program-box{margin-top:10px!important;padding:10px 12px!important;border-radius:12px!important}
+#ferias .vacation-program-title{margin-bottom:7px!important}
+#ferias .vacation-program-title h3{font-size:1rem!important}
+#ferias .vacation-program-title .section-subtitle{margin:2px 0 0!important;font-size:.68rem!important}
+#ferias .vacation-program-filters{grid-template-columns:minmax(300px,1fr) 220px!important;margin-bottom:7px!important}
+#ferias .vacation-program-filters input,#ferias .vacation-program-filters select{height:34px!important}
+#ferias .vacation-control-table{margin-top:6px!important}
+#ferias .vacation-control-table th{padding:8px 7px!important;font-size:.72rem!important}
+#ferias .vacation-control-table td{padding:7px!important;font-size:.72rem!important}
+#ferias .vacation-form-area{margin-top:12px;padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel-2,#0d2b40)}
+#ferias .vacation-form-area.hidden{display:none!important}
+#ferias .vacation-form-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+#ferias .vacation-form-top h3{margin:0;font-size:1rem}
+#ferias .vacation-form-top p{margin:3px 0 0!important;font-size:.68rem!important}
+#ferias .vacation-control-grid{grid-template-columns:minmax(0,1fr) 260px!important;gap:10px!important;align-items:start!important}
+#ferias .vacation-form-card{padding:0!important;border:0!important;background:transparent!important}
+#ferias .vacation-horizontal-form{grid-template-columns:repeat(4,minmax(130px,1fr))!important;gap:8px 10px!important}
+#ferias .vacation-horizontal-form .full{grid-column:span 2!important}
+#ferias .vacation-horizontal-form label span{font-size:.68rem!important;margin-bottom:3px!important}
+#ferias .vacation-horizontal-form input,#ferias .vacation-horizontal-form select{min-height:36px!important;height:36px!important;padding:6px 9px!important;font-size:.75rem!important}
+#ferias .vacation-form-card .actions{margin-top:8px!important}
+#ferias .vacation-form-card .actions button{min-height:36px!important;padding:7px 12px!important}
+#ferias .vacation-import-details{display:block!important;padding:10px!important;min-height:0!important}
+#ferias .vacation-import-details summary{cursor:pointer;font-weight:800;font-size:.78rem;list-style:none}
+#ferias .vacation-import-details summary::after{content:' ▾';color:var(--muted)}
+#ferias .vacation-import-details[open] summary::after{content:' ▴'}
+#ferias .vacation-import-details:not([open]) .vacation-import-copy,#ferias .vacation-import-details:not([open]) .vacation-import-actions{display:none!important}
+#ferias .vacation-import-details .vacation-import-actions{display:block!important;margin-top:8px}
+#ferias .vacation-import-details .vacation-file,#ferias .vacation-import-details .actions,#ferias .vacation-import-details .status{margin-top:7px!important}
+@media(max-width:1200px){#ferias .vacation-kpis{grid-template-columns:repeat(4,1fr)!important}#ferias .vacation-horizontal-form{grid-template-columns:repeat(3,1fr)!important}#ferias .vacation-control-grid{grid-template-columns:1fr!important}}
+@media(max-width:700px){#ferias .vacation-manager-layout{padding:12px!important}#ferias .vacation-kpis{grid-template-columns:repeat(2,1fr)!important}#ferias .vacation-heading-actions{justify-content:flex-start}#ferias .vacation-program-filters{grid-template-columns:1fr!important}#ferias .vacation-horizontal-form{grid-template-columns:1fr!important}#ferias .vacation-horizontal-form .full{grid-column:span 1!important}}
+
+/* v6.10.28 — Férias: tabela gerencial otimizada para zoom 100% */
+#ferias .vacation-management-table table{width:100%!important;min-width:1180px!important;table-layout:auto!important}
+#ferias .vacation-management-table th,#ferias .vacation-management-table td{vertical-align:middle!important}
+#ferias .vacation-management-table th:nth-child(1){width:70px}
+#ferias .vacation-management-table th:nth-child(2){width:82px}
+#ferias .vacation-management-table th:nth-child(3){min-width:205px}
+#ferias .vacation-management-table th:nth-child(4){min-width:210px}
+#ferias .vacation-management-table th:nth-child(5){width:135px}
+#ferias .vacation-management-table th:nth-child(6),#ferias .vacation-management-table th:nth-child(7){width:92px}
+#ferias .vacation-management-table th:nth-child(8){min-width:180px}
+#ferias .vacation-management-table th:nth-child(9){min-width:170px}
+#ferias .vacation-main-row td:nth-child(3) strong{display:block;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+#ferias .vacation-details-toggle{display:inline-block;margin-top:3px;padding:0;border:0;background:transparent;color:#62aaff;font-size:.62rem;font-weight:800;cursor:pointer}
+#ferias .vacation-details-toggle:hover{text-decoration:underline}
+#ferias .vacation-alert-chips{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+#ferias .vacation-alert-chip{display:inline-flex;align-items:center;min-height:22px;padding:3px 7px;border-radius:999px;background:#173b57;color:#d8e8f7;font-size:.61rem;font-weight:800;white-space:nowrap}
+#ferias .vacation-alert-chip.conflict{background:rgba(245,158,11,.16);color:#ffc14f;border:1px solid rgba(245,158,11,.28)}
+#ferias .vacation-alert-chip.ok{background:rgba(34,197,94,.13);color:#54df84;border:1px solid rgba(34,197,94,.22)}
+#ferias .vacation-alert-chip.rh{background:rgba(59,130,246,.14);color:#72b5ff;border:1px solid rgba(59,130,246,.22)}
+#ferias .vacation-alert-chip.days{background:rgba(148,163,184,.12);color:#cbd8e6}
+#ferias .vacation-muted{color:var(--muted)}
+#ferias .vacation-compact-actions{gap:4px!important;flex-wrap:wrap!important}
+#ferias .vacation-compact-actions .small-button{padding:5px 7px!important;min-height:27px!important;font-size:.62rem!important}
+#ferias .vacation-detail-row.hidden{display:none!important}
+#ferias .vacation-detail-row td{padding:0!important;background:rgba(3,17,31,.38)!important}
+#ferias .vacation-detail-grid{display:grid;grid-template-columns:repeat(6,minmax(110px,1fr));gap:8px;padding:9px 12px;text-transform:none}
+#ferias .vacation-detail-grid span{display:flex;flex-direction:column;gap:2px;color:var(--text);font-size:.68rem}
+#ferias .vacation-detail-grid b{color:var(--muted);font-size:.59rem;text-transform:uppercase;letter-spacing:.03em}
+@media(min-width:1200px){#ferias .vacation-management-table table{min-width:1100px!important}}
+@media(max-width:900px){#ferias .vacation-management-table table{min-width:1120px!important}#ferias .vacation-detail-grid{grid-template-columns:repeat(3,minmax(120px,1fr))}}
+
+/* v6.10.29 — Pendências de férias: painel gerencial por prioridade */
+#ferias .vacation-pending-kpis{display:grid;grid-template-columns:repeat(3,minmax(150px,220px));gap:8px;margin:6px 0 8px}
+#ferias .vacation-pending-kpis>div{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:42px;padding:7px 10px;border:1px solid var(--border);border-radius:9px;background:rgba(10,42,63,.55)}
+#ferias .vacation-pending-kpis span{font-size:.67rem;color:var(--muted);font-weight:800;text-transform:uppercase}
+#ferias .vacation-pending-kpis strong{font-size:1.05rem}
+#ferias #kpiPendVencidas{color:#ff6b73}#ferias #kpiPendProgramacao{color:#ffc14f}#ferias #kpiPendAguardando{color:#72b5ff}
+#ferias .vacation-pending-filters{display:grid;grid-template-columns:minmax(260px,1fr) 220px;gap:8px;margin-bottom:7px}
+#ferias .vacation-pending-filters input,#ferias .vacation-pending-filters select{height:34px!important;min-height:34px!important}
+#ferias .vacation-pending-table table{width:100%!important;min-width:980px!important;table-layout:auto!important}
+#ferias .vacation-pending-table th:nth-child(1){width:85px}#ferias .vacation-pending-table th:nth-child(2){min-width:260px}#ferias .vacation-pending-table th:nth-child(3){width:210px}#ferias .vacation-pending-table th:nth-child(4){width:105px}#ferias .vacation-pending-table th:nth-child(5){min-width:245px}#ferias .vacation-pending-table th:nth-child(6){width:160px}
+#ferias .vacation-pending-table td:nth-child(2) small{display:block;margin-top:2px;color:var(--muted);font-size:.58rem;white-space:normal}
+#ferias .vacation-manual-badge{display:inline-flex;margin-left:6px;padding:2px 5px;border-radius:999px;background:rgba(59,130,246,.14);color:#72b5ff;font-size:.53rem;font-weight:900;white-space:nowrap}
+#ferias .vacation-pending-status{display:inline-flex;align-items:center;min-height:24px;padding:4px 8px;border-radius:999px;font-size:.61rem;font-weight:900;white-space:nowrap}
+#ferias .vacation-pending-status.danger{background:rgba(239,68,68,.15);color:#ff747b;border:1px solid rgba(239,68,68,.28)}
+#ferias .vacation-pending-status.pending{background:rgba(245,158,11,.15);color:#ffc14f;border:1px solid rgba(245,158,11,.28)}
+#ferias .vacation-pending-status.waiting{background:rgba(59,130,246,.14);color:#72b5ff;border:1px solid rgba(59,130,246,.25)}
+#ferias .vacation-pending-actions{display:flex;gap:5px;align-items:center;white-space:nowrap}
+#ferias .vacation-pending-actions .small-button{padding:5px 8px!important;min-height:28px!important;font-size:.62rem!important}
+@media(max-width:900px){#ferias .vacation-pending-kpis{grid-template-columns:1fr}#ferias .vacation-pending-filters{grid-template-columns:1fr}#ferias .vacation-pending-table table{min-width:920px!important}}
+
+/* v6.10.35 — Pendências: aproveitamento horizontal para zoom 100% */
+#ferias .vacation-pending-box{overflow:hidden}
+#ferias .vacation-pending-table{width:100%;overflow-x:auto}
+#ferias .vacation-pending-table table{width:100%!important;min-width:0!important;table-layout:fixed!important}
+#ferias .vacation-pending-table th,#ferias .vacation-pending-table td{padding-left:6px!important;padding-right:6px!important}
+#ferias .vacation-pending-table th:nth-child(1){width:6%!important;min-width:0!important}
+#ferias .vacation-pending-table th:nth-child(2){width:24%!important;min-width:0!important}
+#ferias .vacation-pending-table th:nth-child(3){width:22%!important;min-width:0!important}
+#ferias .vacation-pending-table th:nth-child(4){width:12%!important;min-width:0!important}
+#ferias .vacation-pending-table th:nth-child(5){width:23%!important;min-width:0!important}
+#ferias .vacation-pending-table th:nth-child(6){width:13%!important;min-width:0!important}
+#ferias .vacation-pending-table td:nth-child(1),#ferias .vacation-pending-table td:nth-child(4){white-space:nowrap}
+#ferias .vacation-pending-table td:nth-child(2),#ferias .vacation-pending-table td:nth-child(3){overflow:hidden;text-overflow:ellipsis}
+#ferias .vacation-pending-table td:nth-child(3)>strong{white-space:nowrap;font-size:.69rem}
+#ferias .vacation-pending-status{max-width:100%;padding:3px 6px;font-size:.57rem;overflow:hidden;text-overflow:ellipsis}
+#ferias .vacation-pending-actions{gap:4px;justify-content:flex-start;flex-wrap:wrap;white-space:normal}
+#ferias .vacation-pending-actions .small-button{padding:4px 6px!important;min-height:26px!important;font-size:.58rem!important}
+#ferias .vacation-pending-kpis{grid-template-columns:repeat(3,minmax(130px,190px));gap:7px}
+#ferias .vacation-pending-kpis>div{min-height:38px;padding:5px 9px}
+#ferias .vacation-pending-filters{grid-template-columns:minmax(220px,1fr) 190px}
+@media(max-width:1050px){#ferias .vacation-pending-table table{min-width:900px!important;table-layout:fixed!important}}
+
+/* v6.10.37 — edição de férias em painel lateral esquerdo */
+#ferias #vacationFormArea.vacation-edit-drawer{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  bottom:0!important;
+  z-index:10020!important;
+  width:min(520px,92vw)!important;
+  max-width:92vw!important;
+  height:100vh!important;
+  margin:0!important;
+  padding:18px!important;
+  border-radius:0 16px 16px 0!important;
+  border:0!important;
+  border-right:1px solid var(--border)!important;
+  background:var(--panel,#071d2d)!important;
+  box-shadow:18px 0 48px rgba(0,0,0,.42)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  animation:vacationDrawerIn .18s ease-out;
+}
+#ferias #vacationFormArea.vacation-edit-drawer::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:rgba(2,12,20,.42);
+  backdrop-filter:blur(1px);
+}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-form-top{
+  position:sticky;
+  top:-18px;
+  z-index:3;
+  margin:-18px -18px 12px!important;
+  padding:16px 18px 12px!important;
+  background:var(--panel,#071d2d)!important;
+  border-bottom:1px solid var(--border);
+}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-control-grid{display:block!important}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-import-box{display:none!important}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-horizontal-form{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-horizontal-form .full{grid-column:1/-1!important}
+#ferias #vacationFormArea.vacation-edit-drawer .vacation-form-card .actions{
+  position:sticky;
+  bottom:-18px;
+  z-index:3;
+  margin:14px -18px -18px!important;
+  padding:12px 18px 16px!important;
+  background:var(--panel,#071d2d)!important;
+  border-top:1px solid var(--border);
+}
+body.vacation-drawer-open{overflow:hidden!important}
+@keyframes vacationDrawerIn{from{transform:translateX(-100%);opacity:.7}to{transform:translateX(0);opacity:1}}
+@media(max-width:700px){
+  #ferias #vacationFormArea.vacation-edit-drawer{width:100vw!important;max-width:100vw!important;border-radius:0!important;padding:14px!important}
+  #ferias #vacationFormArea.vacation-edit-drawer .vacation-horizontal-form{grid-template-columns:1fr!important}
+  #ferias #vacationFormArea.vacation-edit-drawer .vacation-horizontal-form .full{grid-column:auto!important}
+}
+
+/* v6.10.42 — clareza gerencial entre férias já programadas e próximo ciclo */
+#ferias .vacation-next-program{display:block!important;margin-top:3px;color:var(--accent,#45a3ff)!important;font-size:.58rem!important;font-weight:700;line-height:1.2}
+#ferias .vacation-cycle-label{display:block!important;margin-top:2px;color:var(--muted,#8da6bb)!important;font-size:.53rem!important;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+
+/* v6.10.47 — Pendências de férias: alinhamento do campo de busca e filtro de status */
+#ferias .vacation-pending-filters{
+  grid-template-columns:minmax(220px,1fr) 220px!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+#ferias .vacation-pending-filters input,
+#ferias .vacation-pending-filters select{
+  height:40px!important;
+  min-height:40px!important;
+  margin:0!important;
+  border-radius:9px!important;
+  font-size:.78rem!important;
+}
+#ferias .vacation-pending-filters input{
+  padding:0 12px!important;
+}
+#ferias .vacation-pending-filters select{
+  padding:0 36px 0 12px!important;
+  line-height:38px!important;
+  vertical-align:middle!important;
+}
+@media(max-width:900px){
+  #ferias .vacation-pending-filters{
+    grid-template-columns:1fr!important;
+  }
+  #ferias .vacation-pending-filters select{
+    width:100%!important;
+  }
+}
+/* v6.10.47 — leitura do ciclo já programado em Pendências */
+.vacation-pending-status.preprogrammed{border-color:#b88716;background:rgba(184,135,22,.16);color:#ffc44d}
+.vacation-pending-status.programmed{border-color:#15975c;background:rgba(21,151,92,.16);color:#49d98d}
+
+/* v6.10.48 — Pendências acompanha situação temporal real */
+.vacation-pending-status.inprogress{border-color:#15975c;background:rgba(21,151,92,.20);color:#5be39a}
+
+/* v6.10.49 — Férias: modo compacto visual em desktop, sem alterar regras */
+@media(min-width:1201px){
+  #ferias .vacation-manager-layout{padding:14px 16px!important}
+  #ferias .vacation-main-heading{margin-bottom:6px!important;align-items:center!important}
+  #ferias .vacation-heading-actions{gap:9px!important}
+  #ferias .vacation-heading-actions .records-count{font-size:.82rem!important}
+  #ferias .vacation-new-btn,#ferias .vacation-export-btn{min-height:36px!important;padding:7px 12px!important}
+
+  #ferias .vacation-kpis{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important;margin:8px 0 9px!important}
+  #ferias .vacation-kpis>div{min-height:62px!important;padding:8px 10px!important}
+  #ferias .vacation-kpis span{font-size:.64rem!important}
+  #ferias .vacation-kpis strong{font-size:1.2rem!important;margin-top:3px!important}
+
+  #ferias .vacation-program-box{margin-top:8px!important;padding:8px 10px!important}
+  #ferias .vacation-program-title{margin-bottom:5px!important}
+  #ferias .vacation-program-title h3{font-size:.96rem!important}
+  #ferias .vacation-program-title .section-subtitle{font-size:.65rem!important}
+  #ferias .vacation-program-filters{margin-bottom:5px!important;gap:8px!important}
+  #ferias .vacation-program-filters input,#ferias .vacation-program-filters select{height:32px!important;min-height:32px!important}
+  #ferias .vacation-control-table{margin-top:4px!important}
+  #ferias .vacation-control-table th{padding-top:6px!important;padding-bottom:6px!important}
+  #ferias .vacation-control-table td{padding-top:5px!important;padding-bottom:5px!important}
+
+  #ferias .vacation-pending-filters input,#ferias .vacation-pending-filters select{height:36px!important;min-height:36px!important}
+  #ferias .vacation-pending-actions{flex-wrap:nowrap!important;gap:4px!important;align-items:center!important}
+  #ferias .vacation-pending-actions .small-button{padding:4px 7px!important;min-height:26px!important}
+  #ferias .vacation-pending-table th,#ferias .vacation-pending-table td{padding-top:5px!important;padding-bottom:5px!important}
+}
+
+@media(min-width:1350px){
+  #ferias .vacation-pending-kpis{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:7px!important;margin:5px 0 7px!important}
+  #ferias .vacation-pending-kpis>div{min-height:40px!important;padding:6px 9px!important}
+  #ferias .vacation-pending-kpis span{font-size:.64rem!important;line-height:1.1!important}
+  #ferias .vacation-pending-kpis strong{font-size:1rem!important}
+  #ferias .vacation-pending-table th:nth-child(1){width:6%!important}
+  #ferias .vacation-pending-table th:nth-child(2){width:25%!important}
+  #ferias .vacation-pending-table th:nth-child(3){width:22%!important}
+  #ferias .vacation-pending-table th:nth-child(4){width:12%!important}
+  #ferias .vacation-pending-table th:nth-child(5){width:23%!important}
+  #ferias .vacation-pending-table th:nth-child(6){width:12%!important}
+}
+
+/* v6.10.50 — Férias: ajuste fino para 100% de zoom; somente layout */
+@media(min-width:1201px){
+  /* Programações de férias: ocupa somente a largura disponível da página */
+  #ferias .vacation-management-table{overflow-x:auto!important}
+  #ferias .vacation-management-table table{
+    width:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+
+  /* Distribuição proporcional das 9 colunas */
+  #ferias .vacation-management-table th:nth-child(1){width:5%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(2){width:5%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(3){width:20%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(4){width:19%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(5){width:9%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(6){width:7%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(7){width:7%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(8){width:15%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(9){width:13%!important;min-width:0!important}
+
+  #ferias .vacation-management-table th,
+  #ferias .vacation-management-table td{
+    padding:4px 6px!important;
+    line-height:1.15!important;
+    min-width:0!important;
+  }
+
+  #ferias .vacation-management-table td:nth-child(3),
+  #ferias .vacation-management-table td:nth-child(4){
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #ferias .vacation-management-table td:nth-child(3) strong{
+    max-width:100%!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #ferias .vacation-management-table td:nth-child(4){white-space:nowrap!important}
+  #ferias .vacation-details-toggle{margin-top:2px!important}
+
+  /* Alertas permanecem em uma única linha sempre que houver espaço */
+  #ferias .vacation-alert-chips{
+    flex-wrap:nowrap!important;
+    gap:3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  #ferias .vacation-alert-chip{
+    min-height:20px!important;
+    padding:2px 5px!important;
+    font-size:.57rem!important;
+    flex:0 0 auto!important;
+  }
+
+  /* Ações compactas na mesma linha para evitar linhas altas */
+  #ferias .vacation-compact-actions{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:3px!important;
+    align-items:center!important;
+    white-space:nowrap!important;
+  }
+  #ferias .vacation-compact-actions .small-button{
+    min-height:24px!important;
+    padding:3px 5px!important;
+    font-size:.57rem!important;
+    line-height:1!important;
+  }
+
+  /* Mantém as linhas principais uniformes e compactas */
+  #ferias .vacation-main-row td{height:42px!important;vertical-align:middle!important}
+}
+
+
+/* v6.10.52 — Férias: equilíbrio profissional em 100% de zoom; uma linha sem sobreposição */
+@media(min-width:1201px){
+  #ferias .vacation-management-table{
+    overflow-x:auto!important;
+    overflow-y:visible!important;
+  }
+  #ferias .vacation-management-table table{
+    width:100%!important;
+    min-width:1120px!important;
+    table-layout:fixed!important;
+  }
+
+  /* Distribuição equilibrada: preserva nome/função e reserva espaço real para alertas/ações */
+  #ferias .vacation-management-table th:nth-child(1){width:4%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(2){width:5%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(3){width:20%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(4){width:18%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(5){width:10%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(6){width:7%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(7){width:7%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(8){width:12%!important;min-width:0!important}
+  #ferias .vacation-management-table th:nth-child(9){width:17%!important;min-width:0!important}
+
+  #ferias .vacation-management-table th,
+  #ferias .vacation-management-table td{
+    padding:4px 5px!important;
+    line-height:1.08!important;
+    min-width:0!important;
+    vertical-align:middle!important;
+  }
+
+  /* Área e matrícula mais discretas */
+  #ferias .vacation-management-table td:nth-child(1),
+  #ferias .vacation-management-table td:nth-child(2){
+    font-size:.64rem!important;
+    white-space:nowrap!important;
+  }
+
+  /* Nome completo em uma linha, com tipografia um pouco mais enxuta */
+  #ferias .vacation-management-table td:nth-child(3){
+    overflow:visible!important;
+    white-space:nowrap!important;
+  }
+  #ferias .vacation-management-table td:nth-child(3) strong{
+    display:block!important;
+    max-width:none!important;
+    white-space:nowrap!important;
+    overflow:visible!important;
+    text-overflow:clip!important;
+    font-size:.66rem!important;
+    letter-spacing:-.10px!important;
+  }
+  #ferias .vacation-details-toggle{
+    margin-top:1px!important;
+    font-size:.58rem!important;
+    line-height:1!important;
+  }
+
+  /* Função em uma linha, sem invadir status */
+  #ferias .vacation-management-table td:nth-child(4){
+    font-size:.62rem!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+    letter-spacing:-.10px!important;
+  }
+
+  /* Status, datas, alertas e ações com áreas próprias */
+  #ferias .vacation-management-table td:nth-child(5),
+  #ferias .vacation-management-table td:nth-child(6),
+  #ferias .vacation-management-table td:nth-child(7){
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  #ferias .vacation-management-table td:nth-child(6),
+  #ferias .vacation-management-table td:nth-child(7){font-size:.63rem!important}
+
+  #ferias .vacation-program-status,
+  #ferias .vacation-status-badge,
+  #ferias .vacation-management-table td:nth-child(5) .status-badge{
+    font-size:.56rem!important;
+    padding:4px 6px!important;
+    white-space:nowrap!important;
+  }
+
+  #ferias .vacation-alert-chips{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    gap:3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  #ferias .vacation-alert-chip{
+    min-height:18px!important;
+    padding:2px 4px!important;
+    font-size:.52rem!important;
+    line-height:1!important;
+    flex:0 0 auto!important;
+  }
+
+  #ferias .vacation-compact-actions{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    gap:3px!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+  }
+  #ferias .vacation-compact-actions .small-button{
+    min-height:22px!important;
+    padding:3px 5px!important;
+    font-size:.52rem!important;
+    line-height:1!important;
+    flex:0 0 auto!important;
+  }
+
+  #ferias .vacation-main-row td{
+    height:38px!important;
+    vertical-align:middle!important;
+  }
+}
+\n\n/* v6.10.53 — menu único de Ações nas tabelas de Férias */\n#ferias .vacation-actions-menu{position:relative;display:inline-block;overflow:visible}\n#ferias .vacation-actions-menu>summary{list-style:none;cursor:pointer;user-select:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;min-width:68px;min-height:28px;padding:5px 9px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2,#16344d);color:var(--text,#eef7ff);font-size:.68rem;font-weight:800;white-space:nowrap}\n#ferias .vacation-actions-menu>summary::-webkit-details-marker{display:none}\n#ferias .vacation-actions-menu>summary::after{content:'▾';font-size:.65rem;opacity:.8}\n#ferias .vacation-actions-menu[open]>summary{border-color:#2f80ed}\n#ferias .vacation-actions-popover{position:absolute;right:0;top:calc(100% + 6px);z-index:80;display:flex;flex-direction:column;gap:5px;min-width:168px;padding:7px;background:var(--surface,#0d263a);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(0,0,0,.28)}\n#ferias .vacation-actions-popover .small-button{width:100%;min-height:30px!important;padding:6px 9px!important;font-size:.68rem!important;text-align:left;justify-content:flex-start;white-space:nowrap}\n#ferias .vacation-management-table table{overflow:visible}\n#ferias .vacation-management-table td:last-child,#ferias .vacation-management-table th:last-child{width:78px!important;min-width:78px!important;max-width:78px!important}\n#ferias .vacation-pending-table td:last-child,#ferias .vacation-pending-table th:last-child{width:78px!important;min-width:78px!important;max-width:78px!important}\n/* espaço recuperado é devolvido às informações de leitura */\n#ferias .vacation-management-table td:nth-child(3),#ferias .vacation-management-table th:nth-child(3){width:23%!important}\n#ferias .vacation-management-table td:nth-child(4),#ferias .vacation-management-table th:nth-child(4){width:23%!important}\n#ferias .vacation-management-table td:nth-child(8),#ferias .vacation-management-table th:nth-child(8){width:13%!important}\n#ferias .vacation-pending-table td:nth-child(2),#ferias .vacation-pending-table th:nth-child(2){width:28%!important}\n@media(max-width:760px){#ferias .vacation-actions-popover{right:0;min-width:160px}#ferias .vacation-actions-menu>summary{min-width:62px;padding:5px 7px}}\n
+
+/* v6.10.55 — Férias: tabelas 100% responsivas e menu Ações sem deslocar layout */
+@media (min-width:1101px){
+  /* A tabela deve caber na área útil em zoom 100%; o menu flutua sobre o conteúdo. */
+  #ferias .vacation-management-table,
+  #ferias .vacation-pending-table{
+    width:100%!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  #ferias .vacation-management-table table,
+  #ferias .vacation-pending-table table{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    table-layout:fixed!important;
+  }
+
+  /* Programações de férias — soma exata de 100% */
+  #ferias .vacation-management-table th:nth-child(1),
+  #ferias .vacation-management-table td:nth-child(1){width:4.5%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(2),
+  #ferias .vacation-management-table td:nth-child(2){width:5%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(3),
+  #ferias .vacation-management-table td:nth-child(3){width:22%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(4),
+  #ferias .vacation-management-table td:nth-child(4){width:18%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(5),
+  #ferias .vacation-management-table td:nth-child(5){width:10%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(6),
+  #ferias .vacation-management-table td:nth-child(6){width:7.5%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(7),
+  #ferias .vacation-management-table td:nth-child(7){width:7.5%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(8),
+  #ferias .vacation-management-table td:nth-child(8){width:19.5%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-management-table th:nth-child(9),
+  #ferias .vacation-management-table td:nth-child(9){width:6%!important;min-width:0!important;max-width:none!important}
+
+  /* Pendências e próximos períodos — mesma lógica, coluna Ações realmente compacta. */
+  #ferias .vacation-pending-table th:nth-child(1),
+  #ferias .vacation-pending-table td:nth-child(1){width:6%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-pending-table th:nth-child(2),
+  #ferias .vacation-pending-table td:nth-child(2){width:27%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-pending-table th:nth-child(3),
+  #ferias .vacation-pending-table td:nth-child(3){width:21%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-pending-table th:nth-child(4),
+  #ferias .vacation-pending-table td:nth-child(4){width:13%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-pending-table th:nth-child(5),
+  #ferias .vacation-pending-table td:nth-child(5){width:27%!important;min-width:0!important;max-width:none!important}
+  #ferias .vacation-pending-table th:nth-child(6),
+  #ferias .vacation-pending-table td:nth-child(6){width:6%!important;min-width:0!important;max-width:none!important}
+
+  #ferias .vacation-management-table th,
+  #ferias .vacation-management-table td,
+  #ferias .vacation-pending-table th,
+  #ferias .vacation-pending-table td{
+    box-sizing:border-box!important;
+    padding-left:5px!important;
+    padding-right:5px!important;
+  }
+
+  /* Uma linha nas informações principais, sem empurrar a tabela. */
+  #ferias .vacation-management-table td:nth-child(3) strong,
+  #ferias .vacation-management-table td:nth-child(4){
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:clip!important;
+  }
+
+  /* O botão ocupa apenas a própria célula; o conteúdo abre como sobreposição. */
+  #ferias .vacation-actions-menu{
+    position:relative!important;
+    display:inline-block!important;
+    width:auto!important;
+    max-width:100%!important;
+    overflow:visible!important;
+  }
+  #ferias .vacation-actions-menu>summary{
+    min-width:0!important;
+    width:auto!important;
+    min-height:25px!important;
+    padding:4px 6px!important;
+    font-size:.60rem!important;
+  }
+  #ferias .vacation-actions-popover{
+    position:absolute!important;
+    right:0!important;
+    left:auto!important;
+    top:calc(100% + 4px)!important;
+    z-index:500!important;
+    width:170px!important;
+    min-width:170px!important;
+    max-width:170px!important;
+    box-sizing:border-box!important;
+  }
+
+  #ferias .vacation-program-box,
+  #ferias .vacation-manager-layout{
+    overflow:visible!important;
+  }
+}
+
+/* Em telas menores, prioriza integridade da leitura em vez de comprimir/encavalar colunas. */
+@media (max-width:1100px){
+  #ferias .vacation-management-table,
+  #ferias .vacation-pending-table{overflow-x:auto!important;overflow-y:visible!important}
+  #ferias .vacation-management-table table{min-width:1040px!important;table-layout:fixed!important}
+  #ferias .vacation-pending-table table{min-width:900px!important;table-layout:fixed!important}
+}
+
+/* v6.10.55 — Férias: menu Ações vertical, abrindo para baixo */
+#ferias .vacation-actions-menu{
+  position:relative!important;
+  overflow:visible!important;
+}
+#ferias .vacation-actions-popover{
+  position:absolute!important;
+  top:calc(100% + 5px)!important;
+  right:0!important;
+  left:auto!important;
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-auto-flow:row!important;
+  align-items:stretch!important;
+  gap:4px!important;
+  width:172px!important;
+  min-width:172px!important;
+  max-width:172px!important;
+  padding:6px!important;
+  z-index:1000!important;
+}
+#ferias .vacation-actions-popover .small-button{
+  display:flex!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:30px!important;
+  margin:0!important;
+  padding:6px 9px!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+}
+/* mantém o menu dentro da tela nas duas tabelas, sem alterar a largura das linhas */
+#ferias .vacation-management-table td:last-child .vacation-actions-popover,
+#ferias .vacation-pending-table td:last-child .vacation-actions-popover{
+  right:0!important;
+  left:auto!important;
+}
+
+/* v6.10.56 — Efetivo: tela de gestão compacta, mantendo todos os campos e regras */
+#colaboradores .effective-main-heading{align-items:flex-start;gap:18px}
+#colaboradores .effective-heading-right{display:flex;align-items:center;gap:16px;margin-left:auto}
+#colaboradores .effective-summary{min-width:105px;gap:3px}
+#colaboradores .effective-page-actions{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:nowrap}
+#colaboradores .effective-page-actions button{white-space:nowrap;padding:10px 14px}
+#colaboradores .effective-management-panels{grid-template-columns:1fr;margin:10px 0 14px}
+#colaboradores .effective-management-box{max-width:none;padding:14px 16px}
+#colaboradores .effective-management-box.hidden{display:none!important}
+#colaboradores .effective-list-section{margin-top:8px;padding-top:14px}
+#colaboradores .effective-toolbar{align-items:center;margin-top:12px;gap:10px}
+#colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:minmax(260px,1.65fr) repeat(3,minmax(135px,.8fr));gap:8px}
+#colaboradores .effective-toolbar input,#colaboradores .effective-toolbar select{min-height:42px}
+#colaboradores .effective-actions{flex:0 0 auto}
+#colaboradores .effective-actions button{min-height:42px;padding:9px 13px;white-space:nowrap}
+#colaboradores .effective-table-wrap{margin-top:10px;border-radius:12px}
+#colaboradores .effective-table-manager{width:100%;min-width:1120px;font-size:.79rem;table-layout:auto}
+#colaboradores .effective-table-manager th,#colaboradores .effective-table-manager td{padding:8px 7px}
+#colaboradores .effective-table-manager th:nth-child(1),#colaboradores .effective-table-manager td:nth-child(1){width:62px}
+#colaboradores .effective-table-manager th:nth-child(2),#colaboradores .effective-table-manager td:nth-child(2){width:78px}
+#colaboradores .effective-table-manager th:nth-child(3),#colaboradores .effective-table-manager td:nth-child(3){min-width:220px}
+#colaboradores .effective-table-manager th:nth-child(4),#colaboradores .effective-table-manager td:nth-child(4){min-width:220px}
+#colaboradores .effective-table-manager th:nth-child(5),#colaboradores .effective-table-manager td:nth-child(5),
+#colaboradores .effective-table-manager th:nth-child(6),#colaboradores .effective-table-manager td:nth-child(6){width:96px}
+#colaboradores .effective-table-manager th:nth-child(7),#colaboradores .effective-table-manager td:nth-child(7){width:112px}
+#colaboradores .effective-table-manager th:nth-child(8),#colaboradores .effective-table-manager td:nth-child(8){width:56px}
+#colaboradores .effective-table-manager th:nth-child(9),#colaboradores .effective-table-manager td:nth-child(9){width:120px}
+#colaboradores .effective-table-manager th:nth-child(10),#colaboradores .effective-table-manager td:nth-child(10){width:94px}
+#colaboradores .effective-name,#colaboradores .effective-function{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#colaboradores .effective-name{font-size:.80rem;min-width:0!important}
+#colaboradores .effective-function{font-size:.77rem}
+#colaboradores .effective-actions-cell{position:relative;overflow:visible!important}
+#colaboradores .effective-action-menu{position:relative;display:inline-block}
+#colaboradores .effective-action-menu>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:72px;padding:7px 9px;border:1px solid var(--border);border-radius:9px;background:var(--panel-2,#12324b);color:var(--text,#f4f7fb);font-weight:800;font-size:.74rem;white-space:nowrap;user-select:none}
+#colaboradores .effective-action-menu>summary::-webkit-details-marker{display:none}
+#colaboradores .effective-action-dropdown{position:absolute;right:0;top:calc(100% + 5px);z-index:50;display:grid;gap:5px;min-width:138px;padding:7px;border:1px solid var(--border);border-radius:10px;background:var(--panel,#0b2338);box-shadow:0 12px 28px rgba(0,0,0,.28)}
+#colaboradores .effective-action-menu:not([open]) .effective-action-dropdown{display:none}
+#colaboradores .effective-action-dropdown button{width:100%;text-align:left;justify-content:flex-start;padding:8px 10px;white-space:nowrap}
+@media(max-width:1100px){
+  #colaboradores .effective-main-heading{flex-direction:column}
+  #colaboradores .effective-heading-right{width:100%;margin-left:0;justify-content:space-between;align-items:flex-end}
+  #colaboradores .effective-summary{align-items:flex-start}
+  #colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:1.4fr 1fr 1fr 1fr}
+}
+@media(max-width:760px){
+  #colaboradores .effective-heading-right{align-items:stretch;flex-direction:column}
+  #colaboradores .effective-page-actions{display:grid;grid-template-columns:1fr 1fr}
+  #colaboradores .effective-page-actions .success{grid-column:1/-1}
+  #colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:1fr 1fr}
+  #colaboradores .effective-actions{width:100%}
+  #colaboradores .effective-actions button{width:100%}
+}
+@media(max-width:520px){
+  #colaboradores .effective-page-actions,#colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:1fr}
+  #colaboradores .effective-page-actions .success{grid-column:auto}
+}
+
+/* v6.10.57 — editor lateral do Efetivo, sem deslocar a relação */
+#colaboradores #effectiveCadastroBox.effective-edit-drawer{
+  display:block!important;
+  position:fixed!important;
+  left:0!important;
+  top:0!important;
+  bottom:0!important;
+  width:min(520px,92vw)!important;
+  max-width:none!important;
+  height:100vh!important;
+  margin:0!important;
+  padding:20px 20px 24px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  border-radius:0 18px 18px 0!important;
+  border:1px solid var(--border)!important;
+  background:var(--panel)!important;
+  box-shadow:18px 0 46px rgba(0,0,0,.38)!important;
+  z-index:1200!important;
+}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer h3{
+  position:sticky;
+  top:-20px;
+  z-index:2;
+  margin:-20px -20px 16px!important;
+  padding:18px 20px 14px!important;
+  background:var(--panel)!important;
+  border-bottom:1px solid var(--border);
+}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer .form-grid.compact-grid{
+  grid-template-columns:1fr 1fr!important;
+  gap:12px!important;
+}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer .form-grid.compact-grid label.full{grid-column:1/-1!important}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer .actions{
+  position:sticky;
+  bottom:-24px;
+  z-index:2;
+  margin:16px -20px -24px!important;
+  padding:14px 20px 18px!important;
+  background:var(--panel)!important;
+  border-top:1px solid var(--border);
+}
+body.effective-drawer-open::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.16);
+  z-index:1190;
+  pointer-events:none;
+}
+@media(max-width:640px){
+  #colaboradores #effectiveCadastroBox.effective-edit-drawer{
+    width:100vw!important;
+    border-radius:0!important;
+    padding:18px 16px 22px!important;
+  }
+  #colaboradores #effectiveCadastroBox.effective-edit-drawer h3{margin:-18px -16px 14px!important;padding:16px!important;top:-18px}
+  #colaboradores #effectiveCadastroBox.effective-edit-drawer .form-grid.compact-grid{grid-template-columns:1fr!important}
+  #colaboradores #effectiveCadastroBox.effective-edit-drawer .actions{margin:14px -16px -22px!important;padding:12px 16px 16px!important}
+}
+
+
+/* v6.10.58 — Efetivo: cabeçalho gerencial unificado e compacto */
+#colaboradores .panel{padding-top:14px!important}
+#colaboradores .effective-main-heading{
+  display:flex!important;
+  align-items:center!important;
+  gap:14px!important;
+  margin-bottom:8px!important;
+  padding-bottom:10px!important;
+  border-bottom:1px solid var(--border)!important;
+}
+#colaboradores .effective-main-heading>div:first-child{min-width:210px}
+#colaboradores .effective-main-heading h2{margin:0 0 2px!important}
+#colaboradores .effective-main-heading p{margin:0!important;font-size:.78rem!important}
+#colaboradores .effective-heading-right{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:10px!important;
+  flex:1 1 auto!important;
+  margin-left:auto!important;
+}
+#colaboradores .effective-summary{
+  display:grid!important;
+  grid-template-columns:repeat(2,auto)!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-width:0!important;
+}
+#colaboradores .effective-summary strong,
+#colaboradores .effective-summary .records-count{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:6px 10px!important;
+  border:1px solid var(--border)!important;
+  border-radius:9px!important;
+  background:var(--panel-2,#12324b)!important;
+  white-space:nowrap!important;
+  font-size:.78rem!important;
+  line-height:1!important;
+}
+#colaboradores .effective-summary strong{color:#19e77a!important}
+#colaboradores .effective-summary .records-count{color:#65b8ff!important}
+#colaboradores .effective-page-actions{gap:6px!important}
+#colaboradores .effective-page-actions button{
+  min-height:36px!important;
+  padding:7px 11px!important;
+  font-size:.78rem!important;
+  border-radius:9px!important;
+}
+#colaboradores .effective-list-section{
+  margin-top:0!important;
+  padding-top:6px!important;
+  border-top:0!important;
+}
+#colaboradores .effective-list-heading{margin:0 0 6px!important}
+#colaboradores .effective-list-heading h3{margin:0!important;font-size:1.08rem!important}
+#colaboradores .effective-toolbar{margin-top:0!important;gap:8px!important}
+#colaboradores .effective-toolbar .collaborator-filter{gap:7px!important}
+#colaboradores .effective-toolbar input,
+#colaboradores .effective-toolbar select,
+#colaboradores .effective-actions button{min-height:38px!important;height:38px!important}
+#colaboradores .effective-toolbar input,
+#colaboradores .effective-toolbar select{padding-top:7px!important;padding-bottom:7px!important}
+#colaboradores .effective-actions button{padding:7px 11px!important;font-size:.78rem!important}
+#colaboradores .effective-table-wrap{margin-top:8px!important}
+@media(max-width:1100px){
+  #colaboradores .effective-main-heading{align-items:flex-start!important}
+  #colaboradores .effective-heading-right{width:100%!important;justify-content:space-between!important}
+}
+@media(max-width:760px){
+  #colaboradores .effective-heading-right{align-items:stretch!important}
+  #colaboradores .effective-summary{grid-template-columns:1fr 1fr!important}
+  #colaboradores .effective-summary strong,#colaboradores .effective-summary .records-count{width:100%!important}
+}
+
+
+/* v6.10.59 — fechamento explícito do formulário de Efetivo */
+#colaboradores .effective-form-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px}
+#colaboradores .effective-form-heading h3{margin:0!important}
+#colaboradores .effective-close-btn{flex:0 0 auto;min-height:34px!important;padding:7px 10px!important;font-size:.76rem!important;white-space:nowrap}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer .effective-form-heading{position:sticky;top:-18px;z-index:4;margin:-18px -16px 14px!important;padding:14px 16px;background:var(--panel,#0b2338);border-bottom:1px solid var(--border,#21445f)}
+#colaboradores #effectiveCadastroBox.effective-edit-drawer h3{position:static!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important}
+@media(max-width:720px){#colaboradores .effective-form-heading{align-items:flex-start}#colaboradores .effective-close-btn{min-width:auto!important}}
+
+/* v6.10.61 — módulo Escala 3×3 compacto */
+#escala .schedule-module{padding:14px!important}
+#escala .schedule-main-heading{align-items:center;margin-bottom:6px}
+#escala .schedule-main-heading p{margin-top:2px}
+#escala .schedule-toolbar{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:5px 0 8px}
+#escala .schedule-month-nav{display:flex;align-items:center;gap:6px;min-width:0}
+#escala .schedule-nav-btn{width:34px;min-width:34px;padding:7px 0!important;font-size:1.15rem;line-height:1}
+#escala #btnEscalaHoje{padding:7px 13px!important}
+#escala .schedule-month-title{margin-left:4px;font-size:1rem;white-space:nowrap}
+#escala .schedule-filter{display:grid;gap:3px;min-width:190px;color:var(--muted);font-size:.69rem}
+#escala .schedule-filter select{height:34px;padding:5px 9px}
+#escala .schedule-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:8px;max-width:520px}
+#escala .schedule-summary-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2)}
+#escala .schedule-summary-card span{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+#escala .schedule-summary-card strong{font-size:.88rem;color:var(--text);white-space:nowrap}
+#escala .schedule-calendar-shell{overflow:hidden;border:1px solid var(--border);border-radius:10px;background:#041526}
+#escala .schedule-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:#0b2a43;border-bottom:1px solid var(--border)}
+#escala .schedule-weekdays span{text-align:center;padding:6px 4px;font-size:.7rem;font-weight:800;color:#a9bed1;text-transform:uppercase}
+#escala .schedule-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+#escala .schedule-day{position:relative;min-height:70px;padding:7px;border:0;border-right:1px solid #163851;border-bottom:1px solid #163851;background:#061a2d;color:var(--text);text-align:left;display:grid;align-content:start;gap:5px;overflow:hidden}
+#escala .schedule-day:nth-child(7n){border-right:0}
+#escala .schedule-day:hover{background:#0a2942}
+#escala .schedule-day.outside-month{opacity:.38}
+#escala .schedule-day-number{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;font-size:.8rem;font-weight:800}
+#escala .schedule-day.today .schedule-day-number{background:#1176e8;color:white;box-shadow:0 0 0 3px rgba(17,118,232,.16)}
+#escala .schedule-day.selected{box-shadow:inset 0 0 0 2px #4ea8ff;z-index:1}
+#escala .schedule-day-shift{display:inline-flex;width:max-content;max-width:100%;padding:3px 7px;border-radius:6px;font-size:.7rem;font-weight:900;white-space:nowrap}
+#escala .schedule-day.schedule-ab .schedule-day-shift{background:#087ec7;color:#fff}
+#escala .schedule-day.schedule-cd .schedule-day-shift{background:#e4a817;color:#1b2632}
+#escala .schedule-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px}
+#escala .schedule-legend-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--panel-2);min-width:0}
+#escala .schedule-legend-item>div{display:flex;align-items:center;gap:8px;min-width:0}
+#escala .schedule-legend-item strong{font-size:.76rem;white-space:nowrap}
+#escala .schedule-legend-item small{font-size:.64rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#escala .schedule-dot{width:12px;height:12px;border-radius:4px;flex:0 0 auto}
+#escala .schedule-ab .schedule-dot{background:#087ec7}#escala .schedule-cd .schedule-dot{background:#e4a817}
+@media(max-width:1050px){#escala .schedule-day{min-height:64px;padding:6px}#escala .schedule-summary{max-width:none}}
+@media(max-width:720px){#escala .schedule-main-heading{align-items:flex-start}#escala .schedule-toolbar{align-items:stretch;flex-direction:column}#escala .schedule-month-nav{flex-wrap:wrap}#escala .schedule-month-title{width:100%;margin:3px 0 0}#escala .schedule-filter{min-width:0;width:100%}#escala .schedule-summary{grid-template-columns:1fr 1fr}#escala .schedule-calendar-shell{overflow-x:auto}#escala .schedule-weekdays,#escala .schedule-calendar{min-width:700px}#escala .schedule-legend{grid-template-columns:1fr}}
+
+/* v6.10.62 — Escala ajustada para caber melhor em 100% de zoom */
+#escala .schedule-module{padding:10px!important}
+#escala .schedule-main-heading{margin-bottom:3px}
+#escala .schedule-main-heading h2{margin-bottom:1px}
+#escala .schedule-main-heading p{margin:0;font-size:.72rem}
+#escala .schedule-toolbar{margin:2px 0 5px;gap:8px}
+#escala .schedule-month-nav{gap:5px}
+#escala .schedule-nav-btn{width:30px;min-width:30px;padding:5px 0!important;font-size:1.05rem}
+#escala #btnEscalaHoje{padding:5px 11px!important}
+#escala .schedule-month-title{font-size:.94rem;margin-left:3px}
+#escala .schedule-filter{gap:2px;min-width:185px;font-size:.65rem}
+#escala .schedule-filter select{height:30px;padding:3px 8px}
+#escala .schedule-summary{gap:6px;margin-bottom:5px;max-width:500px}
+#escala .schedule-summary-card{padding:5px 9px;border-radius:7px}
+#escala .schedule-summary-card span{font-size:.61rem}
+#escala .schedule-summary-card strong{font-size:.82rem}
+#escala .schedule-weekdays span{padding:4px 3px;font-size:.65rem}
+#escala .schedule-day{min-height:57px;padding:5px 6px;gap:3px}
+#escala .schedule-day-number{width:21px;height:21px;font-size:.72rem}
+#escala .schedule-day-shift{padding:2px 6px;border-radius:5px;font-size:.66rem}
+#escala .schedule-legend{gap:6px;margin-top:5px}
+#escala .schedule-legend-item{padding:5px 9px;border-radius:7px;gap:6px}
+#escala .schedule-legend-item>div{gap:6px}
+#escala .schedule-legend-item strong{font-size:.72rem}
+#escala .schedule-legend-item small{font-size:.61rem}
+#escala .schedule-dot{width:10px;height:10px;border-radius:3px}
+@media(max-width:1050px){#escala .schedule-day{min-height:55px;padding:5px}}
+
+/* v6.10.63 — Calendário mais compacto em 100% de zoom */
+#escala .schedule-weekdays span{padding:3px 3px;font-size:.64rem}
+#escala .schedule-day{min-height:46px;padding:4px 6px;gap:2px}
+#escala .schedule-day-number{width:19px;height:19px;font-size:.69rem}
+#escala .schedule-day-shift{padding:2px 6px;font-size:.64rem;line-height:1.15}
+#escala .schedule-legend{margin-top:4px}
+@media(max-width:1050px){#escala .schedule-day{min-height:46px;padding:4px 5px}}
+
+/* v6.10.65 — aniversariantes do mês no Dashboard */
+#dashboard .dashboard-left-stack{display:grid;gap:12px;align-content:start;min-width:0}
+#dashboard .birthday-panel{padding:12px 14px!important;min-height:0!important}
+#dashboard .birthday-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px!important}
+#dashboard .birthday-heading h2{font-size:1rem!important;margin:0!important}
+#dashboard .birthday-count{display:grid;place-items:center;min-width:30px;height:28px;padding:0 8px;border-radius:9px;background:rgba(39,121,235,.14);border:1px solid var(--border);font-weight:900;color:#56a5ff;font-size:.78rem}
+#dashboard .birthday-list{display:grid;gap:5px}
+#dashboard .birthday-row{display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:9px;align-items:center;padding:7px 9px;border:1px solid var(--border);border-radius:9px;background:var(--surface-soft)}
+#dashboard .birthday-row.past{opacity:.58}
+#dashboard .birthday-row.today{border-left:4px solid #f2b315;background:rgba(242,179,21,.08)}
+#dashboard .birthday-day{font-size:.72rem;font-weight:900;color:#77b8ff;white-space:nowrap}
+#dashboard .birthday-person{min-width:0;line-height:1.08}
+#dashboard .birthday-person strong{display:block;font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dashboard .birthday-person small{display:block;margin-top:2px;color:var(--muted);font-size:.58rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dashboard .birthday-today{font-size:.65rem;padding:4px 7px;border-radius:999px;background:#f2b315;color:#14202d;white-space:nowrap}
+#dashboard .birthday-empty,#dashboard .birthday-more{font-size:.66rem;color:var(--muted);padding:7px 3px}
+#dashboard .birthday-more{text-align:right}
+@media(max-width:900px){#dashboard .dashboard-left-stack{gap:10px}}
+@media(max-width:560px){#dashboard .birthday-row{grid-template-columns:48px minmax(0,1fr) auto;padding:7px}#dashboard .birthday-person small{white-space:normal}.birthday-today{font-size:.6rem!important}}
+
+/* v6.10.66 — Ocorrências: formulário desktop compacto, sem alterar campos ou lógica */
+@media (min-width: 900px){
+  #ocorrencias .form-panel{
+    padding:18px 20px!important;
+  }
+  #ocorrencias .form-panel > h2{
+    margin:0 0 4px!important;
+  }
+  #ocorrencias .form-panel > .section-subtitle{
+    margin:0!important;
+  }
+  #ocorrencias .form-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:10px 12px!important;
+    margin-top:12px!important;
+    align-items:start!important;
+  }
+  #ocorrencias .form-grid label{
+    gap:4px!important;
+    font-size:.78rem!important;
+    min-width:0!important;
+  }
+  #ocorrencias .form-grid label:nth-of-type(1),
+  #ocorrencias .form-grid label:nth-of-type(2){grid-column:span 2!important;}
+  #ocorrencias .form-grid label:nth-of-type(3){grid-column:span 2!important;}
+  #ocorrencias .form-grid label:nth-of-type(4),
+  #ocorrencias .form-grid label:nth-of-type(5),
+  #ocorrencias .form-grid label:nth-of-type(6){grid-column:span 1!important;}
+  #ocorrencias .form-grid label:nth-of-type(7),
+  #ocorrencias .form-grid label:nth-of-type(8){grid-column:span 2!important;}
+  #ocorrencias .occurrence-dates-group.full{
+    grid-column:1/-1!important;
+    grid-template-columns:minmax(0,1fr) 120px minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  #ocorrencias .form-grid label:nth-of-type(9){grid-column:span 2!important;}
+  #ocorrencias .form-grid label:nth-of-type(10),
+  #ocorrencias .form-grid label:nth-of-type(11){grid-column:span 1!important;}
+  #ocorrencias .form-grid input,
+  #ocorrencias .form-grid select{
+    min-height:38px!important;
+    padding-top:7px!important;
+    padding-bottom:7px!important;
+  }
+  #ocorrencias .field-help{
+    font-size:.66rem!important;
+    line-height:1.15!important;
+    margin-top:0!important;
+  }
+  #ocorrencias textarea#observacao{
+    min-height:58px!important;
+    height:58px!important;
+    resize:vertical!important;
+  }
+  #ocorrencias .photo-field input[type=file]{
+    padding:6px 8px!important;
+    min-height:36px!important;
+  }
+  #ocorrencias .actions{
+    margin-top:10px!important;
+  }
+}
+
+/* v6.10.68 — exportação principal na tela Registros */
+#registros .records-export-visible{display:inline-flex!important;align-items:center!important;justify-content:center!important;white-space:nowrap!important;}
+@media (max-width:700px){
+  #registros .records-export-visible{padding:0 10px!important;font-size:.68rem!important;}
+}
+
+
+/* v6.10.70 — gestão profissional de usuários e permissões */
+.users-admin-panel{position:relative}
+.users-admin-heading{align-items:center;gap:16px}
+.users-summary{display:grid;grid-template-columns:repeat(3,minmax(120px,190px));gap:10px;margin:14px 0}
+.users-summary-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border:1px solid #173b5d;border-radius:10px;background:#071d31}
+.users-summary-card span{color:#8fa7ba;font-size:.78rem;text-transform:uppercase;font-weight:800;letter-spacing:.04em}
+.users-summary-card strong{font-size:1.25rem;color:#27d77d}
+.users-list-main{padding:14px;margin-top:8px;background:#071d31}
+.users-list-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.users-list-heading h3{margin:0 0 2px}.users-list-heading small{color:#8fa7ba}
+.user-list{gap:7px}
+.user-row.user-row-v2{grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:10px 12px}
+.user-row-main{min-width:0;display:flex;align-items:center;gap:12px}
+.user-avatar{width:38px;height:38px;flex:0 0 38px;border-radius:10px;display:grid;place-items:center;background:#123b60;color:#8fc8ff;font-weight:900;text-transform:uppercase}
+.user-row-info{min-width:0}.user-row-info strong{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.user-row-info small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.user-badge{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;border:1px solid #28506f;background:#0a2942;color:#b7c9db;font-size:.7rem;font-weight:800}.user-badge.active{border-color:#146341;color:#57df99;background:#073622}.user-badge.inactive{border-color:#71353a;color:#ff9ba2;background:#35161a}.user-badge.profile{color:#8fc8ff}
+.user-actions-menu{position:relative}.user-actions-menu>summary{list-style:none;cursor:pointer;padding:8px 11px;border-radius:8px;background:#123652;color:#fff;font-weight:800;white-space:nowrap}.user-actions-menu>summary::-webkit-details-marker{display:none}.user-actions-menu[open]>summary{background:#17466a}.user-actions-dropdown{position:absolute;right:0;top:calc(100% + 6px);z-index:80;min-width:190px;padding:6px;border:1px solid #28506f;border-radius:10px;background:#071d31;box-shadow:0 14px 34px rgba(0,0,0,.35);display:grid;gap:4px}.user-actions-dropdown button{width:100%;text-align:left;padding:9px 10px;border-radius:7px}.user-actions-dropdown .danger{color:#fff}
+.user-editor{display:block;position:fixed;right:0;top:0;bottom:0;width:min(610px,94vw);z-index:1500;padding:0;border-radius:16px 0 0 16px;overflow:auto;transform:translateX(105%);transition:transform .2s ease;background:#071d31;box-shadow:-18px 0 45px rgba(0,0,0,.38)}
+.user-editor.open{transform:translateX(0)}.user-editor-backdrop{position:fixed;inset:0;z-index:1490;background:rgba(0,8,18,.52);opacity:0;pointer-events:none;transition:opacity .2s}.user-editor-backdrop.open{opacity:1;pointer-events:auto}
+.user-editor-header{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px;border-bottom:1px solid #21445f;background:#071d31}.user-editor-header h3{margin:0 0 2px}.user-editor-header small{color:#8fa7ba}.user-editor-close{padding:8px 10px}
+.user-profile-row,.user-basic-grid,.permissions-title-row,.permissions-groups,.user-editor-footer{margin-left:18px;margin-right:18px}.user-profile-row{margin-top:16px}.user-profile-row label{display:grid;gap:6px}.user-profile-row select{width:100%}
+.user-basic-grid{margin-top:12px}.user-basic-grid .permission-master{margin:0;min-height:48px}.permission-master span small{display:block;color:#8fa7ba;font-weight:500}
+.permissions-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px}.permissions-title-row h3{margin:0}.critical-legend{font-size:.72rem;color:#ffb45d;font-weight:800}
+.permissions-groups{display:grid;gap:8px;margin-top:10px}.permission-group{border:1px solid #21445f;border-radius:10px;background:#061a2d;overflow:hidden}.permission-group>summary{cursor:pointer;display:flex;justify-content:space-between;gap:12px;padding:11px 12px;list-style:none;font-weight:850}.permission-group>summary::-webkit-details-marker{display:none}.permission-group>summary:after{content:'▾';color:#7fb9ed}.permission-group:not([open])>summary:after{content:'▸'}.permission-group>summary small{font-weight:500;color:#8fa7ba}.permission-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:0 10px 10px}.permission-items label{display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 9px;border:1px solid #173b5d;border-radius:8px;background:#081f34;font-weight:650}.permission-items label span{min-width:0}.permission-items em{display:block;margin-top:2px;color:#ffb45d;font-size:.66rem;font-style:normal;font-weight:800}.permission-critical{border-color:#614621!important}
+.user-editor-footer{position:sticky;bottom:0;margin:16px 0 0;padding:12px 18px;border-top:1px solid #21445f;background:#071d31}.user-editor-footer .actions{margin:0;justify-content:flex-end}.user-editor-footer .status{min-height:0;margin:0 0 6px}
+body.user-editor-open{overflow:hidden}
+@media(max-width:760px){.users-admin-heading{align-items:flex-start}.users-summary{grid-template-columns:repeat(3,1fr)}.users-summary-card{display:grid;gap:3px}.user-row.user-row-v2{grid-template-columns:1fr auto}.permission-items{grid-template-columns:1fr}.user-editor{width:100vw;border-radius:0}.user-basic-grid{grid-template-columns:1fr}.permission-group>summary small{display:none}}
+
+/* v6.10.71 — Efetivo: rolagem interna da relação, sem deslocar toda a página */
+@media (min-width: 901px){
+  #colaboradores .effective-list-section{
+    display:flex!important;
+    flex-direction:column!important;
+    min-height:0!important;
+    overflow:visible!important;
+  }
+  #colaboradores .effective-table-wrap{
+    position:relative!important;
+    height:calc(100vh - 330px)!important;
+    min-height:360px!important;
+    max-height:680px!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable!important;
+    border:1px solid var(--border,#21445f)!important;
+    border-radius:12px!important;
+    background:var(--panel,#0b2338)!important;
+  }
+  #colaboradores .effective-table-manager{
+    margin:0!important;
+  }
+  #colaboradores .effective-table-manager thead th{
+    position:sticky!important;
+    top:0!important;
+    z-index:12!important;
+  }
+}
+
+/* v6.10.72 - login corporativo / identidade Pessoas e Equipamentos */
+.login-screen.login-corporate{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr);place-items:stretch;padding:0;background:#04111f;overflow:auto}
+.login-corporate .login-hero{position:relative;min-height:100vh;background:url('../login-crane.jpg') center 54%/cover no-repeat;overflow:hidden}
+.login-corporate .login-hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(3,18,34,.22),rgba(3,18,34,.18) 55%,rgba(3,18,34,.86)),linear-gradient(0deg,rgba(3,18,34,.9),transparent 48%,rgba(3,18,34,.55))}
+.login-corporate .login-hero-content{position:relative;z-index:1;height:100%;min-height:100vh;padding:clamp(34px,5vw,74px);display:flex;flex-direction:column;color:#fff}
+.login-corporate .login-hero-brand{display:flex;align-items:center;gap:15px}.login-corporate .login-hero-brand .brand-logo{margin:0}.login-corporate .login-hero-brand .brand-name{font-size:1.6rem}
+.login-system-name{margin-top:18px;text-transform:uppercase;letter-spacing:.12em;font-size:.82rem;font-weight:800;color:#d6e7f7}
+.login-corporate .login-hero h2{margin:clamp(44px,9vh,110px) 0 0;max-width:560px;font-size:clamp(2.4rem,4.2vw,4.8rem);line-height:1.02;text-transform:uppercase;letter-spacing:-.035em}.login-corporate .login-hero h2 span{color:#2387ff}
+.login-hero-footer{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding-top:30px;border-top:1px solid rgba(255,255,255,.18)}.login-hero-footer strong{text-transform:uppercase;letter-spacing:.13em}.login-hero-footer span{font-size:1.3rem;font-style:italic;color:#fff}
+.login-corporate>.login-card{align-self:center;justify-self:center;width:min(520px,calc(100% - 64px));padding:42px;border:1px solid #245377;border-radius:22px;background:linear-gradient(160deg,rgba(10,38,62,.98),rgba(3,18,33,.98));box-shadow:0 30px 80px rgba(0,0,0,.5);color:#fff}
+.login-corporate .login-product-name{display:block;margin:-7px 0 32px;text-align:center;text-transform:uppercase;letter-spacing:.08em;color:#a9c3da;font-weight:700}.login-corporate .login-card h1{font-size:2.15rem}.login-corporate .login-card>p{font-size:1.03rem}.login-corporate .login-card input{min-height:54px}.login-corporate .login-button{min-height:56px;font-size:1.12rem}.login-signature{margin-top:18px;text-align:right;color:#9fb5c8;font-style:italic;font-size:.92rem}
+@media(max-width:900px){.login-screen.login-corporate{grid-template-columns:1fr;background:linear-gradient(rgba(3,18,34,.78),rgba(3,18,34,.92)),url('../login-crane.jpg') center/cover no-repeat}.login-corporate .login-hero{display:none}.login-corporate>.login-card{width:min(500px,calc(100% - 28px));margin:28px auto;padding:30px}}
+
+/* v6.10.73 — Login corporativo aprovado: foto real + logo 3D, sem credenciais demo/nome pessoal */
+.login-screen.login-corporate{
+  grid-template-columns:minmax(0,1.08fr) minmax(430px,.92fr);
+  min-height:100vh;
+  background:#03111e;
+}
+.login-corporate .login-hero{
+  background-image:linear-gradient(90deg,rgba(2,13,25,.12),rgba(2,13,25,.18) 58%,rgba(2,13,25,.84)),linear-gradient(0deg,rgba(2,13,25,.92),rgba(2,13,25,.05) 46%,rgba(2,13,25,.36)),url('../login-crane.jpg');
+  background-position:center 48%;
+  background-size:cover;
+}
+.login-corporate .login-hero-overlay{background:linear-gradient(90deg,rgba(4,18,33,.12),rgba(4,18,33,.08) 55%,rgba(4,18,33,.62)),linear-gradient(0deg,rgba(4,18,33,.83),transparent 52%)}
+.login-hero-logo3d,.login-card-logo3d{display:block;object-fit:cover;object-position:left center;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.26)}
+.login-hero-logo3d{width:min(520px,78%);height:auto;max-height:170px}
+.login-card-logo3d{width:min(380px,88%);height:auto;max-height:132px;margin:0 auto 14px}
+.login-corporate .login-hero-content{padding:clamp(32px,4.2vw,64px)}
+.login-corporate .login-hero h2{margin:clamp(34px,7vh,86px) 0 0;max-width:580px;font-size:clamp(2.3rem,4vw,4.45rem)}
+.login-hero-footer{justify-content:flex-start;border-top:0;padding-top:22px}
+.login-hero-footer span{font-size:clamp(1.45rem,2vw,2rem);font-style:italic;letter-spacing:.01em;text-shadow:0 3px 14px rgba(0,0,0,.55)}
+.login-corporate>.login-card{width:min(540px,calc(100% - 64px));padding:38px 42px 40px;border-color:#2770a4;background:linear-gradient(155deg,rgba(8,35,58,.98),rgba(2,17,31,.985));box-shadow:0 30px 90px rgba(0,0,0,.55)}
+.login-corporate .login-product-name{margin:0 0 26px;font-size:.77rem;letter-spacing:.07em}
+.login-corporate .login-card h1{margin-top:0}
+.login-corporate .login-status{min-height:22px;margin-top:10px}
+@media(max-width:900px){
+  .login-screen.login-corporate{background-image:linear-gradient(rgba(3,18,34,.78),rgba(3,18,34,.94)),url('../login-crane.jpg');background-position:center 45%;background-size:cover}
+  .login-card-logo3d{width:min(360px,92%)}
+}
+
+/* v6.10.74 — Login responsivo 100vh sem rolagem */
+.login-screen.login-corporate{
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  grid-template-columns:minmax(0,1.08fr) minmax(390px,.92fr);
+}
+.login-corporate .login-hero{
+  height:100dvh;
+  min-height:0;
+}
+.login-corporate .login-hero-content{
+  height:100%;
+  min-height:0;
+  padding:clamp(18px,3.2vh,42px) clamp(22px,3.2vw,52px);
+}
+.login-hero-logo3d{
+  width:min(430px,70%);
+  max-height:clamp(78px,15vh,138px);
+}
+.login-corporate .login-system-name{
+  margin-top:clamp(8px,1.4vh,14px);
+  font-size:clamp(.68rem,1.1vw,.8rem);
+}
+.login-corporate .login-hero h2{
+  margin:clamp(18px,3.8vh,44px) 0 0;
+  max-width:520px;
+  font-size:clamp(1.9rem,3.3vw,3.65rem);
+  line-height:1.01;
+}
+.login-hero-footer{
+  padding-top:clamp(8px,1.6vh,18px);
+}
+.login-hero-footer span{
+  font-size:clamp(1.05rem,1.65vw,1.75rem);
+}
+.login-corporate>.login-card{
+  align-self:center;
+  width:min(500px,calc(100% - 38px));
+  max-height:calc(100dvh - 28px);
+  padding:clamp(20px,3.2vh,34px) clamp(26px,2.8vw,38px);
+  overflow:hidden;
+}
+.login-card-logo3d{
+  width:min(310px,78%);
+  max-height:clamp(72px,13vh,112px);
+  margin-bottom:clamp(8px,1.3vh,12px);
+}
+.login-corporate .login-product-name{
+  margin:0 0 clamp(12px,2vh,20px);
+  font-size:clamp(.65rem,.9vw,.75rem);
+}
+.login-corporate .login-card h1{
+  font-size:clamp(1.6rem,2.5vw,2rem);
+  margin-bottom:clamp(4px,.8vh,8px);
+}
+.login-corporate .login-card>p{
+  margin-bottom:clamp(10px,1.8vh,18px);
+  font-size:clamp(.88rem,1.15vw,1rem);
+}
+.login-corporate .login-card label{
+  margin:clamp(7px,1.1vh,11px) 0;
+  gap:5px;
+}
+.login-corporate .login-card input{
+  min-height:clamp(44px,6.2vh,52px);
+}
+.login-corporate .login-button{
+  min-height:clamp(46px,6.5vh,54px);
+  margin-top:clamp(5px,.9vh,8px);
+}
+.login-corporate .login-status{
+  min-height:clamp(14px,2.1vh,20px);
+  margin-top:clamp(4px,.8vh,8px);
+}
+@media (max-height:760px) and (min-width:901px){
+  .login-corporate .login-hero-content{padding-top:16px;padding-bottom:16px}
+  .login-hero-logo3d{width:min(360px,64%);max-height:92px}
+  .login-corporate .login-hero h2{margin-top:16px;font-size:clamp(1.75rem,3vw,2.75rem)}
+  .login-corporate>.login-card{max-height:calc(100dvh - 18px);padding:18px 30px}
+  .login-card-logo3d{width:min(270px,72%);max-height:86px}
+  .login-corporate .login-product-name{margin-bottom:10px}
+  .login-corporate .login-card h1{font-size:1.55rem}
+  .login-corporate .login-card>p{margin-bottom:8px;font-size:.9rem}
+  .login-corporate .login-card label{margin:6px 0}
+  .login-corporate .login-card input{min-height:42px}
+  .login-corporate .login-button{min-height:44px}
+  .login-corporate .login-status{min-height:12px;margin-top:3px}
+}
+@media(max-width:900px){
+  .login-screen.login-corporate{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+    padding:clamp(10px,2vh,18px);
+  }
+  .login-corporate>.login-card{
+    width:min(480px,100%);
+    max-height:calc(100dvh - 20px);
+    margin:0;
+    padding:clamp(18px,3vh,28px);
+  }
+  .login-card-logo3d{width:min(300px,82%);max-height:clamp(68px,12vh,105px)}
+}
+@media(max-width:520px){
+  .login-corporate>.login-card{padding:16px 18px;border-radius:18px}
+  .login-corporate .login-card h1{font-size:1.45rem}
+  .login-corporate .login-product-name{font-size:.62rem;letter-spacing:.05em}
+}
+
+/* v6.10.75 — ajuste exclusivo de posicionamento das logos do login */
+.login-corporate .login-hero-logo3d,
+.login-corporate .login-card-logo3d{
+  object-fit:contain;
+  object-position:center center;
+  height:auto;
+  max-height:none;
+  box-shadow:none;
+  background:transparent;
+}
+.login-corporate .login-hero-logo3d{
+  width:min(470px,72%);
+  align-self:flex-start;
+  margin:0;
+}
+.login-corporate .login-card-logo3d{
+  width:min(360px,82%);
+  margin:0 auto clamp(8px,1.3vh,12px);
+}
+@media (max-height:760px) and (min-width:901px){
+  .login-corporate .login-hero-logo3d{width:min(380px,66%);max-height:none}
+  .login-corporate .login-card-logo3d{width:min(300px,76%);max-height:none}
+}
+@media(max-width:900px){
+  .login-corporate .login-card-logo3d{width:min(320px,84%);max-height:none}
+}
+
+
+/* v6.10.76 — logo 3D transparente aplicada exclusivamente ao login */
+.login-corporate .login-hero-logo3d,
+.login-corporate .login-card-logo3d{
+  background:transparent!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+.login-corporate .login-hero-logo3d{
+  width:min(500px,74%);
+  max-width:100%;
+}
+.login-corporate .login-card-logo3d{
+  width:min(390px,84%);
+  max-width:100%;
+}
+@media (max-height:760px) and (min-width:901px){
+  .login-corporate .login-hero-logo3d{width:min(400px,68%)}
+  .login-corporate .login-card-logo3d{width:min(320px,78%)}
+}
+@media(max-width:900px){
+  .login-corporate .login-card-logo3d{width:min(340px,86%)}
+}
+
+
+/* v6.10.77 — nova logo 3D transparente somente no cabeçalho da barra lateral */
+.sidebar .brand-block{
+  overflow:visible;
+}
+.sidebar-brand-logo3d{
+  display:block;
+  width:min(205px,100%);
+  height:auto;
+  max-height:72px;
+  object-fit:contain;
+  object-position:left center;
+  margin:0 0 10px 0;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+}
+@media(max-width:1450px) and (min-width:1051px){
+  .sidebar-brand-logo3d{width:min(190px,100%);max-height:66px}
+}
+@media(max-width:1050px) and (min-width:721px){
+  .sidebar-brand-logo3d{
+    width:62px;
+    max-height:44px;
+    margin:0 auto;
+    object-position:center;
+  }
+  .sidebar .brand-block .team-badge,
+  .sidebar .brand-block .developer{display:none!important}
+}

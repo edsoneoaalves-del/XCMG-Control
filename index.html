@@ -6,37 +6,47 @@
   <meta name="theme-color" content="#061625">
   <meta name="description" content="Controle de ausências, férias e disponibilidade da Turma D">
   <title>XCMG Control – Turma D</title>
-  <link rel="icon" href="icons/icon-192-v6011.png">
-  <link rel="apple-touch-icon" href="icons/icon-192-v6011.png">
+  <link rel="icon" href="icons/icon-192-v61076.png">
+  <link rel="apple-touch-icon" href="icons/icon-192-v61076.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.5.56">
+  <link rel="stylesheet" href="css/style.css?v=6.10.77">
 </head>
 <body>
-<div id="loginScreen" class="login-screen">
+<div id="loginScreen" class="login-screen login-corporate">
+  <section class="login-hero" aria-label="XCMG Control">
+    <div class="login-hero-overlay"></div>
+    <div class="login-hero-content">
+      <img class="login-hero-logo3d" src="logo-3d.png" alt="XCMG Control">
+      <div class="login-system-name">Sistema de Gestão de Pessoas e Equipamentos</div>
+      <h2>Pessoas em movimento<br><span>por grandes resultados</span></h2>
+      <div class="login-hero-footer"><span>Deus é fiel e justo.</span></div>
+    </div>
+  </section>
   <div class="login-card">
-    <div class="login-brand"><div class="brand-logo"><span class="brand-mark">XC</span></div><div class="brand-name"><strong>XCMG</strong><span>CONTROL</span></div></div>
-    <h1>Acesso ao sistema</h1><p>Entre com seu usuário e senha.</p>
-    <label><span>Usuário</span><input id="loginUsuario" autocomplete="username" placeholder="Digite o usuário"></label>
-    <label><span>Senha</span><div class="password-field"><input id="loginSenha" type="password" autocomplete="current-password" placeholder="Digite a senha"><button id="btnVerSenhaLogin" type="button" class="password-toggle" aria-label="Mostrar senha" title="Mostrar senha">👁</button></div></label>
+    <img class="login-card-logo3d" src="logo-3d.png" alt="XCMG Control">
+    <small class="login-product-name">Sistema de Gestão de Pessoas e Equipamentos</small>
+    <h1>Bem-vindo!</h1><p>Faça seu login para acessar o sistema.</p>
+    <label><span>Usuário</span><input id="loginUsuario" autocomplete="username" placeholder="Digite seu usuário"></label>
+    <label><span>Senha</span><div class="password-field"><input id="loginSenha" type="password" autocomplete="current-password" placeholder="Digite sua senha"><button id="btnVerSenhaLogin" type="button" class="password-toggle" aria-label="Mostrar senha" title="Mostrar senha">👁</button></div></label>
     <button id="btnEntrar" class="primary login-button">Entrar</button>
     <div id="loginStatus" class="status login-status"></div>
-    <small class="login-help">Primeiro acesso: admin / Admin@123</small>
   </div>
 </div>
 <div id="appShell" class="app-shell">
   <aside class="sidebar">
     <div class="brand-block">
-      <div class="brand-logo"><span class="brand-mark">XC</span></div>
-      <div class="brand-name"><strong>XCMG</strong><span>CONTROL</span></div>
+      <img class="sidebar-brand-logo3d" src="logo-3d.png" alt="XCMG Control">
       <div class="team-badge" id="teamBadge">Turma D</div>
       <div class="developer">Desenvolvedor: <span id="developerSidebar">Edson Alves</span></div>
     </div>
 
     <nav>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span data-mobile-label="Início">Dashboard</span></button>
+      <button class="nav-item" data-page="colaboradores"><span class="nav-icon">👥</span><span data-mobile-label="Efetivo">Efetivo</span></button>
+      <button class="nav-item" data-page="ferias"><span class="nav-icon">▦</span><span data-mobile-label="Férias">Férias</span></button>
+      <button class="nav-item" data-page="escala"><span class="nav-icon">📅</span><span data-mobile-label="Escala">Escala</span></button>
       <button class="nav-item" data-page="ocorrencias"><span class="nav-icon">▣</span><span data-mobile-label="Ocorr.">Ocorrências</span></button>
-      <button class="nav-item" data-page="colaboradores"><span class="nav-icon">👥</span><span data-mobile-label="Colab.">Colaboradores</span></button>
       <button class="nav-item" data-page="registros"><span class="nav-icon">▤</span><span data-mobile-label="Registros">Registros</span></button>
       <button class="nav-item" data-page="mensagem"><span class="nav-icon">◉</span><span data-mobile-label="WhatsApp">WhatsApp</span></button>
       <button class="nav-item" data-page="configuracoes"><span class="nav-icon">⚙</span><span data-mobile-label="Config.">Configurações</span></button>
@@ -49,7 +59,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.5.38</strong><span>Datas visíveis nas ocorrências no celular</span></div>
+    <div class="version"><strong>Versão 6.10.77</strong><span>Identidade visual atualizada</span></div>
   </aside>
 
   <main>
@@ -78,6 +88,7 @@
       </div>
 
       <div class="dashboard-main-grid dashboard-executive-grid">
+        <div class="dashboard-left-stack">
         <article class="panel current-panel dashboard-primary-panel">
           <div class="panel-heading occurrence-heading"><div><h2><span class="heading-icon">☷</span> Ocorrências</h2><p id="ocorrenciasPainelSubtitulo">Ocorrências iniciadas na data selecionada.</p></div><button class="text-button" id="btnVerTodos">Ver todas</button></div>
           <div class="occurrence-tabs" role="tablist" aria-label="Visualização das ocorrências">
@@ -87,6 +98,15 @@
           <div id="ocorrenciasAtuais" class="current-list"></div>
           <div class="occurrence-total"><span>✓</span><strong id="totalOcorrenciasAtuais">0 ocorrência(s) ativa(s) na data selecionada.</strong></div>
         </article>
+
+        <article class="panel birthday-panel dashboard-primary-panel" id="painelAniversariantes">
+          <div class="panel-heading birthday-heading">
+            <div><h2><span class="heading-icon">🎂</span> <span id="tituloAniversariantes">Aniversariantes do mês</span></h2></div>
+            <span class="birthday-count" id="totalAniversariantes">0</span>
+          </div>
+          <div id="listaAniversariantes" class="birthday-list"></div>
+        </article>
+        </div>
 
         <article class="panel vacation-alert-panel dashboard-primary-panel" id="painelProximasFerias">
           <div class="panel-heading vacation-alert-heading">
@@ -158,101 +178,283 @@
 
     <section id="colaboradores" class="page">
       <article class="panel">
-        <div class="panel-heading">
-          <div><h2>Cadastro de colaboradores</h2><p>Cadastre manualmente ou substitua a lista completa importando uma planilha.</p></div>
-          <strong id="totalColaboradores" class="records-count">0 colaborador(es)</strong>
+        <div class="panel-heading effective-main-heading">
+          <div><h2>Efetivo</h2><p>Base central dos colaboradores e das informações de RH.</p></div>
+          <div class="effective-heading-right">
+            <div class="effective-summary"><strong id="totalEfetivoAtivo">0 ativos</strong><span id="totalColaboradores" class="records-count">0 cadastrados</span></div>
+            <div class="actions effective-page-actions">
+              <button id="btnNovoColaboradorEfetivo" class="primary" type="button">+ Novo colaborador</button>
+              <button id="btnAbrirImportacaoEfetivo" class="secondary" type="button">Importar</button>
+              <button id="btnExportarEfetivo" class="success" type="button">Exportar</button>
+            </div>
+          </div>
         </div>
-        <div class="collaborator-grid">
-          <div class="collaborator-box">
-            <h3>Cadastro manual</h3>
+        <div class="collaborator-grid effective-management-panels">
+          <div class="collaborator-box effective-management-box hidden" id="effectiveCadastroBox">
+            <div class="effective-form-heading">
+              <h3 id="tituloFormEfetivo">Cadastrar colaborador</h3>
+              <button id="btnFecharCadastroEfetivo" class="secondary effective-close-btn" type="button" aria-label="Fechar cadastro">✕ Fechar</button>
+            </div>
             <div class="form-grid compact-grid">
               <label><span>Matrícula</span><input id="novoColaboradorMatricula" type="text" placeholder="Ex.: 120206"></label>
               <label><span>Nome completo</span><input id="novoColaboradorNome" type="text" placeholder="Ex.: Edson de Oliveira Alves"></label>
               <label><span>Função</span><input id="novoColaboradorFuncao" type="text" placeholder="Ex.: Operador de Guindaste I"></label>
               <label><span>Área</span><input id="novoColaboradorArea" type="text" placeholder="Ex.: Mina ou Usina"></label>
+              <label><span>Data de admissão</span><input id="novoColaboradorAdmissao" type="date"></label>
+              <label><span>Data de nascimento</span><input id="novoColaboradorNascimento" type="date"></label>
+              <label><span>CPF</span><input id="novoColaboradorCpf" type="text" inputmode="numeric" placeholder="000.000.000-00" maxlength="14"></label>
+              <label><span>Turma</span><input id="novoColaboradorTurma" type="text" placeholder="Ex.: D" maxlength="10"></label>
+              <label><span>Status</span><select id="novoColaboradorStatus"><option>Ativo</option><option>INSS/Afastado</option><option>Mudança de turma</option><option>Desligado</option><option>Inativo</option></select></label>
+              <label class="full"><span>Motivo/observação da alteração</span><input id="novoColaboradorMotivo" type="text" placeholder="Opcional no cadastro; obrigatório ao alterar o status"></label>
             </div>
-            <div class="actions"><button id="btnAdicionarColaborador" class="primary">Adicionar colaborador</button></div>
+            <div class="actions"><button id="btnAdicionarColaborador" class="primary">Salvar colaborador</button><button id="btnCancelarEdicaoEfetivo" class="secondary hidden" type="button">Cancelar edição</button></div>
             <div id="statusColaborador" class="status"></div>
           </div>
-          <div class="collaborator-box">
-            <h3>Importar planilha completa</h3>
-            <p class="section-subtitle">Aceita XLSX, XLS ou CSV. A nova planilha substitui toda a lista anterior.</p>
+          <div class="collaborator-box effective-management-box hidden" id="effectiveImportBox">
+            <h3>Importação inicial do efetivo</h3>
+            <p class="section-subtitle">Inclui novos colaboradores e atualiza os existentes pela matrícula, sem apagar o histórico.</p>
             <label class="file-drop"><span>Selecionar planilha</span><input id="planilhaColaboradores" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
-            <small class="field-help">Use as colunas “Matrícula”, “Nome completo”, “Função” e “Área”. O nome é obrigatório; os demais campos podem ficar vazios.</small>
-            <div class="actions"><button id="btnImportarColaboradores" class="success">Substituir lista pela planilha</button><a class="secondary download-model" href="modelo_colaboradores.csv" download>Baixar modelo</a></div>
+            <small class="field-help">Colunas: Área, Matrícula, Nome completo, Função, Data Admis, Data Nasc, CPF, Turma e Status.</small>
+            <div class="actions"><button id="btnImportarColaboradores" class="success">Importar e atualizar efetivo</button><a class="secondary download-model" href="modelo_colaboradores.csv" download>Baixar modelo</a></div>
             <div id="statusImportacao" class="status"></div>
           </div>
         </div>
-        <div class="vacation-import-box vacation-import-compact">
-          <div class="vacation-import-copy">
-            <h3>🏖️ Programação de férias</h3>
-            <p class="section-subtitle">Importe a planilha com Colaborador, Início, Fim e Retorno.</p>
+        <div class="effective-list-section">
+          <div class="effective-list-heading"><div><h3>Relação do efetivo</h3></div></div>
+          <div class="effective-toolbar">
+            <div class="filters collaborator-filter"><input id="pesquisaColaborador" placeholder="Pesquisar nome, matrícula, CPF ou função..."><select id="filtroEfetivoArea"><option value="">Todas as áreas</option></select><select id="filtroEfetivoTurma"><option value="">Todas as turmas</option></select><select id="filtroEfetivoStatus"><option value="">Todos os status</option><option>Ativo</option><option>INSS/Afastado</option><option>Mudança de turma</option><option>Desligado</option><option>Inativo</option></select></div>
+            <div class="actions effective-actions"><button id="btnCopiarEfetivo" class="secondary" type="button">Copiar tabela</button></div>
           </div>
-          <div class="vacation-import-actions">
-            <label class="file-drop vacation-file"><span>Selecionar planilha</span><input id="planilhaFerias" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
-            <div class="actions"><button id="btnImportarFerias" class="success" type="button">Importar férias</button><a class="secondary download-model compact-model" href="modelo_ferias.csv" download>Modelo</a></div>
-            <div id="statusImportacaoFerias" class="status"></div><div id="statusFonteFerias" class="status vacation-source-status" hidden>Fonte: verificando programação de férias...</div>
-          </div>
+          <div id="statusAcoesEfetivo" class="status"></div>
+          <div id="listaColaboradores" class="effective-table-wrap"></div>
         </div>
-        <div class="vacation-program-box">
-          <div class="vacation-program-title"><div><h3>🏖️ Férias programadas</h3></div><strong id="totalProgramacaoFerias">0 programação(ões)</strong></div>
-          <div class="vacation-program-filters"><input id="pesquisaProgramacaoFerias" type="search" placeholder="Pesquisar colaborador..."><select id="filtroStatusFerias"><option value="Todos">Todos os status</option><option value="Em férias">Em férias</option><option value="Programada">Próximas</option><option value="Concluída">Concluídas</option></select></div>
-          <div id="listaProgramacaoFerias"></div>
-        </div>
-        <div class="filters collaborator-filter"><input id="pesquisaColaborador" placeholder="Pesquisar nome completo ou nome exibido..."></div>
-        <div id="listaColaboradores" class="collaborator-list"></div>
       </article>
     </section>
 
+
+    <section id="escala" class="page">
+      <article class="panel schedule-module">
+        <div class="panel-heading schedule-main-heading">
+          <div>
+            <h2>Calendário de escala</h2>
+            <p>Escala automática 3×3 das Turmas A, B, C e D.</p>
+          </div>
+        </div>
+
+        <div class="schedule-toolbar">
+          <div class="schedule-month-nav">
+            <button id="btnEscalaAnterior" class="secondary schedule-nav-btn" type="button" aria-label="Mês anterior">‹</button>
+            <button id="btnEscalaHoje" class="secondary" type="button">Hoje</button>
+            <button id="btnEscalaProximo" class="secondary schedule-nav-btn" type="button" aria-label="Próximo mês">›</button>
+            <strong id="escalaMesTitulo" class="schedule-month-title">—</strong>
+          </div>
+          <label class="schedule-filter">
+            <span>Visualizar turma</span>
+            <select id="filtroTurmaEscala">
+              <option value="TODAS">Todas as turmas</option>
+              <option value="A">Turma A</option>
+              <option value="B">Turma B</option>
+              <option value="C">Turma C</option>
+              <option value="D">Turma D</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="schedule-summary">
+          <div class="schedule-summary-card"><span id="escalaServicoLabel">Em serviço</span><strong id="escalaTurmasServico">—</strong></div>
+          <div class="schedule-summary-card"><span id="escalaFolgaLabel">Em folga</span><strong id="escalaTurmasFolga">—</strong></div>
+        </div>
+
+        <div class="schedule-calendar-shell">
+          <div class="schedule-weekdays" aria-hidden="true">
+            <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+          </div>
+          <div id="escalaCalendario" class="schedule-calendar" role="grid" aria-label="Calendário mensal da escala"></div>
+        </div>
+
+        <div class="schedule-legend">
+          <div class="schedule-legend-item schedule-ab"><span class="schedule-dot"></span><div><strong>A / B</strong><small>A 06:00–18:00 • B 18:00–06:00</small></div></div>
+          <div class="schedule-legend-item schedule-cd"><span class="schedule-dot"></span><div><strong>C / D</strong><small>C 06:00–18:00 • D 18:00–06:00</small></div></div>
+        </div>
+      </article>
+    </section>
+
+    <section id="ferias" class="page">
+      <article class="panel vacation-module vacation-manager-layout">
+        <div class="panel-heading vacation-main-heading"><div><h2>Férias</h2><p>Planejamento anual, aprovação do RH e acompanhamento dos prazos.</p></div><div class="vacation-heading-actions"><strong id="resumoFeriasModulo" class="records-count">0 programações</strong><button id="btnExportarFeriasExcel" class="success vacation-export-btn" type="button">▤ Exportar Excel</button><button id="btnNovaProgramacaoFerias" class="primary vacation-new-btn" type="button">+ Nova programação</button></div></div>
+        <div class="vacation-kpis"><div><span>Pré-programados</span><strong id="kpiFeriasAProgramar">0</strong></div><div><span>Fluxo RH</span><strong id="kpiFeriasAguardandoRH">0</strong></div><div><span>Programados</span><strong id="kpiFeriasAprovadas">0</strong></div><div><span>Em férias</span><strong id="kpiFeriasEmFerias">0</strong></div><div><span>Realizados</span><strong id="kpiFeriasRealizadas">0</strong></div><div><span>Programação urgente</span><strong id="kpiFeriasProgramacaoUrgente">0</strong></div></div>
+
+        <div class="vacation-program-box vacation-primary-table">
+          <div class="vacation-program-title"><div><h3>Programações de férias</h3></div><strong id="totalProgramacaoFerias">0 programação(ões)</strong></div>
+          <div class="vacation-program-filters"><input id="pesquisaProgramacaoFerias" type="search" placeholder="Pesquisar colaborador, matrícula ou função..."><select id="filtroStatusFerias"><option value="Todos">Todos os status</option><option value="PRÉ-PROGRAMADO">PRÉ-PROGRAMADO</option><option value="ALERTA PARA ENVIAR AO RH">ALERTA PARA ENVIAR AO RH</option><option value="AGUARDANDO APROVAÇÃO RH">AGUARDANDO APROVAÇÃO RH</option><option value="APROVADO">APROVADO</option><option value="APROVAÇÃO RH PENDENTE">APROVAÇÃO RH PENDENTE</option><option value="PROGRAMADO">PROGRAMADO</option><option value="EM FÉRIAS">EM FÉRIAS</option><option value="REALIZADO">REALIZADO</option><option value="NÃO APROVADO">NÃO APROVADO</option><option value="REPROGRAMAR">REPROGRAMAR</option></select></div>
+          <div id="listaProgramacaoFerias"></div>
+        </div>
+
+        <div class="vacation-program-box vacation-pending-box">
+          <div class="vacation-program-title"><div><h3>Pendências e próximos períodos</h3><p class="section-subtitle">Próximo ciclo de cada colaborador ativo, organizado por prioridade.</p></div><strong id="totalPendenciasFerias">0 colaborador(es)</strong></div>
+          <div class="vacation-pending-kpis"><div><span>Férias vencidas</span><strong id="kpiPendVencidas">0</strong></div><div><span>Pendentes</span><strong id="kpiPendProgramacao">0</strong></div><div><span>Pré-programados</span><strong id="kpiPendPreProgramado">0</strong></div><div><span>Programados</span><strong id="kpiPendProgramado">0</strong></div><div><span>Em férias</span><strong id="kpiPendEmFerias">0</strong></div><div><span>Aguardando abertura</span><strong id="kpiPendAguardando">0</strong></div></div>
+          <div class="vacation-pending-filters"><input id="pesquisaPendenciasFerias" type="search" placeholder="Pesquisar colaborador ou matrícula..."><select id="filtroPendenciasFerias"><option value="TODOS">Todos os status</option><option value="VENCIDA">Férias vencidas</option><option value="PENDENTE">Pendente de programação</option><option value="PREPROGRAMADO">Pré-programado</option><option value="PROGRAMADO">Programado</option><option value="EMFERIAS">Em férias</option><option value="AGUARDANDO">Aguardando abertura</option></select></div>
+          <div id="listaPendenciasFerias"></div>
+        </div>
+
+        <div id="vacationFormArea" class="vacation-form-area hidden">
+          <div class="vacation-form-top"><div><h3 id="tituloFormFerias">Cadastrar programação</h3><p class="section-subtitle">Os dados do colaborador vêm automaticamente do Efetivo.</p></div><button id="btnFecharFormFerias" class="secondary" type="button">Fechar</button></div>
+          <div class="vacation-control-grid">
+            <div class="collaborator-box vacation-form-card">
+              <div class="form-grid compact-grid vacation-horizontal-form">
+                <label class="full"><span>Colaborador</span><select id="feriasColaborador"><option value="">Selecione o colaborador</option></select></label>
+                <label><span>Matrícula</span><input id="feriasMatricula" readonly placeholder="Automática"></label>
+                <label><span>Área</span><input id="feriasArea" readonly placeholder="Automática"></label>
+                <label class="full"><span>Função</span><input id="feriasFuncao" readonly placeholder="Automática"></label>
+                <label><span>Data de admissão</span><input id="feriasAdmissao" type="date" readonly></label>
+                <label><span>Início das férias</span><input id="feriasInicio" type="date"></label>
+                <label><span>Dias</span><select id="feriasDias"><option value="30">30 dias</option><option value="20">20 dias</option><option value="15">15 dias</option><option value="10">10 dias</option><option value="5">5 dias</option></select></label>
+                <label><span>Data final</span><input id="feriasFim" type="date" readonly></label>
+                <label><span>Retorno</span><input id="feriasRetorno" type="date" readonly></label>
+                <label><span>Abono</span><select id="feriasAbono"><option>NÃO</option><option>SIM</option></select></label>
+                <label><span>1ª parcela do 13º</span><select id="feriasDecimo"><option>NÃO</option><option>SIM</option></select></label>
+                <label class="full"><span>Observação</span><input id="feriasObservacao" placeholder="Informação complementar"></label>
+              </div>
+              <div id="alertaCadastroFerias" class="vacation-form-alert hidden"></div>
+              <div class="actions"><button id="btnSalvarFerias" class="primary" type="button">Salvar como PRÉ-PROGRAMADO</button><button id="btnCancelarFerias" class="secondary hidden" type="button">Cancelar edição</button></div>
+              <div id="statusCadastroFerias" class="status"></div>
+            </div>
+            <details class="vacation-import-box vacation-import-compact vacation-import-details">
+              <summary>Importação excepcional</summary>
+              <div class="vacation-import-copy"><p class="section-subtitle">Somente para carga inicial, contingência ou correção em massa.</p></div>
+              <div class="vacation-import-actions"><label class="file-drop vacation-file"><span>Selecionar planilha</span><input id="planilhaFerias" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label><div class="actions"><button id="btnImportarFerias" class="success" type="button">Importar planilha</button><a class="secondary download-model compact-model" href="modelo_ferias.csv" download>Modelo</a></div><div id="statusImportacaoFerias" class="status"></div><div id="statusFonteFerias" class="status vacation-source-status" hidden>Fonte: verificando programação de férias...</div></div>
+            </details>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div id="modalHistoricoEfetivo" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="tituloHistoricoEfetivo">
+      <div class="modal-card effective-history-modal"><div class="panel-heading"><div><h3 id="tituloHistoricoEfetivo">Histórico do colaborador</h3><p id="subtituloHistoricoEfetivo"></p></div><button id="btnFecharHistoricoEfetivo" class="secondary" type="button">Fechar</button></div><div id="listaHistoricoEfetivo"></div></div>
+    </div>
+
     <section id="registros" class="page">
-      <article class="panel records-panel"><div class="panel-heading records-toolbar"><div class="records-title"><h2>Registros cadastrados</h2><p>Consulta e manutenção dos registros.</p></div><div class="records-toolbar-actions"><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong><details class="records-more"><summary title="Mais ações" aria-label="Mais ações">⋮</summary><div class="records-more-menu"><button id="btnModoPrint" class="secondary print-mode-btn" type="button">📷 Modo Print</button><button id="btnExportarExcelRegistros" class="success" type="button">▤ Exportar Excel</button><button id="btnGerenciarPeriodos" class="secondary period-manage-btn" type="button">⚙️ Gerenciar períodos</button><button id="btnLimparTudo" class="danger" type="button">Limpar todos os registros</button></div></details></div></div>
+      <article class="panel records-panel"><div class="panel-heading records-toolbar"><div class="records-title"><h2>Registros cadastrados</h2><p>Consulta e manutenção dos registros.</p></div><div class="records-toolbar-actions"><strong id="totalRegistrosExibidos" class="records-count">0 registro(s)</strong><button id="btnExportarExcelRegistros" class="success records-export-visible" type="button">▤ Exportar Excel</button><details class="records-more"><summary title="Mais ações" aria-label="Mais ações">⋮</summary><div class="records-more-menu"><button id="btnModoPrint" class="secondary print-mode-btn" type="button">📷 Modo Print</button><button id="btnGerenciarPeriodos" class="secondary period-manage-btn" type="button">⚙️ Gerenciar períodos</button><button id="btnLimparTudo" class="danger" type="button">Limpar todos os registros</button></div></details></div></div>
         <div class="filters records-filters"><input id="pesquisa" placeholder="Pesquisar colaborador, equipamento ou local..."><select id="filtroTipo"><option value="">Todos os tipos</option><option>Férias</option><option>Atestado</option><option>Falta não justificada</option><option>Desligamento</option><option>Outras justificativas</option><option>Folga compensada</option></select><select id="filtroLocal"><option value="">Todos os locais</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select><select id="filtroPeriodo"><option value="">Todos os períodos</option></select><label class="records-view-compact" title="Ative para mostrar todos os registros; desative para exibir somente os ativos na data do painel."><span class="view-label">Exibição</span><input id="mostrarTodosRegistros" type="checkbox" checked><span class="toggle-track" aria-hidden="true"></span><span class="view-state" aria-hidden="true"></span></label></div>
         <div id="listaRegistros" class="records"></div>
       </article>
     </section>
 
     <section id="mensagem" class="page">
-      <article class="panel"><h2>Mensagem para WhatsApp</h2><p class="section-subtitle">Relatório automático da data selecionada.</p><div class="actions"><button id="btnGerar" class="primary">Gerar mensagem</button><button id="btnCopiar" class="success">Copiar texto</button><button id="btnWhatsApp" class="success">Abrir no WhatsApp</button><button id="btnExportarExcel" class="secondary">Gerar planilha Excel</button></div><pre id="mensagemGerada" class="message-box"></pre><div id="statusMensagem" class="status"></div></article>
+      <article class="panel"><h2>Mensagem para WhatsApp</h2><p class="section-subtitle">Relatório automático da data selecionada.</p><div class="actions"><button id="btnGerar" class="primary">Gerar mensagem</button><button id="btnCopiar" class="success">Copiar texto</button><button id="btnWhatsApp" class="success">Abrir no WhatsApp</button></div><pre id="mensagemGerada" class="message-box"></pre><div id="statusMensagem" class="status"></div></article>
     </section>
 
 
     <section id="usuarios" class="page">
-      <article class="panel">
-        <div class="panel-heading"><div><h2>Usuários e permissões</h2><p>O administrador escolhe exatamente o que cada usuário pode fazer.</p></div></div>
-        <div class="user-admin-grid">
-          <div class="user-form-box">
-            <h3>Novo usuário</h3>
-            <div class="form-grid compact-grid">
-              <label><span>Nome</span><input id="novoUsuarioNome" placeholder="Nome do usuário"></label>
-              <label><span>Login</span><input id="novoUsuarioLogin" placeholder="Ex.: programador.d"></label>
-              <label><span>Senha inicial</span><input id="novoUsuarioSenha" type="password" placeholder="Mínimo 6 caracteres"></label>
-              <label class="permission-master"><input id="novoUsuarioAdmin" type="checkbox"><span>Administrador geral (acesso total)</span></label>
-            </div>
-            <h3>Permissões individuais</h3>
-            <div id="permissoesUsuario" class="permissions-grid">
-              <label><input type="checkbox" value="dashboard_ver"> Visualizar Dashboard</label>
-              <label><input type="checkbox" value="ocorrencias_cadastrar"> Cadastrar ocorrências</label>
-              <label><input type="checkbox" value="ocorrencias_editar"> Editar ocorrências</label>
-              <label><input type="checkbox" value="ocorrencias_excluir"> Excluir ocorrências</label>
-              <label><input type="checkbox" value="ocorrencias_fotos"> Anexar fotos</label>
-              <label><input type="checkbox" value="registros_ver"> Visualizar registros</label>
-              <label><input type="checkbox" value="registros_exportar"> Exportar Excel RH</label>
-              <label><input type="checkbox" value="whatsapp_gerar"> Gerar mensagem WhatsApp</label>
-              <label><input type="checkbox" value="registros_limpar"> Limpar registros</label>
-              <label><input type="checkbox" value="colaboradores_ver"> Visualizar colaboradores</label>
-              <label><input type="checkbox" value="colaboradores_cadastrar"> Cadastrar colaboradores</label>
-              <label><input type="checkbox" value="colaboradores_excluir"> Excluir colaboradores</label>
-              <label><input type="checkbox" value="colaboradores_importar"> Importar planilha</label>
-              <label><input type="checkbox" value="configuracoes_ver"> Visualizar configurações</label>
-              <label><input type="checkbox" value="configuracoes_alterar"> Alterar configurações</label>
-              <label><input type="checkbox" value="backup_gerenciar"> Exportar/importar backup</label>
-              <label><input type="checkbox" value="usuarios_gerenciar"> Gerenciar usuários</label>
-            </div>
-            <div class="actions"><button id="btnCriarUsuario" class="primary">Criar usuário</button></div>
-            <div id="statusUsuario" class="status"></div>
+      <article class="panel users-admin-panel">
+        <div class="panel-heading users-admin-heading">
+          <div>
+            <h2>Usuários e permissões</h2>
+            <p>Gerencie acessos por perfil e ajuste permissões individuais quando necessário.</p>
           </div>
-          <div class="user-list-box"><h3>Usuários cadastrados</h3><div id="listaUsuarios" class="user-list"><div class="empty">Carregando...</div></div></div>
+          <button id="btnNovoUsuario" class="primary" type="button">+ Novo usuário</button>
         </div>
+
+        <div class="users-summary" aria-label="Resumo de usuários">
+          <div class="users-summary-card"><span>Usuários</span><strong id="usuariosResumoTotal">—</strong></div>
+          <div class="users-summary-card"><span>Ativos</span><strong id="usuariosResumoAtivos">—</strong></div>
+          <div class="users-summary-card"><span>Administradores</span><strong id="usuariosResumoAdmins">—</strong></div>
+        </div>
+
+        <div class="user-list-box users-list-main">
+          <div class="users-list-heading"><div><h3>Usuários cadastrados</h3><small>Consulte o perfil, status e as permissões de cada acesso.</small></div></div>
+          <div id="listaUsuarios" class="user-list"><div class="empty">Carregando...</div></div>
+        </div>
+
+        <aside id="usuarioEditor" class="user-form-box user-editor" aria-hidden="true">
+          <div class="user-editor-header">
+            <div><h3 id="usuarioEditorTitulo">Novo usuário</h3><small id="usuarioEditorSubtitulo">Defina um perfil ou personalize o acesso.</small></div>
+            <button id="btnFecharUsuarioEditor" class="secondary user-editor-close" type="button">✕ Fechar</button>
+          </div>
+
+          <div class="user-profile-row">
+            <label><span>Perfil de acesso</span>
+              <select id="perfilAcessoUsuario">
+                <option value="personalizado">Personalizado</option>
+                <option value="lideranca">Liderança</option>
+                <option value="rh">RH</option>
+                <option value="administrador">Administrador</option>
+              </select>
+              <small class="field-help">O perfil apenas pré-seleciona permissões. Você pode ajustar antes de salvar.</small>
+            </label>
+          </div>
+
+          <div class="form-grid compact-grid user-basic-grid">
+            <label><span>Nome</span><input id="novoUsuarioNome" placeholder="Nome do usuário"></label>
+            <label><span>Login</span><input id="novoUsuarioLogin" placeholder="Ex.: programador.d"></label>
+            <label><span>Senha inicial</span><input id="novoUsuarioSenha" type="password" placeholder="Mínimo 6 caracteres"></label>
+            <label class="permission-master"><input id="novoUsuarioAdmin" type="checkbox"><span>Administrador geral <small>Acesso total</small></span></label>
+          </div>
+
+          <div class="permissions-title-row"><h3>Permissões</h3><span class="critical-legend">● Acesso crítico</span></div>
+          <div id="permissoesUsuario" class="permissions-groups">
+            <details class="permission-group" open>
+              <summary><span>Dashboard e Escala</span><small>Visão geral e calendário 3×3</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="dashboard_ver"><span>Visualizar Dashboard e Escala</span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Ocorrências</span><small>Cadastro e manutenção</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="ocorrencias_cadastrar"><span>Cadastrar ocorrências</span></label>
+                <label><input type="checkbox" value="ocorrencias_editar"><span>Editar ocorrências</span></label>
+                <label class="permission-critical"><input type="checkbox" value="ocorrencias_excluir"><span>Excluir ocorrências <em>Acesso crítico</em></span></label>
+                <label><input type="checkbox" value="ocorrencias_fotos"><span>Anexar fotos</span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Registros</span><small>Consulta, exportação e limpeza</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="registros_ver"><span>Visualizar registros</span></label>
+                <label><input type="checkbox" value="registros_exportar"><span>Exportar Excel RH</span></label>
+                <label class="permission-critical"><input type="checkbox" value="registros_limpar"><span>Limpar registros <em>Acesso crítico</em></span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Efetivo</span><small>Base de colaboradores</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="colaboradores_ver"><span>Visualizar efetivo</span></label>
+                <label><input type="checkbox" value="colaboradores_cadastrar"><span>Cadastrar e editar efetivo</span></label>
+                <label class="permission-critical"><input type="checkbox" value="colaboradores_importar"><span>Importar planilha do efetivo <em>Acesso crítico</em></span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Férias</span><small>Planejamento e aprovação</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="ferias_ver"><span>Visualizar férias</span></label>
+                <label><input type="checkbox" value="ferias_cadastrar"><span>Cadastrar e editar férias</span></label>
+                <label class="permission-critical"><input type="checkbox" value="ferias_importar"><span>Importar matriz de férias <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="ferias_aprovar"><span>Aprovar férias pelo RH <em>Acesso crítico</em></span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>WhatsApp</span><small>Comunicação operacional</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="whatsapp_gerar"><span>Gerar mensagem WhatsApp</span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Configurações e segurança</span><small>Administração do sistema</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="configuracoes_ver"><span>Visualizar configurações</span></label>
+                <label class="permission-critical"><input type="checkbox" value="configuracoes_alterar"><span>Alterar configurações <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="backup_gerenciar"><span>Exportar/importar backup <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="usuarios_gerenciar"><span>Gerenciar usuários <em>Acesso crítico</em></span></label>
+              </div>
+            </details>
+          </div>
+          <div class="user-editor-footer">
+            <div id="statusUsuario" class="status"></div>
+            <div class="actions"><button id="btnCriarUsuario" class="primary">Criar usuário</button><button id="btnCancelarUsuario" class="secondary" type="button">Cancelar</button></div>
+          </div>
+        </aside>
+        <div id="usuarioEditorBackdrop" class="user-editor-backdrop" aria-hidden="true"></div>
       </article>
     </section>
 
@@ -292,6 +494,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.5.56"></script>
+<script src="js/app.js?v=6.10.77"></script>
 </body>
 </html>

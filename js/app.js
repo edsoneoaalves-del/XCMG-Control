@@ -3,7 +3,7 @@
 const $=id=>document.getElementById(id);
 const SUPABASE_URL='https://exsvzguzgfwuclincgov.supabase.co';
 const SUPABASE_KEY='sb_publishable_UhqP2AmVQ2zg7wfllbJSvg_xmiD5sFM';
-const REG_KEY='xcmg_registros_v2',CFG_KEY='xcmg_config_v2',COL_KEY='xcmg_colaboradores_cache_v1',FERIAS_KEY='xcmg_programacao_ferias_v1',FERIAS_TABLE='xcmg_programacao_ferias',QUEUE_KEY='xcmg_fila_offline_v1',MIG_KEY='xcmg_supabase_migrado_v41',VIEW_KEY='xcmg_mostrar_todos_registros',MOTIVOS_KEY='xcmg_motivos_rh_v2',CATEGORIAS_KEY='xcmg_categorias_rh_v3';
+const REG_KEY='xcmg_registros_v2',CFG_KEY='xcmg_config_v2',COL_KEY='xcmg_colaboradores_cache_v1',FERIAS_KEY='xcmg_programacao_ferias_v1',FERIAS_TABLE='xcmg_programacao_ferias',FERIAS_CICLOS_KEY='xcmg_ferias_ciclos_manuais_v1',QUEUE_KEY='xcmg_fila_offline_v1',MIG_KEY='xcmg_supabase_migrado_v41',VIEW_KEY='xcmg_mostrar_todos_registros',MOTIVOS_KEY='xcmg_motivos_rh_v2',CATEGORIAS_KEY='xcmg_categorias_rh_v3';
 const CATS=['Férias','Atestado','Falta não justificada','Desligamento','Outras justificativas','Folga compensada'];
 const MOTIVOS_POR_CATEGORIA={
   'Férias':['Férias','Folga compensada'],
@@ -16,7 +16,7 @@ const MOTIVOS_PADRAO=Object.values(MOTIVOS_POR_CATEGORIA).flat();
 const ICONES_CATEGORIA={'Férias':'📅','Saúde':'🏥','Ausências':'⚠️','Eventos':'🎉','Outros':'📄'};
 let categoriasRH=[];
 const PADRAO={turma:'Turma D',efetivoTotal:0,nomeSistema:'XCMG Control',desenvolvedor:'Edson de Oliveira Alves',estiloSimbolos:'completo',periodosFechamento:[]};
-let registros=[],colaboradores=[],programacaoFerias=[],feriasNuvemDisponivel=false,config={...PADRAO},editando=null,promptInstalacao=null,canalRealtime=null,carregando=false,importandoColaboradores=false,fotoAtual={url:'',path:''},removerFotoAtual=false,editandoPeriodoId=null;
+let registros=[],colaboradores=[],programacaoFerias=[],ajustesCiclosFerias=lerLocal(FERIAS_CICLOS_KEY,{}),feriasNuvemDisponivel=false,config={...PADRAO},editando=null,editandoEfetivoId=null,editandoFeriasId=null,cicloProgramacaoSelecionado=null,promptInstalacao=null,canalRealtime=null,carregando=false,importandoColaboradores=false,fotoAtual={url:'',path:''},removerFotoAtual=false,editandoPeriodoId=null;
 let conexaoReal=navigator.onLine!==false,verificandoConexao=false;
 const AUTH_KEY='xcmg_auth_v5',LAST_LOGIN_KEY='xcmg_ultimo_login_v5',OFFLINE_CRED_KEY='xcmg_credencial_offline_v1';let usuarioAtual=null,editandoUsuarioId=null;
 
@@ -153,20 +153,25 @@ function contarPessoasUnicas(lista){
   for(const r of lista||[]){const id=identidadePessoa(r);if(id)chaves.add(id)}
   return chaves.size;
 }
+// v6.10.21 — a Relação de Férias é exclusiva do Efetivo ATIVO. Registros de ex-colaboradores permanecem no banco/histórico, mas não entram na relação nem nos indicadores atuais.
+function programacaoPertenceEfetivoAtivo(r){
+  const mat=String(r?.matricula||'').replace(/\D/g,'');
+  const nome=normalizarTexto(r?.nome_completo||r?.nome||'').replace(/\s+/g,' ').trim();
+  return (Array.isArray(colaboradores)?colaboradores:[]).some(c=>{
+    if(!colaboradorAtivo(c))return false;
+    const cm=String(c?.matricula||'').replace(/\D/g,'');
+    const cn=normalizarTexto(c?.nome_completo||c?.nome_exibicao||'').replace(/\s+/g,' ').trim();
+    return (mat&&cm&&mat===cm)||(!mat&&nome&&cn===nome);
+  });
+}
+function programacoesFeriasEfetivoAtivo(){return consolidarProgramacaoFeriasCanonica(programacaoFerias).filter(programacaoPertenceEfetivoAtivo)}
 function programacoesAtivasNaData(data){
   const ref=dataISOFlex(data);if(!ref)return[];
-  return programacaoFerias.map(programacaoComoRegistro).filter(Boolean).filter(r=>{
-    const i=dataISOFlex(r.inicio),f=dataISOFlex(r.fim)||i;
-    return i&&ref>=i&&ref<=f;
-  });
+  return programacoesFeriasEfetivoAtivo().filter(r=>statusFeriasControle(r,ref)==='EM FÉRIAS').map(programacaoComoRegistro).filter(Boolean);
 }
 function historicoProgramacaoFeriasAte(data){
   const ref=dataISOFlex(data);if(!ref)return[];
-  return programacaoFerias.map(programacaoComoRegistro).filter(Boolean).filter(r=>{
-    const retorno=dataISOFlex(r.retorno),fim=dataISOFlex(r.fim);
-    const marco=retorno|| (fim?dataISOFlex(new Date(new Date(`${fim}T12:00:00`).getTime()+86400000)):'');
-    return marco&&ref>=marco;
-  });
+  return consolidarProgramacaoFeriasCanonica(programacaoFerias).filter(r=>statusFeriasControle(r,ref)==='REALIZADO').map(programacaoComoRegistro).filter(Boolean);
 }
 function registrosManuais(){return registros.filter(r=>!ehEspelhoProgramacaoFerias(r))}
 function ativosNaData(data){
@@ -235,7 +240,7 @@ function statusNuvem(texto,erro=false){
   el.classList.add('cloud-online');
   el.title=t || 'Conectado';
 }
-function abrirPagina(nome){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===nome));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===nome));const tit={dashboard:'Dashboard',ocorrencias:editando?'Editar ocorrência':'Ocorrências',colaboradores:'Colaboradores',registros:'Registros',mensagem:'WhatsApp',configuracoes:'Configurações',usuarios:'Usuários'};const sub={dashboard:`Controle de ausências, férias e disponibilidade da ${config.turma||'Turma D'}.`,ocorrencias:'Cadastro e atualização de ocorrências.',colaboradores:'Cadastro e importação da lista de colaboradores.',registros:'Consulta e manutenção dos registros.',mensagem:'Geração de relatório para WhatsApp.',configuracoes:'Preferências e backup do aplicativo.',usuarios:'Cadastro de usuários e permissões individuais.'};$('pageTitle').textContent=tit[nome]||'XCMG Control';$('pageSubtitle').textContent=sub[nome]||'';window.scrollTo({top:0,behavior:'smooth'});setTimeout(atualizarStickyMobileDashboard,80)}
+function abrirPagina(nome){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===nome));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.page===nome));const tit={dashboard:'Dashboard',ocorrencias:editando?'Editar ocorrência':'Ocorrências',colaboradores:'Colaboradores',escala:'Escala',ferias:'Férias',registros:'Registros',mensagem:'WhatsApp',configuracoes:'Configurações',usuarios:'Usuários'};const sub={dashboard:`Controle de ausências, férias e disponibilidade da ${config.turma||'Turma D'}.`,ocorrencias:'Cadastro e atualização de ocorrências.',colaboradores:'Cadastro e importação da lista de colaboradores.',escala:'Calendário automático do regime 3×3 das Turmas A, B, C e D.',ferias:'Planejamento anual, aprovação do RH e acompanhamento dos prazos.',registros:'Consulta e manutenção dos registros.',mensagem:'Geração de relatório para WhatsApp.',configuracoes:'Preferências e backup do aplicativo.',usuarios:'Cadastro de usuários e permissões individuais.'};$('pageTitle').textContent=tit[nome]||'XCMG Control';$('pageSubtitle').textContent=sub[nome]||'';window.scrollTo({top:0,behavior:'smooth'});setTimeout(atualizarStickyMobileDashboard,80)}
 function contar(lista,tipo){return lista.filter(x=>x.tipo===tipo).length}
 function diferencaDiasISO(inicio,fim){if(!inicio||!fim)return null;const a=new Date(`${inicio}T12:00:00`),b=new Date(`${fim}T12:00:00`);if(Number.isNaN(a.getTime())||Number.isNaN(b.getTime()))return null;return Math.round((b-a)/86400000)}
 function diasInclusivosISO(inicio,fim){const d=diferencaDiasISO(inicio,fim);return d===null||d<0?'':d+1}
@@ -244,14 +249,118 @@ function atualizarPeriodoPorDias(){const inicio=$('inicio')?.value||'',dias=$('d
 function atualizarDiasPorPeriodo(){const inicio=$('inicio')?.value||'',fim=$('fim')?.value||'';if(!inicio||!fim){if($('dias'))$('dias').value='';return}const qtd=diasInclusivosISO(inicio,fim);if($('dias'))$('dias').value=qtd||''}
 function ehRegistroFerias(r){const campos=[r?.tipo,r?.categoria,r?.motivo,r?.descricao].map(normalizarTexto);return campos.some(v=>v==='ferias'||v.includes('ferias programad'))}
 function dataISOFlex(v){if(!v)return'';if(v instanceof Date&&!Number.isNaN(v.getTime())){const y=v.getFullYear(),m=String(v.getMonth()+1).padStart(2,'0'),d=String(v.getDate()).padStart(2,'0');return `${y}-${m}-${d}`};const s=String(v).trim();let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;m=s.match(/^(\d{1,2})[\/. -](\d{1,2})[\/. -](\d{2,4})$/);if(m){let a=m[3];if(a.length===2)a=`20${a}`;return `${a}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`};return''}
-function normalizarProgramacaoFerias(r){if(!r)return null;const inicio=dataISOFlex(r.inicio||r.inicio_ferias||r.data_inicio),fim=dataISOFlex(r.fim||r.fim_ferias||r.data_fim),retorno=dataISOFlex(r.retorno||r.data_retorno);if(!inicio)return null;return{...r,tipo:'Férias',categoria:'Férias',motivo:r.motivo||'Férias',descricao:r.descricao||'Férias programadas',nome_completo:organizarNome(r.nome_completo||r.nome||''),nome:organizarNome(r.nome_completo||r.nome||''),inicio,fim,retorno}}
+function normalizarProgramacaoFerias(r){if(!r)return null;const inicio=dataISOFlex(r.inicio||r.inicio_ferias||r.data_inicio),fim=dataISOFlex(r.fim||r.fim_ferias||r.data_fim),retorno=dataISOFlex(r.retorno||r.data_retorno);if(!inicio)return null;return{...r,tipo:'Férias',categoria:'Férias',motivo:r.motivo||'Férias',descricao:r.descricao||'Férias programadas',nome_completo:String(r.nome_completo||r.nome||'').trim().toUpperCase(),nome:String(r.nome_completo||r.nome||'').trim().toUpperCase(),inicio,fim,retorno,dias:Number(r.dias||diasInclusivosISO(inicio,fim)||30),status_aprovacao:r.status_aprovacao||'A PROGRAMAR',abono:r.abono||'NÃO',decimo_terceiro:r.decimo_terceiro||'NÃO',observacao:r.observacao||'',data_admissao:dataISOFlex(r.data_admissao)}}
+function dadosEfetivoFerias(r){
+  // v6.10.6 — normaliza a programação e recompõe dados do Efetivo sem depender da planilha.
+  const item=normalizarProgramacaoFerias(r);if(!item)return null;
+  const id=String(item.colaborador_id||'').trim(),mat=String(item.matricula||'').replace(/\D/g,''),nome=normalizarTexto(item.nome_completo||item.nome||'').replace(/\s+/g,' ').trim();
+  const c=(Array.isArray(colaboradores)?colaboradores:[]).find(x=>{
+    if(id&&String(x.id||'').trim()===id)return true;
+    if(mat&&String(x.matricula||'').replace(/\D/g,'')===mat)return true;
+    return nome&&normalizarTexto(x.nome_completo||x.nome_exibicao||x.nome||'').replace(/\s+/g,' ').trim()===nome;
+  })||null;
+  if(!c)return item;
+  const nomeEfetivo=String(c.nome_completo||c.nome_exibicao||item.nome_completo||item.nome||'').trim().toUpperCase();
+  return{...item,colaborador_id:item.colaborador_id||c.id||null,nome_completo:nomeEfetivo,nome:nomeEfetivo,matricula:String(c.matricula||item.matricula||'').trim(),funcao:String(c.funcao||item.funcao_colaborador||item.funcao||'').trim().toUpperCase(),funcao_colaborador:String(c.funcao||item.funcao_colaborador||item.funcao||'').trim().toUpperCase(),area:String(c.area||item.area||item.local||'').trim().toUpperCase(),local:String(c.area||item.area||item.local||'').trim().toUpperCase(),data_admissao:dataISOFlex(c.data_admissao||item.data_admissao)};
+}
 function chaveProgramacaoFerias(r){const mat=String(r?.matricula||'').trim(),nome=normalizarTexto(r?.nome_completo||r?.nome||'');return `${mat||nome}|${dataISOFlex(r?.inicio)}|${dataISOFlex(r?.fim)}`}
-function carregarProgramacaoFeriasLocal(){const lista=lerLocal(FERIAS_KEY,[]);programacaoFerias=(Array.isArray(lista)?lista:[]).map(normalizarProgramacaoFerias).filter(Boolean);return programacaoFerias}
-function salvarProgramacaoFerias(lista){const map=new Map();for(const r of [...carregarProgramacaoFeriasLocal(),...(Array.isArray(lista)?lista:[])]){const item=normalizarProgramacaoFerias(r);if(!item)continue;map.set(chaveProgramacaoFerias(item),item)}programacaoFerias=[...map.values()].sort((a,b)=>String(a.inicio).localeCompare(String(b.inicio))||nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'));gravarLocal(FERIAS_KEY,programacaoFerias);return programacaoFerias}
+// v6.10.11 — chave canônica: depois de recompor os dados pelo Efetivo, a mesma pessoa/período
+// sempre gera uma única chave, mesmo que um registro antigo tenha vindo sem matrícula ou colaborador_id.
+function chaveProgramacaoFeriasCanonica(r){
+  const item=dadosEfetivoFerias(r)||normalizarProgramacaoFerias(r);if(!item)return'';
+  const id=String(item.colaborador_id||'').trim(),mat=String(item.matricula||'').replace(/\D/g,''),nome=normalizarTexto(item.nome_completo||item.nome||'').replace(/\s+/g,' ').trim();
+  const pessoa=id?`id:${id}`:mat?`mat:${mat}`:`nome:${nome}`;
+  return `${pessoa}|${dataISOFlex(item.inicio)}|${dataISOFlex(item.fim)}`;
+}
+function consolidarProgramacaoFeriasCanonica(lista){
+  const map=new Map();
+  for(const bruto of (Array.isArray(lista)?lista:[])){
+    const item=dadosEfetivoFerias(bruto)||normalizarProgramacaoFerias(bruto);if(!item)continue;
+    const chave=chaveProgramacaoFeriasCanonica(item);if(!chave)continue;
+    const anterior=map.get(chave);
+    if(!anterior){map.set(chave,item);continue}
+    // Mantém um único registro por colaborador + período, preferindo o mais recente/completo.
+    const ta=String(anterior.atualizado_em||anterior.updated_at||anterior.created_at||''),tb=String(item.atualizado_em||item.updated_at||item.created_at||'');
+    const escolhido=tb>=ta?{...anterior,...item}:{...item,...anterior};
+    map.set(chave,escolhido);
+  }
+  return [...map.values()];
+}
+function carregarProgramacaoFeriasLocal(){
+  // v6.10.14 — a chave oficial é soberana. Bases legadas só entram em recuperação quando ela estiver vazia.
+  const principal=lerLocal(FERIAS_KEY,[]);
+  if(Array.isArray(principal)&&principal.length){
+    programacaoFerias=consolidarProgramacaoFeriasCanonica(principal);
+    gravarLocal(FERIAS_KEY,programacaoFerias);
+    return programacaoFerias;
+  }
+  const recuperadas=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i)||'';
+      if(k===FERIAS_KEY)continue;
+      if(/ferias/i.test(k)&&/program/i.test(k)){
+        let v=[];try{v=JSON.parse(localStorage.getItem(k)||'[]')}catch{}
+        if(Array.isArray(v))recuperadas.push(...v);
+      }
+    }
+  }catch(e){console.warn('Recuperação de férias legadas ignorada',e)}
+  programacaoFerias=consolidarProgramacaoFeriasCanonica(recuperadas);
+  if(programacaoFerias.length)gravarLocal(FERIAS_KEY,programacaoFerias);
+  return programacaoFerias;
+}
+function salvarProgramacaoFerias(lista){programacaoFerias=consolidarProgramacaoFeriasCanonica([...carregarProgramacaoFeriasLocal(),...(Array.isArray(lista)?lista:[])]).sort((a,b)=>String(a.inicio).localeCompare(String(b.inicio))||nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'));gravarLocal(FERIAS_KEY,programacaoFerias);return programacaoFerias}
 
 function chaveNomeFerias(nome){return normalizarTexto(nome).replace(/\s+/g,' ').trim()}
-function payloadProgramacaoFerias(r){const item=normalizarProgramacaoFerias(r);if(!item)return null;return{nome_chave:chaveNomeFerias(item.nome_completo||item.nome||''),nome_completo:organizarNome(item.nome_completo||item.nome||''),matricula:String(item.matricula||'').trim(),funcao:String(item.funcao_colaborador||item.funcao||'').trim(),area:String(item.area||item.local||'').trim(),inicio:item.inicio,fim:item.fim||item.inicio,retorno:item.retorno||null,origem:'planilha',atualizado_em:new Date().toISOString()}}
-async function carregarProgramacaoFeriasNuvem(){if(!db||!estaOnline())return false;try{const {data,error}=await db.from(FERIAS_TABLE).select('*').order('inicio',{ascending:true});if(error)throw error;const lista=(data||[]).map(r=>normalizarProgramacaoFerias({id:r.id,nome_completo:r.nome_completo,nome:r.nome_completo,matricula:r.matricula||'',funcao_colaborador:r.funcao||'',funcao:r.funcao||'',area:r.area||'',local:r.area||'',inicio:r.inicio,fim:r.fim,retorno:r.retorno||''})).filter(Boolean);programacaoFerias=lista;gravarLocal(FERIAS_KEY,programacaoFerias);feriasNuvemDisponivel=true;atualizarStatusFonteFerias();const ref=$('dataPainel')?.value||hoje();renderizarProximasFerias(ref);return true}catch(e){feriasNuvemDisponivel=false;console.warn('Tabela de programação de férias indisponível; usando cache/local.',e);carregarProgramacaoFeriasLocal();atualizarStatusFonteFerias(e);const ref=$('dataPainel')?.value||hoje();renderizarProximasFerias(ref);return false}}
+function payloadProgramacaoFerias(r){const item=normalizarProgramacaoFerias(r);if(!item)return null;return{nome_chave:chaveNomeFerias(item.nome_completo||item.nome||''),nome_completo:String(item.nome_completo||item.nome||'').trim().toUpperCase(),matricula:String(item.matricula||'').trim(),funcao:String(item.funcao_colaborador||item.funcao||'').trim().toUpperCase(),area:String(item.area||item.local||'').trim().toUpperCase(),inicio:item.inicio,fim:item.fim||item.inicio,retorno:item.retorno||null,origem:item.origem||'planilha',atualizado_em:new Date().toISOString(),colaborador_id:item.colaborador_id||null,data_admissao:item.data_admissao||null,dias:Number(item.dias||30),abono:item.abono||'NÃO',decimo_terceiro:item.decimo_terceiro||'NÃO',status_aprovacao:item.status_aprovacao||'A PROGRAMAR',observacao:item.observacao||'',justificativa_conflito:item.justificativa_conflito||''}}
+async function carregarProgramacaoFeriasNuvem(){
+  // v6.10.14 — Supabase é a fonte oficial quando online. Cache/legados apenas recuperam chaves ausentes.
+  const cache=(lerLocal(FERIAS_KEY,[])||[]).map(normalizarProgramacaoFerias).filter(Boolean);
+  const legados=(Array.isArray(registros)?registros:[]).filter(ehRegistroFerias).map(r=>normalizarProgramacaoFerias({...r,origem:r.origem||'registro'})).filter(Boolean);
+  if(!db||!estaOnline()){
+    programacaoFerias=consolidarProgramacaoFeriasCanonica(cache.length?cache:legados);
+    gravarLocal(FERIAS_KEY,programacaoFerias);
+    return false;
+  }
+  try{
+    const {data,error}=await db.from(FERIAS_TABLE).select('*').order('inicio',{ascending:true});
+    if(error)throw error;
+    const canceladas=(data||[]).filter(r=>normalizarTexto(r?.status_aprovacao)==='cancelado');
+    if(canceladas.length){
+      // v6.10.18: registro cancelado fica apenas como histórico/túmulo no banco.
+      // O nome_chave é alterado para liberar a restrição única e permitir nova programação no mesmo período.
+      for(const r of canceladas){
+        if(r?.id&&!String(r.nome_chave||'').startsWith('cancelado-')){
+          const {error:erroLiberacao}=await db.from(FERIAS_TABLE).update({nome_chave:chaveCancelamentoFerias(r),atualizado_em:new Date().toISOString()}).eq('id',r.id);
+          if(erroLiberacao)console.warn('Não foi possível liberar uma programação cancelada antiga.',erroLiberacao);
+        }
+      }
+    }
+    const nuvem=(data||[]).filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
+    const mapa=new Map();
+    const inserir=(r,forcar=false)=>{const item=dadosEfetivoFerias(r)||normalizarProgramacaoFerias(r);if(!item)return;const k=chaveProgramacaoFeriasCanonica(item);if(!k)return;if(forcar||!mapa.has(k))mapa.set(k,item)};
+    // Legados < cache < nuvem. A nuvem sempre vence para a mesma pessoa/período.
+    legados.filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').forEach(r=>inserir(r,false));
+    cache.filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').forEach(r=>inserir(r,true));
+    nuvem.forEach(r=>inserir(r,true));
+    programacaoFerias=[...mapa.values()].sort((a,b)=>String(a.inicio||'').localeCompare(String(b.inicio||''))||nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'));
+    const chavesNuvem=new Set(nuvem.map(chaveProgramacaoFeriasCanonica));
+    const recuperarNuvem=programacaoFerias.filter(x=>!chavesNuvem.has(chaveProgramacaoFeriasCanonica(x))).map(payloadProgramacaoFerias).filter(x=>x&&x.nome_chave&&x.inicio&&x.fim);
+    if(recuperarNuvem.length){
+      const {error:erroRecuperacao}=await db.from(FERIAS_TABLE).upsert(recuperarNuvem,{onConflict:'nome_chave,inicio,fim'});
+      if(erroRecuperacao)console.warn('Não foi possível restaurar toda a base de férias na nuvem; mantendo cópia local.',erroRecuperacao);
+    }
+    gravarLocal(FERIAS_KEY,programacaoFerias);
+    feriasNuvemDisponivel=true;atualizarStatusFonteFerias();
+    const ref=$('dataPainel')?.value||hoje();renderizarProximasFerias(ref);renderizarProgramacaoFerias();
+    return true;
+  }catch(e){
+    feriasNuvemDisponivel=false;console.warn('Tabela de programação de férias indisponível; preservando cache.',e);
+    programacaoFerias=consolidarProgramacaoFeriasCanonica(cache.length?cache:legados);gravarLocal(FERIAS_KEY,programacaoFerias);atualizarStatusFonteFerias(e);
+    const ref=$('dataPainel')?.value||hoje();renderizarProximasFerias(ref);renderizarProgramacaoFerias();
+    return false;
+  }
+}
 function atualizarStatusFonteFerias(erro){const el=$('statusFonteFerias');if(!el)return;if(feriasNuvemDisponivel){el.textContent='Fonte: Supabase • programação sincronizada entre dispositivos';el.classList.remove('cloud-error')}else{el.textContent='Fonte local ativa. Para sincronizar entre dispositivos, execute supabase_migracao_v6.4.0_ferias.sql no Supabase.';el.classList.add('cloud-error');if(erro)el.title=erro.message||String(erro)}}
 function projetoSupabaseAtual(){try{return new URL(SUPABASE_URL).hostname.split('.')[0]}catch{return SUPABASE_URL}}
 async function salvarProgramacaoFeriasNuvem(lista){
@@ -287,13 +396,19 @@ async function salvarProgramacaoFeriasNuvem(lista){
 function reconstruirProgramacaoFeriasDosRegistros(){if(programacaoFerias.length)return programacaoFerias;const ferias=registros.filter(r=>ehRegistroFerias(r)).map(r=>normalizarProgramacaoFerias({...r,retorno:r.retorno||''})).filter(Boolean);if(ferias.length)salvarProgramacaoFerias(ferias);else carregarProgramacaoFeriasLocal();return programacaoFerias}
 function espelhoFeriasLocal(){return carregarProgramacaoFeriasLocal()}
 function salvarEspelhoFerias(lista){return salvarProgramacaoFerias(lista)}
-function proximasFerias(data){const ref=dataISOFlex(data);if(!ref)return[];if(!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();const map=new Map();for(const r of programacaoFerias){const item=normalizarProgramacaoFerias(r);if(!item?.inicio)continue;map.set(chaveProgramacaoFerias(item),item)}return [...map.values()].map(r=>({...r,diasAte:diferencaDiasISO(ref,r.inicio)})).filter(r=>r.diasAte!==null&&r.diasAte>=1).sort((a,b)=>a.diasAte-b.diasAte||String(a.inicio).localeCompare(String(b.inicio))||nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'))}
+function proximasFerias(data){
+  const ref=dataISOFlex(data);if(!ref)return[];
+  if(!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();
+  return programacoesFeriasEfetivoAtivo().map(r=>({...r,diasAte:diferencaDiasISO(ref,r.inicio),situacao:statusFeriasControle(r,ref)})).filter(r=>r.diasAte!==null&&r.diasAte>=1&&!['CANCELADO','NÃO APROVADO','REPROGRAMAR','REALIZADO'].includes(r.situacao)).sort((a,b)=>a.diasAte-b.diasAte||String(a.inicio).localeCompare(String(b.inicio))||nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'));
+}
 function statusProgramacaoFerias(r,ref){const hojeRef=dataISOFlex(ref)||hoje(),inicio=dataISOFlex(r.inicio),fim=dataISOFlex(r.fim),retorno=dataISOFlex(r.retorno);if(retorno&&hojeRef>=retorno)return'Concluída';if(inicio&&fim&&hojeRef>=inicio&&hojeRef<=fim)return'Em férias';if(inicio&&hojeRef<inicio)return'Programada';return'Concluída'}
-function renderizarProgramacaoFerias(){const el=$('listaProgramacaoFerias'),total=$('totalProgramacaoFerias');if(!el)return;if(!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();const ref=$('dataPainel')?.value||hoje();const q=normalizarTexto($('pesquisaProgramacaoFerias')?.value||'');const filtro=$('filtroStatusFerias')?.value||'Todos';const base=[...programacaoFerias].sort((a,b)=>String(a.inicio).localeCompare(String(b.inicio)));const lista=base.filter(r=>{const st=statusProgramacaoFerias(r,ref);const nome=normalizarTexto(nomeCompletoRegistro(r));const dados=normalizarTexto([r.matricula,r.funcao_colaborador||r.funcao].filter(Boolean).join(' '));return(!q||nome.includes(q)||dados.includes(q))&&(filtro==='Todos'||st===filtro)});if(total)total.textContent=`${base.length} programação(ões)`;if(!lista.length){el.innerHTML='<div class="vacation-program-empty">Nenhuma programação encontrada para este filtro.</div>';return}el.innerHTML=`<div class="vacation-program-table"><div class="vacation-program-head"><span>Colaborador</span><span>Início</span><span>Fim</span><span>Retorno</span><span>Status</span></div>${lista.map(r=>{const st=statusProgramacaoFerias(r,ref);return`<div class="vacation-program-row"><span><strong>${escapar(nomeCompletoRegistro(r))}</strong><small>${escapar([r.matricula,r.funcao_colaborador||r.funcao].filter(Boolean).join(' • '))}</small></span><span>${dataBR(r.inicio)||'—'}</span><span>${dataBR(r.fim)||'—'}</span><span>${dataBR(r.retorno)||'—'}</span><span><b class="vacation-program-status ${st.toLowerCase().replace(' ','-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}">${st}</b></span></div>`}).join('')}</div>`}
+function renderizarProgramacaoFeriasLegacyA(){const el=$('listaProgramacaoFerias'),total=$('totalProgramacaoFerias');if(!el)return;if(!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();const ref=$('dataPainel')?.value||hoje();const q=normalizarTexto($('pesquisaProgramacaoFerias')?.value||'');const filtro=$('filtroStatusFerias')?.value||'Todos';const base=[...programacaoFerias].sort((a,b)=>String(a.inicio).localeCompare(String(b.inicio)));const lista=base.filter(r=>{const st=statusProgramacaoFerias(r,ref);const nome=normalizarTexto(nomeCompletoRegistro(r));const dados=normalizarTexto([r.matricula,r.funcao_colaborador||r.funcao].filter(Boolean).join(' '));return(!q||nome.includes(q)||dados.includes(q))&&(filtro==='Todos'||st===filtro)});if(total)total.textContent=`${base.length} programação(ões)`;if(!lista.length){el.innerHTML='<div class="vacation-program-empty">Nenhuma programação encontrada para este filtro.</div>';return}el.innerHTML=`<div class="vacation-program-table"><div class="vacation-program-head"><span>Colaborador</span><span>Início</span><span>Fim</span><span>Retorno</span><span>Status</span></div>${lista.map(r=>{const st=statusProgramacaoFerias(r,ref);return`<div class="vacation-program-row"><span><strong>${escapar(nomeCompletoRegistro(r))}</strong><small>${escapar([r.matricula,r.funcao_colaborador||r.funcao].filter(Boolean).join(' • '))}</small></span><span>${dataBR(r.inicio)||'—'}</span><span>${dataBR(r.fim)||'—'}</span><span>${dataBR(r.retorno)||'—'}</span><span><b class="vacation-program-status ${st.toLowerCase().replace(' ','-').normalize('NFD').replace(/[\u0300-\u036f]/g,'')}">${st}</b></span></div>`}).join('')}</div>`}
 function renderizarProximasFerias(data){const painel=$('painelProximasFerias'),lista=$('listaProximasFerias'),total=$('totalProximasFerias');if(!painel||!lista)return;const itens=proximasFerias(data);painel.hidden=false;if(total)total.textContent=itens.length;if(!itens.length){lista.innerHTML='<div class="vacation-alert-empty">Nenhuma férias futura programada.</div>';return}const visiveis=itens.slice(0,5);lista.innerHTML=visiveis.map(r=>{const d=r.diasAte;const faixa=d<=2?'urgent':d<=6?'attention':d<=10?'notice':'future';const texto=d===1?'Falta 1 dia':`Faltam ${d} dias`;return `<div class="vacation-alert-row ${faixa}"><div class="vacation-alert-person"><strong title="${escapar(nomeCompletoRegistro(r))}">${escapar(nomeCompletoRegistro(r))}</strong><small>${escapar(r.funcao_colaborador||r.funcao||'Função não informada')}</small></div><div class="vacation-alert-period"><span>${dataBR(r.inicio)}${r.fim?` → ${dataBR(r.fim)}`:''}</span><b>${texto}</b></div></div>`}).join('')+(itens.length>5?`<div class="vacation-alert-more">+${itens.length-5} férias futura(s) programada(s)</div>`:'')}
+function statusEfetivo(c){return String(c?.status||'Ativo').trim()||'Ativo'}
+function colaboradorAtivo(c){return normalizarTexto(statusEfetivo(c))==='ativo'}
 function efetivoAtual(){
   const vistos=new Set();
-  for(const c of colaboradores){
+  for(const c of colaboradores.filter(colaboradorAtivo)){
     const matricula=String(c?.matricula||'').trim();
     const nome=normalizarTexto(c?.nome_completo||c?.nome_exibicao||'');
     const chave=matricula?`m:${matricula}`:(nome?`n:${nome}`:'');
@@ -308,7 +423,32 @@ function sincronizarEfetivoVisual(){
   if(campo)campo.value=total;
   return total;
 }
-function atualizarDashboard(){const dataPainelAtual=$('dataPainel').value;const ativos=ativosNaData(dataPainelAtual);const efetivo=sincronizarEfetivoVisual();const ausentes=contarPessoasUnicas(ativos.filter(x=>x.tipo!=='Desligamento'));const disponiveis=Math.max(efetivo-ausentes,0);const disponibilidadePct=efetivo>0?Math.round((disponiveis/efetivo)*1000)/10:0;$('kpiEfetivo').textContent=efetivo;$('kpiDisponiveis').textContent=disponiveis;if($('kpiDisponibilidadePct'))$('kpiDisponibilidadePct').textContent=`${String(disponibilidadePct).replace('.',',')}%`;if($('kpiDisponibilidadeTexto'))$('kpiDisponibilidadeTexto').textContent=`${disponiveis} de ${efetivo} disponíveis`;if($('kpiDisponibilidadeBar'))$('kpiDisponibilidadeBar').style.width=`${Math.max(0,Math.min(disponibilidadePct,100))}%`;$('kpiFerias').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Férias'));$('kpiAtestados').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Atestado'||x.tipo==='Atestado Médico'));$('kpiDesligamentos').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Desligamento'));$('kpiFaltas').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Falta não justificada'||x.tipo==='Falta Não Justificada'));renderizarOcorrenciasPainel(ativos,dataPainelAtual);renderizarProximasFerias(dataPainelAtual);atualizarLocais(ativos);atualizarResumoCategorias(ativos);$('ultimaAtualizacao').textContent=dataHoraBR();$('teamBadge').textContent=config.turma||'Turma D';$('developerSidebar').textContent=(config.desenvolvedor||'Edson Alves').replace(' de Oliveira','')}
+
+function renderizarAniversariantes(data){
+  const ref=dataISOFlex(data)||hoje(), lista=$('listaAniversariantes'), total=$('totalAniversariantes'), titulo=$('tituloAniversariantes');
+  if(!lista)return;
+  const [ano,mes,dia]=ref.split('-').map(Number);
+  const meses=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  if(titulo)titulo.textContent=`Aniversariantes de ${meses[mes-1]||'mês'}`;
+  const itens=colaboradores.filter(colaboradorAtivo).map(c=>{
+    const nasc=dataISOFlex(c.data_nascimento);if(!nasc)return null;
+    const [,m,d]=nasc.split('-').map(Number);if(m!==mes)return null;
+    return{...c,dia:d,hoje:d===dia};
+  }).filter(Boolean).sort((a,b)=>a.dia-b.dia||String(a.nome_completo||a.nome_exibicao||'').localeCompare(String(b.nome_completo||b.nome_exibicao||''),'pt-BR'));
+  if(total)total.textContent=itens.length;
+  if(!itens.length){lista.innerHTML='<div class="birthday-empty">Nenhum aniversariante ativo neste mês.</div>';return;}
+  const visiveis=itens.slice(0,8);
+  lista.innerHTML=visiveis.map(c=>{
+    const passado=c.dia<dia?' past':'';
+    const nome=organizarNome(c.nome_completo||c.nome_exibicao||'Colaborador');
+    return `<div class="birthday-row${c.hoje?' today':''}${passado}"><span class="birthday-day">${String(c.dia).padStart(2,'0')}/${String(mes).padStart(2,'0')}</span><div class="birthday-person"><strong title="${escapar(nome)}">${escapar(nome)}</strong><small>${escapar([c.funcao,c.area].filter(Boolean).join(' • ')||'Dados não informados')}</small></div>${c.hoje?'<b class="birthday-today">🎉 HOJE</b>':''}</div>`;
+  }).join('')+(itens.length>8?`<div class="birthday-more">+${itens.length-8} aniversariante(s) neste mês</div>`:'');
+}
+function atualizarDashboard(){const dataPainelAtual=$('dataPainel').value;renderizarAniversariantes(dataPainelAtual);const ativos=ativosNaData(dataPainelAtual);const efetivo=sincronizarEfetivoVisual();const ausentes=contarPessoasUnicas(ativos.filter(x=>x.tipo!=='Desligamento'));const disponiveis=Math.max(efetivo-ausentes,0);const disponibilidadePct=efetivo>0?Math.round((disponiveis/efetivo)*1000)/10:0;$('kpiEfetivo').textContent=efetivo;$('kpiDisponiveis').textContent=disponiveis;if($('kpiDisponibilidadePct'))$('kpiDisponibilidadePct').textContent=`${String(disponibilidadePct).replace('.',',')}%`;if($('kpiDisponibilidadeTexto'))$('kpiDisponibilidadeTexto').textContent=`${disponiveis} de ${efetivo} disponíveis`;if($('kpiDisponibilidadeBar'))$('kpiDisponibilidadeBar').style.width=`${Math.max(0,Math.min(disponibilidadePct,100))}%`;// v6.10.2 — Efetivo de férias calculado pela DATA, independente do texto do Status/RH.
+const feriasAtivasOficiais=programacoesAtivasNaData(dataPainelAtual);
+const feriasAtivasManuais=registrosManuais().filter(r=>normalizarTexto(r.tipo)==='ferias'&&dataPainelAtual>=(dataISOFlex(r.inicio)||'0000-01-01')&&dataPainelAtual<=(dataISOFlex(r.fim)||'9999-12-31'));
+const efetivoFerias=contarPessoasUnicas(deduplicarRegistros([...feriasAtivasManuais,...feriasAtivasOficiais]));
+$('kpiFerias').textContent=efetivoFerias;$('kpiAtestados').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Atestado'||x.tipo==='Atestado Médico'));$('kpiDesligamentos').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Desligamento'));$('kpiFaltas').textContent=contarPessoasUnicas(ativos.filter(x=>x.tipo==='Falta não justificada'||x.tipo==='Falta Não Justificada'));renderizarOcorrenciasPainel(ativos,dataPainelAtual);renderizarProximasFerias(dataPainelAtual);atualizarLocais(ativos);atualizarResumoCategorias(ativos);$('ultimaAtualizacao').textContent=dataHoraBR();$('teamBadge').textContent=config.turma||'Turma D';$('developerSidebar').textContent=(config.desenvolvedor||'Edson Alves').replace(' de Oliveira','')}
 function nomeCompacto(nome){const n=String(nome||'Colaborador não informado').trim();if(n.length<=13)return n;const partes=n.split(/\s+/).filter(Boolean);if(partes.length===1)return n.slice(0,12)+'…';return `${partes[0]} ${partes[partes.length-1].charAt(0).toUpperCase()}.`}
 let visualizacaoOcorrenciasDashboard='dia';
 function selecionarVisualizacaoOcorrencias(modo){
@@ -347,7 +487,7 @@ function nomeExibicao(nome){const partes=organizarNome(nome).split(/\s+/).filter
 function preencherSelectColaboradores(){
   const select=$('nome');if(!select)return;
   const atual=select.value;
-  select.innerHTML='<option value="">Selecione o colaborador</option>'+colaboradores.map(c=>{const completo=organizarNome(c.nome_completo||c.nome_exibicao||'');return `<option value="${escapar(completo)}" data-id="${c.id}" title="${escapar(completo)}">${escapar(completo)}</option>`}).join('');
+  select.innerHTML='<option value="">Selecione o colaborador</option>'+colaboradores.filter(colaboradorAtivo).map(c=>{const completo=organizarNome(c.nome_completo||c.nome_exibicao||'');return `<option value="${escapar(completo)}" data-id="${c.id}" title="${escapar(completo)}">${escapar(completo)}</option>`}).join('');
   if(atual&&!Array.from(select.options).some(o=>o.value===atual)){const c=colaboradores.find(x=>x.nome_exibicao===atual||x.nome_completo===atual);if(c){select.value=organizarNome(c.nome_completo||c.nome_exibicao||atual);return}const op=document.createElement('option');op.value=atual;op.textContent=atual;select.appendChild(op)}
   select.value=atual;
 }
@@ -355,44 +495,111 @@ function colaboradorSelecionado(){const nome=$('nome')?.value||'';const opt=$('n
 function nomeCompletoRegistro(r){if(r?.nome_completo)return organizarNome(r.nome_completo);const c=colaboradores.find(x=>(r?.matricula&&x.matricula===r.matricula)||x.nome_completo===r?.nome||x.nome_exibicao===r?.nome);return organizarNome(c?.nome_completo||r?.nome||'Colaborador não informado')}
 function areaRegistroPainel(r){const direta=String(r?.area||'').trim();if(direta)return direta;const mat=String(r?.matricula||'').trim();const nome=normalizarTexto(r?.nome_completo||r?.nome||'');const c=colaboradores.find(x=>(mat&&String(x?.matricula||'').trim()===mat)||(nome&&normalizarTexto(x?.nome_completo||x?.nome_exibicao||'')===nome));const areaColab=String(c?.area||'').trim();if(areaColab)return areaColab;return String(r?.local||'').trim()||'Não informado'}
 function preencherDadosColaborador(){const c=colaboradorSelecionado();$('matricula').value=c?.matricula||'';$('funcaoColaborador').value=c?.funcao||'';$('area').value=c?.area||'';if(c?.area&&['Mina','Usina','Base Externa'].includes(c.area))$('local').value=c.area}
+function cpfExibicao(cpf){return String(cpf||'').trim()||'—'}
+function classeStatusEfetivo(s){const n=normalizarTexto(s).replace(/\s+/g,'-').replace('/','-');return `effective-status-${n||'ativo'}`}
+function atualizarFiltrosEfetivo(){const atualizar=(id,valores,rotulo)=>{const el=$(id);if(!el)return;const atual=el.value;el.innerHTML=`<option value="">${rotulo}</option>`+[...new Set(valores.filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')).map(v=>`<option>${escapar(v)}</option>`).join('');el.value=atual};atualizar('filtroEfetivoArea',colaboradores.map(c=>c.area),'Todas as áreas');atualizar('filtroEfetivoTurma',colaboradores.map(c=>c.turma),'Todas as turmas')}
+function listaEfetivoFiltrada(){const q=normalizarTexto($('pesquisaColaborador')?.value||''),area=$('filtroEfetivoArea')?.value||'',turma=$('filtroEfetivoTurma')?.value||'',status=$('filtroEfetivoStatus')?.value||'';return colaboradores.filter(c=>(!q||normalizarTexto(`${c.area} ${c.matricula} ${c.nome_completo} ${c.funcao} ${c.cpf} ${c.turma} ${statusEfetivo(c)}`).includes(q))&&(!area||c.area===area)&&(!turma||c.turma===turma)&&(!status||statusEfetivo(c)===status)).sort((a,b)=>String(a.nome_completo).localeCompare(String(b.nome_completo),'pt-BR'))}
 function renderizarColaboradores(){
-  const box=$('listaColaboradores');if(!box)return;
-  const q=normalizarTexto($('pesquisaColaborador')?.value||'');
-  const lista=colaboradores.filter(c=>!q||normalizarTexto(`${c.matricula} ${c.nome_completo} ${c.nome_exibicao} ${c.funcao} ${c.area}`).includes(q));
-  $('totalColaboradores').textContent=`${colaboradores.length} colaborador(es)`;
-  box.innerHTML=lista.length?lista.map(c=>`<div class="collaborator-row"><div><strong>${escapar(c.nome_exibicao)}</strong><small>${escapar(c.nome_completo)}</small><small>${c.matricula?`Matrícula: ${escapar(c.matricula)} • `:''}${c.funcao?escapar(c.funcao):''}${c.area?` • ${escapar(c.area)}`:''}</small></div><button class="danger small-button" data-delete-colaborador="${c.id}">Excluir</button></div>`).join(''):'<div class="empty">Nenhum colaborador cadastrado.</div>'
+  const box=$('listaColaboradores');if(!box)return;atualizarFiltrosEfetivo();const lista=listaEfetivoFiltrada();
+  $('totalColaboradores').textContent=`${colaboradores.length} cadastrados`;if($('totalEfetivoAtivo'))$('totalEfetivoAtivo').textContent=`${efetivoAtual()} ativos`;
+  if(!lista.length){box.innerHTML='<div class="empty">Nenhum colaborador encontrado.</div>';return}
+  box.innerHTML=`<table class="effective-table effective-table-manager"><thead><tr><th>Área</th><th>Matrícula</th><th>Nome completo</th><th>Função</th><th>Data Admis</th><th>Data Nasc</th><th>CPF</th><th>Turma</th><th>Status</th><th>Ações</th></tr></thead><tbody>${lista.map(c=>`<tr><td>${escapar(c.area||'—')}</td><td>${escapar(c.matricula||'—')}</td><td class="effective-name" title="${escapar(c.nome_completo||c.nome_exibicao)}">${escapar(c.nome_completo||c.nome_exibicao)}</td><td class="effective-function" title="${escapar(c.funcao||'—')}">${escapar(c.funcao||'—')}</td><td>${dataBR(c.data_admissao)||'—'}</td><td>${dataBR(c.data_nascimento)||'—'}</td><td>${escapar(cpfExibicao(c.cpf))}</td><td>${escapar(c.turma||'—')}</td><td><span class="effective-status ${classeStatusEfetivo(statusEfetivo(c))}">${escapar(statusEfetivo(c))}</span></td><td class="effective-actions-cell"><details class="effective-action-menu"><summary>Ações <span aria-hidden="true">▾</span></summary><div class="effective-action-dropdown"><button class="secondary small-button" type="button" data-edit-colaborador="${c.id}">Editar</button><button class="secondary small-button" type="button" data-history-colaborador="${c.id}">Histórico</button></div></details></td></tr>`).join('')}</tbody></table>`
 }
-async function carregarColaboradores(){if(!estaOnline()){colaboradores=lerLocal(COL_KEY,[]);preencherSelectColaboradores();renderizarColaboradores();atualizarDashboard();return}const {data,error}=await db.from('xcmg_colaboradores').select('*').order('nome_exibicao',{ascending:true});if(error)throw error;colaboradores=data||[];gravarLocal(COL_KEY,colaboradores);preencherSelectColaboradores();renderizarColaboradores();atualizarDashboard()}
+
+// v6.10.20 — preserva no Efetivo de férias quem possui programação, mesmo fora da Relação do efetivo atual.
+function chavePessoaEfetivoFerias(r){
+  const mat=String(r?.matricula||'').replace(/\D/g,'');
+  const nome=normalizarTexto(r?.nome_completo||r?.nome||r?.nome_exibicao||'').replace(/\s+/g,' ').trim();
+  return mat?`m:${mat}`:(nome?`n:${nome}`:'');
+}
+function efetivoFeriasForaDaRelacao(){
+  const chavesEfetivo=new Set((Array.isArray(colaboradores)?colaboradores:[]).map(chavePessoaEfetivoFerias).filter(Boolean));
+  const mapa=new Map();
+  for(const bruto of consolidarProgramacaoFeriasCanonica(programacaoFerias)){
+    const r=dadosEfetivoFerias(bruto)||normalizarProgramacaoFerias(bruto);if(!r)continue;
+    const status=statusFeriasControle(r,$('dataPainel')?.value||hoje());
+    if(['CANCELADO','NÃO APROVADO','REPROGRAMAR'].includes(status))continue;
+    const chave=chavePessoaEfetivoFerias(r);if(!chave||chavesEfetivo.has(chave))continue;
+    const atual=mapa.get(chave);
+    if(!atual||String(r.inicio||'')>String(atual.inicio||''))mapa.set(chave,r);
+  }
+  return [...mapa.values()].sort((a,b)=>nomeCompletoRegistro(a).localeCompare(nomeCompletoRegistro(b),'pt-BR'));
+}
+function renderizarEfetivoFeriasFora(){
+  const box=$('listaEfetivoFeriasFora'),total=$('totalEfetivoFeriasFora');if(!box)return;
+  const lista=efetivoFeriasForaDaRelacao();if(total)total.textContent=`${lista.length} colaborador(es)`;
+  if(!lista.length){box.innerHTML='<div class="empty">Nenhum colaborador de férias está fora da Relação do efetivo.</div>';return}
+  const ref=$('dataPainel')?.value||hoje();
+  box.innerHTML=`<table class="effective-table"><thead><tr><th>Área</th><th>Matrícula</th><th>Nome completo</th><th>Função</th><th>Data Admis.</th><th>Status férias</th><th>Início</th><th>Fim</th><th>Retorno</th><th>Origem</th></tr></thead><tbody>${lista.map(r=>{const st=statusFeriasControle(r,ref);return `<tr><td>${escapar(r.area||r.local||'—')}</td><td>${escapar(r.matricula||'—')}</td><td class="effective-name">${escapar(String(r.nome_completo||r.nome||'—').toUpperCase())}</td><td>${escapar(r.funcao_colaborador||r.funcao||'—')}</td><td>${dataBR(r.data_admissao)||'—'}</td><td><span class="effective-status">${escapar(st)}</span></td><td>${dataBR(r.inicio)||'—'}</td><td>${dataBR(r.fim)||'—'}</td><td>${dataBR(r.retorno)||'—'}</td><td><span class="vacation-outside-badge">Fora do efetivo ativo</span></td></tr>`}).join('')}</tbody></table>`;
+}
+
+function recuperarColaboradoresLocais(){
+  const mapa=new Map();
+  const adicionar=c=>{if(!c)return;const matricula=String(c.matricula||'').trim(),nome=String(c.nome_completo||c.nome_exibicao||c.nome||'').trim();if(!matricula&&!nome)return;const chave=matricula||normalizarTexto(nome);const atual=mapa.get(chave)||{};mapa.set(chave,{...atual,...c,matricula:matricula||atual.matricula||'',nome_completo:String(c.nome_completo||atual.nome_completo||nome).trim().toUpperCase(),nome_exibicao:String(c.nome_exibicao||atual.nome_exibicao||nome).trim(),funcao:c.funcao||c.funcao_colaborador||atual.funcao||'',area:c.area||c.local||atual.area||'',data_admissao:dataISOFlex(c.data_admissao||atual.data_admissao),status:c.status||atual.status||'Ativo'});};
+  const principal=lerLocal(COL_KEY,[]);if(Array.isArray(principal))principal.forEach(adicionar);
+  try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(k===COL_KEY)continue;let v;try{v=JSON.parse(localStorage.getItem(k)||'null')}catch{continue}if(Array.isArray(v)&&v.some(x=>x&&typeof x==='object'&&(x.matricula||x.nome_completo||x.nome_exibicao))){v.forEach(adicionar)}}}catch(e){console.warn('Busca de efetivo legado ignorada',e)}
+  (Array.isArray(registros)?registros:[]).forEach(r=>adicionar({matricula:r.matricula,nome_completo:r.nome_completo||r.nome,funcao:r.funcao_colaborador,area:r.area,data_admissao:r.data_admissao,status:'Ativo'}));
+  return [...mapa.values()];
+}
+async function carregarColaboradores(){const cache=recuperarColaboradoresLocais();if(!estaOnline()){colaboradores=cache;preencherSelectColaboradores();renderizarColaboradores();atualizarDashboard();return}const {data,error}=await db.from('xcmg_colaboradores').select('*').order('nome_exibicao',{ascending:true});if(error)throw error;const nuvem=Array.isArray(data)?data:[];colaboradores=nuvem.length?nuvem:cache;if(colaboradores.length)gravarLocal(COL_KEY,colaboradores);preencherSelectColaboradores();renderizarColaboradores();atualizarDashboard()}
+function limparFormEfetivo(){editandoEfetivoId=null;['novoColaboradorMatricula','novoColaboradorNome','novoColaboradorFuncao','novoColaboradorArea','novoColaboradorAdmissao','novoColaboradorNascimento','novoColaboradorCpf','novoColaboradorTurma','novoColaboradorMotivo'].forEach(id=>{if($(id))$(id).value=''});$('novoColaboradorStatus').value='Ativo';$('tituloFormEfetivo').textContent='Cadastrar colaborador';$('btnAdicionarColaborador').textContent='Salvar colaborador';$('btnCancelarEdicaoEfetivo').classList.add('hidden');$('effectiveCadastroBox')?.classList.remove('effective-edit-drawer');document.body.classList.remove('effective-drawer-open')}
+function dadosFormEfetivo(){const nomeCompleto=String($('novoColaboradorNome').value||'').replace(/\s+/g,' ').trim().toUpperCase();return{matricula:$('novoColaboradorMatricula').value.trim(),nome_completo:nomeCompleto,nome_exibicao:nomeExibicao(nomeCompleto),funcao:$('novoColaboradorFuncao').value.trim().toUpperCase(),area:$('novoColaboradorArea').value.trim().toUpperCase(),data_admissao:$('novoColaboradorAdmissao').value||null,data_nascimento:$('novoColaboradorNascimento').value||null,cpf:$('novoColaboradorCpf').value.trim(),turma:$('novoColaboradorTurma').value.trim().toUpperCase(),status:$('novoColaboradorStatus').value||'Ativo'} }
+function painelEfetivo(tipo, abrir=true){
+  const cadastro=$('effectiveCadastroBox'),importacao=$('effectiveImportBox');
+  if(!cadastro||!importacao)return;
+  if(tipo==='cadastro'){
+    cadastro.classList.toggle('hidden',!abrir);
+    if(!abrir){cadastro.classList.remove('effective-edit-drawer');document.body.classList.remove('effective-drawer-open')}
+    if(abrir)importacao.classList.add('hidden');
+  }else if(tipo==='importacao'){
+    importacao.classList.toggle('hidden',!abrir);
+    if(abrir)cadastro.classList.add('hidden');
+  }
+}
+function alternarPainelEfetivo(tipo){
+  const alvo=tipo==='cadastro'?$('effectiveCadastroBox'):$('effectiveImportBox');
+  if(!alvo)return;
+  painelEfetivo(tipo,alvo.classList.contains('hidden'));
+}
+function editarColaboradorEfetivo(id){const c=colaboradores.find(x=>String(x.id)===String(id));if(!c)return;const scrollAtual=window.scrollY;painelEfetivo('cadastro',true);const box=$('effectiveCadastroBox');box?.classList.add('effective-edit-drawer');document.body.classList.add('effective-drawer-open');editandoEfetivoId=c.id;$('novoColaboradorMatricula').value=c.matricula||'';$('novoColaboradorNome').value=c.nome_completo||'';$('novoColaboradorFuncao').value=c.funcao||'';$('novoColaboradorArea').value=c.area||'';$('novoColaboradorAdmissao').value=c.data_admissao||'';$('novoColaboradorNascimento').value=c.data_nascimento||'';$('novoColaboradorCpf').value=c.cpf||'';$('novoColaboradorTurma').value=c.turma||'';$('novoColaboradorStatus').value=statusEfetivo(c);$('novoColaboradorMotivo').value='';$('tituloFormEfetivo').textContent='Editar colaborador';$('btnAdicionarColaborador').textContent='Salvar alterações';$('btnCancelarEdicaoEfetivo').classList.remove('hidden');requestAnimationFrame(()=>window.scrollTo({top:scrollAtual,behavior:'auto'}))}
+async function registrarHistoricoEfetivo(colaboradorId,anterior,novo,motivo){const alteracoes=[];const labels={matricula:'Matrícula',nome_completo:'Nome',funcao:'Função',area:'Área',data_admissao:'Data de admissão',data_nascimento:'Data de nascimento',cpf:'CPF',turma:'Turma',status:'Status'};for(const [campo,label] of Object.entries(labels)){if(String(anterior?.[campo]??'')!==String(novo?.[campo]??''))alteracoes.push({colaborador_id:colaboradorId,tipo:campo==='status'?'Alteração de status':'Atualização cadastral',campo,valor_anterior:String(anterior?.[campo]??''),valor_novo:String(novo?.[campo]??''),motivo:motivo||'',descricao:`${label}: ${anterior?.[campo]||'—'} → ${novo?.[campo]||'—'}`})}if(alteracoes.length&&estaOnline()){const {error}=await db.from('xcmg_efetivo_historico').insert(alteracoes);if(error)console.warn('Não foi possível gravar o histórico do efetivo.',error)}}
 async function adicionarColaborador(){
   const nomeCompleto=organizarNome($('novoColaboradorNome').value);
   if(!nomeCompleto){alert('Informe o nome completo do colaborador.');$('novoColaboradorNome').focus();return}
-  const dados={matricula:$('novoColaboradorMatricula').value.trim(),nome_completo:nomeCompleto,nome_exibicao:nomeExibicao(nomeCompleto),funcao:$('novoColaboradorFuncao').value.trim(),area:$('novoColaboradorArea').value.trim()};
-  if(!estaOnline()){const local={...dados,id:`local-col-${Date.now()}`};colaboradores.push(local);gravarLocal(COL_KEY,colaboradores);adicionarFilaOffline({entidade:'colaborador',operacao:'insert',dados:{...dados,id_local:local.id}});preencherSelectColaboradores();renderizarColaboradores();['novoColaboradorMatricula','novoColaboradorNome','novoColaboradorFuncao','novoColaboradorArea'].forEach(id=>$(id).value='');$('statusColaborador').textContent='Colaborador salvo offline. Será sincronizado quando a internet voltar.';return}
-  const {error}=await db.from('xcmg_colaboradores').insert(dados);
+  const dados=dadosFormEfetivo(),anterior=editandoEfetivoId?colaboradores.find(c=>String(c.id)===String(editandoEfetivoId)):null,motivo=$('novoColaboradorMotivo').value.trim();
+  if(anterior&&statusEfetivo(anterior)!==dados.status&&!motivo){alert('Informe o motivo da alteração de status.');$('novoColaboradorMotivo').focus();return}
+  if(dados.matricula&&colaboradores.some(c=>String(c.id)!==String(editandoEfetivoId)&&String(c.matricula||'').trim()===dados.matricula)){alert('Já existe um colaborador com esta matrícula.');return}
+  if(!estaOnline()){if(anterior){alert('Para preservar o histórico, a edição do efetivo precisa ser feita com conexão.');return}const local={...dados,id:`local-col-${Date.now()}`};colaboradores.push(local);adicionarFilaOffline({entidade:'colaborador',operacao:'insert',dados:{...dados,id_local:local.id}});gravarLocal(COL_KEY,colaboradores);preencherSelectColaboradores();renderizarColaboradores();limparFormEfetivo();$('statusColaborador').textContent='Cadastro salvo offline. Será sincronizado quando a internet voltar.';return}
+  const resposta=anterior?await db.from('xcmg_colaboradores').update(dados).eq('id',anterior.id):await db.from('xcmg_colaboradores').insert(dados).select('id').single(),error=resposta.error;
   if(error){alert(error.code==='23505'?'Este colaborador já está cadastrado.':'Não foi possível cadastrar o colaborador.');return}
-  ['novoColaboradorMatricula','novoColaboradorNome','novoColaboradorFuncao','novoColaboradorArea'].forEach(id=>$(id).value='');
-  $('statusColaborador').textContent='Colaborador cadastrado e sincronizado.';await carregarColaboradores();setTimeout(()=>$('statusColaborador').textContent='',2500)
+  const idSalvo=anterior?.id||resposta.data?.id;if(anterior)await registrarHistoricoEfetivo(idSalvo,anterior,dados,motivo);else await db.from('xcmg_efetivo_historico').insert({colaborador_id:idSalvo,tipo:'Cadastro',campo:'cadastro',valor_novo:'Cadastrado',motivo:motivo||'',descricao:'Colaborador cadastrado no efetivo'});
+  limparFormEfetivo();$('statusColaborador').textContent=anterior?'Colaborador atualizado e histórico registrado.':'Colaborador cadastrado e sincronizado.';await carregarColaboradores();setTimeout(()=>$('statusColaborador').textContent='',3500)
 }
-async function excluirColaborador(id){if(!confirm('Deseja excluir este colaborador do cadastro? Os registros antigos não serão apagados.'))return;if(!estaOnline()||String(id).startsWith('local-')){colaboradores=colaboradores.filter(x=>String(x.id)!==String(id));gravarLocal(COL_KEY,colaboradores);if(!String(id).startsWith('local-'))adicionarFilaOffline({entidade:'colaborador',operacao:'delete',id});preencherSelectColaboradores();renderizarColaboradores();return}const {error}=await db.from('xcmg_colaboradores').delete().eq('id',id);if(error){alert('Não foi possível excluir o colaborador.');return}await carregarColaboradores()}
 function extrairNomesPlanilha(file){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>{try{
   if(!window.XLSX)throw new Error('Biblioteca de planilha não carregada. Verifique a conexão com a internet.');
-  const wb=XLSX.read(fr.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],linhas=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  const wb=XLSX.read(fr.result,{type:'array',cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],linhas=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
   if(!linhas.length)throw new Error('A planilha está vazia.');
-  const aliases={matricula:['matricula','matrícula','registro'],nome:['nome','nome completo','colaborador','funcionario','funcionário'],funcao:['funcao','função','cargo'],area:['area','área','local']};
+  const aliases={matricula:['matricula','matrícula','registro'],nome:['nome','nome completo','colaborador','funcionario','funcionário'],funcao:['funcao','função','cargo'],area:['area','área','local'],admissao:['data admis','data admissão','data admissao','admissão','admissao'],nascimento:['data nasc','data nascimento','nascimento'],cpf:['cpf'],turma:['turma'],status:['status','situação','situacao']};
   let linhaCab=-1,map={};
-  for(let i=0;i<Math.min(linhas.length,15);i++){const row=linhas[i]||[];const found={};row.forEach((v,j)=>{const n=normalizarTexto(v);Object.entries(aliases).forEach(([k,arr])=>{if(arr.map(normalizarTexto).includes(n))found[k]=j})});if(found.nome!==undefined){linhaCab=i;map=found;break}}
+  for(let i=0;i<Math.min(linhas.length,15);i++){const row=linhas[i]||[];const found={};row.forEach((v,j)=>{const n=normalizarTexto(v);Object.entries(aliases).forEach(([k,arr])=>{if(arr.map(normalizarTexto).includes(n))found[k]=j});if(n.includes('admis'))found.admissao=j;if(n.includes('nasc'))found.nascimento=j;if(n==='nome completo'||n==='nome do colaborador')found.nome=j});if(found.nome!==undefined){linhaCab=i;map=found;break}}
   if(linhaCab<0){linhaCab=-1;map={nome:0}}
   const inicio=linhaCab+1,vistos=new Set(),lista=[];
   for(let i=inicio;i<linhas.length;i++){
-    const row=linhas[i]||[],completo=organizarNome(row[map.nome]);if(!completo)continue;
+    const row=linhas[i]||[],completo=String(row[map.nome]||'').replace(/\s+/g,' ').trim().toUpperCase();if(!completo)continue;
     const chave=normalizarTexto(completo);if(vistos.has(chave))continue;vistos.add(chave);
-    lista.push({matricula:map.matricula!==undefined?String(row[map.matricula]??'').trim():'',nome_completo:completo,nome_exibicao:nomeExibicao(completo),funcao:map.funcao!==undefined?String(row[map.funcao]??'').trim():'',area:map.area!==undefined?organizarNome(row[map.area]):''});
+    const statusBruto=map.status!==undefined?String(row[map.status]??'').trim():'Ativo';const statusMapa={ativo:'Ativo',inss:'INSS/Afastado',afastado:'INSS/Afastado','inss-afastado':'INSS/Afastado',mudanca:'Mudança de turma','mudanca de turma':'Mudança de turma',deslig:'Desligado',desligado:'Desligado',inativo:'Inativo'};const status=statusMapa[normalizarTexto(statusBruto)]||statusBruto||'Ativo';
+    lista.push({matricula:map.matricula!==undefined?String(row[map.matricula]??'').trim():'',nome_completo:completo,nome_exibicao:nomeExibicao(completo),funcao:map.funcao!==undefined?String(row[map.funcao]??'').trim().toUpperCase():'',area:map.area!==undefined?String(row[map.area]??'').trim().toUpperCase():'',data_admissao:map.admissao!==undefined?dataPlanilhaISO(row[map.admissao]):null,data_nascimento:map.nascimento!==undefined?dataPlanilhaISO(row[map.nascimento]):null,cpf:map.cpf!==undefined?String(row[map.cpf]??'').trim():'',turma:map.turma!==undefined?String(row[map.turma]??'').trim().toUpperCase():'',status});
   }
   lista.sort((a,b)=>a.nome_exibicao.localeCompare(b.nome_exibicao,'pt-BR'));if(!lista.length)throw new Error('Nenhum nome válido foi encontrado na planilha.');resolve(lista)
 }catch(e){reject(e)}};fr.onerror=()=>reject(new Error('Não foi possível ler a planilha.'));fr.readAsArrayBuffer(file)})}
-async function importarColaboradores(){const input=$('planilhaColaboradores'),file=input.files[0];if(!file){alert('Selecione uma planilha.');return}const btn=$('btnImportarColaboradores'),status=$('statusImportacao');try{const nomes=await extrairNomesPlanilha(file);if(!confirm(`Foram encontrados ${nomes.length} colaboradores. A lista atual será totalmente substituída. Continuar?`))return;importandoColaboradores=true;btn.disabled=true;status.textContent=`Enviando ${nomes.length} colaborador(es) para o Supabase...`;const chamada=db.rpc('xcmg_substituir_colaboradores',{lista:nomes});const limite=new Promise((_,reject)=>setTimeout(()=>reject(new Error('A importação ultrapassou 60 segundos. Verifique a conexão e tente novamente.')),60000));const {data,error}=await Promise.race([chamada,limite]);if(error)throw error;status.textContent='Atualizando a lista na tela...';await carregarColaboradores();atualizarTudo();input.value='';status.textContent=`Importação concluída: ${data??nomes.length} colaborador(es). Efetivo atualizado automaticamente para ${efetivoAtual()}.`;setTimeout(()=>{if(status.textContent.startsWith('Importação concluída'))status.textContent=''},6000)}catch(e){console.error('Falha ao importar colaboradores:',e);status.textContent='Falha na importação. A planilha continua selecionada para nova tentativa.';alert(`Não foi possível importar a planilha.
+async function importarColaboradores(){const input=$('planilhaColaboradores'),file=input.files[0];if(!file){alert('Selecione uma planilha.');return}const btn=$('btnImportarColaboradores'),status=$('statusImportacao');try{const nomes=await extrairNomesPlanilha(file),semMatricula=nomes.filter(x=>!x.matricula).length;if(semMatricula)throw new Error(`${semMatricula} linha(s) estão sem matrícula. A matrícula é obrigatória para uma importação segura.`);if(!confirm(`Foram encontrados ${nomes.length} colaboradores. Os existentes serão atualizados pela matrícula e os novos serão incluídos. Nenhum cadastro será apagado. Continuar?`))return;importandoColaboradores=true;btn.disabled=true;status.textContent=`Importando ${nomes.length} colaborador(es) sem apagar o histórico...`;const chamada=db.rpc('xcmg_importar_efetivo',{lista:nomes});const limite=new Promise((_,reject)=>setTimeout(()=>reject(new Error('A importação ultrapassou 60 segundos. Verifique a conexão e tente novamente.')),60000));const {data,error}=await Promise.race([chamada,limite]);if(error)throw error;await carregarColaboradores();atualizarTudo();input.value='';status.textContent=`Importação concluída: ${data??nomes.length} linha(s) processadas. Efetivo ativo: ${efetivoAtual()}.`;setTimeout(()=>{if(status.textContent.startsWith('Importação concluída'))status.textContent=''},7000)}catch(e){console.error('Falha ao importar efetivo:',e);status.textContent='Falha na importação. Nenhum cadastro existente foi apagado.';alert(`Não foi possível importar a planilha.
 
 ${e.message||e.details||'Erro desconhecido.'}`)}finally{importandoColaboradores=false;btn.disabled=false}}
+
+function linhasExportacaoEfetivo(){return listaEfetivoFiltrada().map(c=>({Área:String(c.area||'').toUpperCase(),Matrícula:c.matricula||'','Nome completo':String(c.nome_completo||'').toUpperCase(),Função:String(c.funcao||'').toUpperCase(),'Data Admis':dataBR(c.data_admissao),'Data Nasc':dataBR(c.data_nascimento),CPF:c.cpf||'',Turma:String(c.turma||'').toUpperCase(),Status:statusEfetivo(c)}))}
+function exportarEfetivoExcel(){if(!window.XLSX){alert('A biblioteca de planilha não foi carregada.');return}const dados=linhasExportacaoEfetivo();if(!dados.length){alert('Não há colaboradores neste filtro.');return}const ws=XLSX.utils.json_to_sheet(dados);ws['!cols']=[{wch:12},{wch:12},{wch:34},{wch:34},{wch:13},{wch:13},{wch:16},{wch:9},{wch:20}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'EFETIVO');XLSX.writeFile(wb,`XCMG_Efetivo_${hoje()}.xlsx`)}
+async function copiarTabelaEfetivo(){const dados=linhasExportacaoEfetivo();if(!dados.length){alert('Não há colaboradores neste filtro.');return}const cab=Object.keys(dados[0]),texto=[cab.join('\t'),...dados.map(r=>cab.map(k=>r[k]).join('\t'))].join('\n');try{await navigator.clipboard.writeText(texto)}catch{const ta=document.createElement('textarea');ta.value=texto;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}$('statusAcoesEfetivo').textContent=`${dados.length} linha(s) copiadas. Pronto para colar no e-mail ou em uma planilha.`;setTimeout(()=>$('statusAcoesEfetivo').textContent='',4000)}
+async function abrirHistoricoEfetivo(id){const c=colaboradores.find(x=>String(x.id)===String(id));if(!c)return;$('subtituloHistoricoEfetivo').textContent=`${c.nome_completo} • Matrícula ${c.matricula||'não informada'}`;$('listaHistoricoEfetivo').innerHTML='<div class="empty">Carregando histórico...</div>';$('modalHistoricoEfetivo').classList.remove('hidden');if(!estaOnline()){$('listaHistoricoEfetivo').innerHTML='<div class="empty">O histórico detalhado requer conexão.</div>';return}const {data,error}=await db.from('xcmg_efetivo_historico').select('*').eq('colaborador_id',id).order('created_at',{ascending:false});if(error){$('listaHistoricoEfetivo').innerHTML='<div class="empty">Execute a migração do módulo Efetivo para visualizar o histórico.</div>';return}$('listaHistoricoEfetivo').innerHTML=data?.length?data.map(h=>`<div class="effective-history-row"><div><strong>${escapar(h.tipo)}</strong><span>${escapar(h.descricao||`${h.valor_anterior||'—'} → ${h.valor_novo||'—'}`)}</span>${h.motivo?`<small>Motivo: ${escapar(h.motivo)}</small>`:''}</div><time>${new Date(h.created_at).toLocaleString('pt-BR')}</time></div>`).join(''):'<div class="empty">Nenhuma movimentação registrada.</div>'}
 
 function dataPlanilhaISO(valor){
   if(valor===null||valor===undefined||valor==='')return'';
@@ -401,12 +608,13 @@ function dataPlanilhaISO(valor){
   const s=String(valor).trim();
   let m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
   m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})$/);if(m){let a=m[3];if(a.length===2)a=`20${a}`;return `${a}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+  const dt=new Date(s);if(!Number.isNaN(dt.getTime()))return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
   return'';
 }
 function extrairFeriasPlanilha(file){return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>{try{
   if(!window.XLSX)throw new Error('Biblioteca de planilha não carregada. Verifique a conexão com a internet.');
   const wb=XLSX.read(fr.result,{type:'array',cellDates:true});
-  const aliases={nome:['colaborador','nome','nome completo','funcionario','funcionário'],inicio:['inicio ferias','início férias','inicio férias','início ferias','inicio','data inicio','data início'],fim:['fim','fim ferias','fim férias','data fim'],retorno:['retorno','data retorno']};
+  const aliases={nome:['colaborador','nome','nome completo','funcionario','funcionário'],inicio:['inicio ferias','início férias','inicio férias','início ferias','inicio','data inicio','data início'],fim:['fim','fim ferias','fim férias','data fim'],retorno:['retorno','data retorno'],dias:['dias','quantidade de dias'],abono:['abono'],decimo:['1ª parc 13º','1a parc 13o','13º','decimo terceiro','décimo terceiro'],antecipada:['prog. antecipada','prog antecipada','programação antecipada','programacao antecipada'],status_planilha:['status'],situacao_planilha:['situação','situacao'],matricula:['matricula','matrícula'],area:['area','área'],funcao:['funcao','função']};
   let escolhido=null;
   for(const nomeAba of wb.SheetNames){
     const ws=wb.Sheets[nomeAba],linhas=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:true});
@@ -426,12 +634,17 @@ function extrairFeriasPlanilha(file){return new Promise((resolve,reject)=>{const
     const inicio=dataPlanilhaISO(row[map.inicio]),fim=dataPlanilhaISO(row[map.fim]),retorno=map.retorno!==undefined?dataPlanilhaISO(row[map.retorno]):'';
     if(!inicio||!fim){lista.push({linha:i+1,nome,inicio,fim,retorno,erro:'Data inválida',aba:nomeAba});continue}
     if(fim<inicio){lista.push({linha:i+1,nome,inicio,fim,retorno,erro:'Fim anterior ao início',aba:nomeAba});continue}
-    lista.push({linha:i+1,nome,inicio,fim,retorno,aba:nomeAba});
+    lista.push({linha:i+1,nome,inicio,fim,retorno,aba:nomeAba,dias:map.dias!==undefined?Number(String(row[map.dias]||'').replace(/\D/g,''))||diasInclusivosISO(inicio,fim):diasInclusivosISO(inicio,fim),abono:map.abono!==undefined?String(row[map.abono]||'NÃO').trim().toUpperCase():'NÃO',decimo_terceiro:map.decimo!==undefined?String(row[map.decimo]||'NÃO').trim().toUpperCase():'NÃO',programacao_antecipada:map.antecipada!==undefined&&normalizarTexto(row[map.antecipada])==='sim'?'SIM':'NÃO',status_planilha:map.status_planilha!==undefined?String(row[map.status_planilha]||'').trim():(map.situacao_planilha!==undefined?String(row[map.situacao_planilha]||'').trim():''),matricula:map.matricula!==undefined?String(row[map.matricula]||'').trim():'',area:map.area!==undefined?String(row[map.area]||'').trim().toUpperCase():'',funcao:map.funcao!==undefined?String(row[map.funcao]||'').trim().toUpperCase():''});
   }
   if(!lista.length)throw new Error(`Nenhuma programação de férias foi encontrada na aba ${nomeAba}.`);
   resolve(lista)
 }catch(e){reject(e)}};fr.onerror=()=>reject(new Error('Não foi possível ler a planilha de férias.'));fr.readAsArrayBuffer(file)})}
-function localizarColaboradorFerias(nome){const chave=normalizarTexto(nome);return colaboradores.find(c=>normalizarTexto(c.nome_completo)===chave)||colaboradores.find(c=>normalizarTexto(c.nome_exibicao)===chave)||null}
+function localizarColaboradorFerias(nome,matricula=''){
+  const mat=String(matricula||'').replace(/\D/g,''),chave=normalizarTexto(nome).replace(/\s+/g,' ').trim();
+  if(mat){const porMatricula=colaboradores.find(c=>String(c.matricula||'').replace(/\D/g,'')===mat);if(porMatricula)return{colaborador:porMatricula,criterio:'MATRÍCULA',divergenciaNome:chave!==normalizarTexto(porMatricula.nome_completo||porMatricula.nome_exibicao).replace(/\s+/g,' ').trim()}}
+  const porNome=colaboradores.find(c=>normalizarTexto(c.nome_completo||c.nome_exibicao).replace(/\s+/g,' ').trim()===chave)||null;
+  return porNome?{colaborador:porNome,criterio:'NOME',divergenciaMatricula:!!mat&&String(porNome.matricula||'').replace(/\D/g,'')!==mat}:null
+}
 function registroFeriasJaExiste(c,inicio,fim){const mat=String(c?.matricula||'').trim();const nome=normalizarTexto(c?.nome_completo||'');if(!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();return programacaoFerias.some(r=>dataISOFlex(r.inicio)===dataISOFlex(inicio)&&dataISOFlex(r.fim)===dataISOFlex(fim)&&((mat&&String(r.matricula||'').trim()===mat)||normalizarTexto(r.nome_completo||r.nome)===nome))}
 async function salvarProgramacaoFeriasREST(lista,onStatus){
   const bruto=(Array.isArray(lista)?lista:[]).map(payloadProgramacaoFerias).filter(x=>x&&x.nome_chave&&x.inicio&&x.fim);
@@ -452,15 +665,29 @@ async function salvarProgramacaoFeriasREST(lista,onStatus){
     onStatus?.(`Gravando no Supabase... ${Math.min(i+lote,payload.length)}/${payload.length}`);
   }
   onStatus?.('Gravação enviada. Conferindo diretamente no Supabase...');
-  const conf=await fetch(`${urlBase}?select=id,nome_chave,nome_completo,matricula,funcao,area,inicio,fim,retorno&order=inicio.asc`,{headers:{...headers,'Prefer':'count=exact'},cache:'no-store'});
+  const conf=await fetch(`${urlBase}?select=*&order=inicio.asc`,{headers:{...headers,'Prefer':'count=exact'},cache:'no-store'});
   const textoConf=await conf.text();let rows=[];if(textoConf){try{rows=JSON.parse(textoConf)}catch{}}
   if(!conf.ok)throw new Error(`Não foi possível conferir a tabela: ${textoConf||`HTTP ${conf.status}`}`);
   const presentes=new Set((Array.isArray(rows)?rows:[]).map(x=>`${x.nome_chave}|${dataISOFlex(x.inicio)}|${dataISOFlex(x.fim)}`));
   const faltantes=payload.filter(x=>!presentes.has(`${x.nome_chave}|${x.inicio}|${x.fim}`));
   if(faltantes.length)throw new Error(`A conferência encontrou ${faltantes.length} programação(ões) ausente(s) no banco após o envio.`);
-  programacaoFerias=(Array.isArray(rows)?rows:[]).map(r=>normalizarProgramacaoFerias({id:r.id,nome_completo:r.nome_completo,nome:r.nome_completo,matricula:r.matricula||'',funcao_colaborador:r.funcao||'',funcao:r.funcao||'',area:r.area||'',local:r.area||'',inicio:r.inicio,fim:r.fim,retorno:r.retorno||''})).filter(Boolean);
+  programacaoFerias=(Array.isArray(rows)?rows:[]).map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
   gravarLocal(FERIAS_KEY,programacaoFerias);feriasNuvemDisponivel=true;atualizarStatusFonteFerias();
   return{gravadas:payload.length,totalTabela:programacaoFerias.length,duplicadasRemovidas:bruto.length-payload.length,projeto};
+}
+function statusPlanilhaParaApp(valor){
+  const n=normalizarTexto(valor||'').replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  if(!n)return'PRÉ-PROGRAMADO';
+  if(n.includes('cancelado'))return'CANCELADO';
+  if(n.includes('nao aprovado'))return'NÃO APROVADO';
+  if(n.includes('reprogramar'))return'REPROGRAMAR';
+  if(n.includes('realizado')||n.includes('concluido'))return'REALIZADO';
+  if(n.includes('lancado no gl')||n.includes('enviar ao rh')||n.includes('aviso'))return'ALERTA PARA ENVIAR AO RH';
+  if((n.includes('aguardando')||n.includes('pendente'))&&n.includes('rh'))return'AGUARDANDO APROVAÇÃO RH';
+  if(n.includes('programado')||n.includes('aprovado pelo rh')||n==='aprovado')return'PROGRAMADO';
+  if(n.includes('ferias')||n.includes('em gozo'))return'PROGRAMADO';
+  if(n.includes('pre-programado')||n.includes('pre programado')||n.includes('a programar')||n.includes('em dia'))return'PRÉ-PROGRAMADO';
+  return'A PROGRAMAR';
 }
 async function importarFerias(){
   const input=$('planilhaFerias'),file=input?.files?.[0],btn=$('btnImportarFerias'),status=$('statusImportacaoFerias');
@@ -470,23 +697,510 @@ async function importarFerias(){
   btn.disabled=true;
   try{
     const linhas=await extrairFeriasPlanilha(file);status.textContent=`Planilha lida • aba ${linhas[0]?.aba||'identificada'} • ${linhas.length} linha(s) encontrada(s). Validando...`;
-    const validas=[],invalidas=[],vinculadas=[],naoVinculadas=[];
+    const validas=[],invalidas=[],vinculadas=[],naoVinculadas=[],divergencias=[];
     for(const f of linhas){
       if(f.erro){invalidas.push(f);continue}
-      const c=localizarColaboradorFerias(f.nome),nomeCompleto=organizarNome(c?.nome_completo||f.nome);
-      const p={tipo:'Férias',categoria:'Férias',motivo:'Férias',nome:nomeCompleto,nome_completo:nomeCompleto,matricula:String(c?.matricula||'').trim(),funcao_colaborador:String(c?.funcao||'').trim(),area:String(c?.area||'').trim(),funcao:String(c?.funcao||'').trim(),local:String(c?.area||'').trim(),inicio:f.inicio,fim:f.fim,retorno:f.retorno||'',cid:'',descricao:'Férias programadas',atestado_fisico:'N/A',enviado_grupo:'N/A',observacao:f.retorno?`Retorno previsto: ${dataBR(f.retorno)}`:'',foto_url:'',foto_path:''};
-      validas.push(p);if(c)vinculadas.push(p);else naoVinculadas.push(p)
+      const vinculo=localizarColaboradorFerias(f.nome,f.matricula),c=vinculo?.colaborador;
+      if(!c){naoVinculadas.push(f);continue}
+      const nomeCompleto=organizarNome(c.nome_completo||c.nome_exibicao);
+      const p={tipo:'Férias',categoria:'Férias',motivo:'Férias',colaborador_id:c.id,nome:nomeCompleto,nome_completo:nomeCompleto,matricula:String(c.matricula||'').trim(),funcao_colaborador:String(c.funcao||'').trim(),area:String(c.area||'').trim(),funcao:String(c.funcao||'').trim(),local:String(c.area||'').trim(),data_admissao:c.data_admissao||null,inicio:f.inicio,fim:f.fim,retorno:f.retorno||'',dias:f.dias||diasInclusivosISO(f.inicio,f.fim),abono:f.abono||'NÃO',decimo_terceiro:f.decimo_terceiro||'NÃO',status_aprovacao:statusPlanilhaParaApp(f.status_planilha),cid:'',descricao:'Férias programadas',atestado_fisico:'N/A',enviado_grupo:'N/A',observacao:[f.retorno?`Retorno previsto: ${dataBR(f.retorno)}`:'',f.programacao_antecipada==='SIM'?'Prog. Antecipada: SIM':'',f.status_planilha?`Status planilha: ${String(f.status_planilha).trim()}`:''].filter(Boolean).join(' • '),foto_url:'',foto_path:'',origem:'planilha'};
+      validas.push(p);vinculadas.push(p);if(vinculo.divergenciaNome||vinculo.divergenciaMatricula)divergencias.push({linha:f.linha,nome:f.nome,matriculaPlanilha:f.matricula,matriculaEfetivo:c.matricula,criterio:vinculo.criterio})
     }
     if(!validas.length)throw new Error(`Nenhuma programação válida. ${invalidas.length} linha(s) com erro de data.`);
-    if(!confirm(`Planilha lida com sucesso.\n\nVálidas: ${validas.length}\nVinculadas ao Efetivo: ${vinculadas.length}\nSem vínculo: ${naoVinculadas.length}\nInválidas: ${invalidas.length}\n\nGravar agora no Supabase?`)){status.textContent='Importação cancelada pelo usuário.';return}
+    if(!confirm(`Planilha lida com sucesso.\n\nVinculadas ao Efetivo: ${vinculadas.length}\nNão importadas por falta de vínculo: ${naoVinculadas.length}\nDivergências corrigidas pelo Efetivo: ${divergencias.length}\nInválidas: ${invalidas.length}\n\nSomente colaboradores reconhecidos no Efetivo serão gravados. Continuar?`)){status.textContent='Importação cancelada pelo usuário.';return}
     const resultado=await salvarProgramacaoFeriasREST(validas,msg=>status.textContent=msg);
     // A programação futura permanece somente na tabela própria de férias.
     // Ela só entra no operacional durante o período e no histórico a partir do retorno.
     input.value='';
     const ref=$('dataPainel')?.value||hoje(),prox=proximasFerias(ref)[0];
     renderizarProgramacaoFerias();renderizarProximasFerias(ref);atualizarDashboard();
-    status.textContent=`✅ IMPORTAÇÃO CONFIRMADA NO SUPABASE • ${resultado.gravadas} programação(ões) desta planilha confirmada(s) • total da tabela: ${resultado.totalTabela} • projeto ${resultado.projeto} • ${vinculadas.length} vinculada(s) ao Efetivo • ${naoVinculadas.length} sem vínculo • ${invalidas.length} inválida(s).${prox?` Próxima: ${nomeCompletoRegistro(prox)} em ${dataBR(prox.inicio)} (${prox.diasAte===1?'falta 1 dia':`faltam ${prox.diasAte} dias`}).`:''}`;
-  }catch(e){console.error('IMPORTAÇÃO FÉRIAS 6.4.7:',e);status.classList.add('cloud-error');status.textContent=`❌ ERRO NA IMPORTAÇÃO: ${e.message||String(e)}`;alert(`Falha na importação de férias:\n\n${e.message||e}`)}finally{btn.disabled=false;if(estaOnline())statusNuvem('Sincronizado')}
+    status.textContent=`✅ IMPORTAÇÃO CONFIRMADA • ${resultado.gravadas} programação(ões) atualizada(s) conforme o STATUS individual da planilha • ${vinculadas.length} vinculada(s) ao Efetivo • ${naoVinculadas.length} não importada(s) por falta de vínculo • ${divergencias.length} divergência(s) corrigida(s) com os dados oficiais do Efetivo • ${invalidas.length} inválida(s).${prox?` Próxima: ${nomeCompletoRegistro(prox)} em ${dataBR(prox.inicio)} (${prox.diasAte===1?'falta 1 dia':`faltam ${prox.diasAte} dias`}).`:''}`;
+  }catch(e){console.error('IMPORTAÇÃO FÉRIAS 6.10.14:',e);status.classList.add('cloud-error');status.textContent=`❌ ERRO NA IMPORTAÇÃO: ${e.message||String(e)}`;alert(`Falha na importação de férias:\n\n${e.message||e}`)}finally{btn.disabled=false;if(estaOnline())statusNuvem('Sincronizado')}
+}
+
+function preencherSelectFerias(){const el=$('feriasColaborador');if(!el)return;const atual=el.value;el.innerHTML='<option value="">Selecione o colaborador</option>'+colaboradores.filter(colaboradorAtivo).sort((a,b)=>String(a.nome_completo).localeCompare(String(b.nome_completo),'pt-BR')).map(c=>`<option value="${c.id}">${escapar(String(c.nome_completo||'').toUpperCase())}</option>`).join('');el.value=atual}
+function colaboradorFeriasSelecionado(){return colaboradores.find(c=>String(c.id)===String($('feriasColaborador')?.value))||null}
+function preencherDadosFerias(){const c=colaboradorFeriasSelecionado();$('feriasMatricula').value=c?.matricula||'';$('feriasArea').value=String(c?.area||'').toUpperCase();$('feriasFuncao').value=String(c?.funcao||'').toUpperCase();$('feriasAdmissao').value=c?.data_admissao||'';validarCadastroFerias()}
+function calcularDatasFerias(){const inicio=$('feriasInicio')?.value||'',dias=Number($('feriasDias')?.value||30),fim=somarDiasInclusivosISO(inicio,dias);$('feriasFim').value=fim;if(fim){const d=new Date(`${fim}T12:00:00`);d.setDate(d.getDate()+1);$('feriasRetorno').value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}else $('feriasRetorno').value='';validarCadastroFerias()}
+function conflitoFeriasAtual(){const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio')?.value||'',fim=$('feriasFim')?.value||'';if(!c||!inicio||!fim)return[];const funcao=normalizarTexto(c.funcao);return programacaoFerias.filter(r=>normalizarTexto(r.funcao_colaborador||r.funcao)===funcao&&String(r.matricula||'')!==String(c.matricula||'')&&r.inicio<=fim&&r.fim>=inicio&&statusFeriasControle(r)!=='REALIZADO')}
+function antecedenciaFerias(inicio){return diferencaDiasISO(hoje(),inicio)}
+function statusFeriasControleLegacy(r){const base=String(r.status_aprovacao||'A PROGRAMAR').toUpperCase();if(base==='APROVADO'){if(hoje()>r.fim)return'REALIZADO';if(hoje()>=r.inicio&&hoje()<=r.fim)return'EM FÉRIAS'}return base}
+function validarCadastroFerias(){const el=$('alertaCadastroFerias');if(!el)return[];const inicio=$('feriasInicio')?.value||'',avisos=[],ant=antecedenciaFerias(inicio),conflitos=conflitoFeriasAtual(),c=colaboradorFeriasSelecionado();if(inicio&&ant<60)avisos.push(`ANTECEDÊNCIA: ${ant} dia(s). O recomendado é programar com no mínimo 60 dias.`);if(conflitos.length)avisos.push(`CONFLITO DE FUNÇÃO: ${conflitos.map(x=>`${x.nome_completo} (${dataBR(x.inicio)} a ${dataBR(x.fim)})`).join('; ')}`);if(inicio&&c){const regra=validarInicioFeriasNaEscala(c,inicio);if(!regra.valido)avisos.push(regra.mensagem)}el.innerHTML=avisos.map(x=>`<div>⚠ ${escapar(x)}</div>`).join('');el.classList.toggle('hidden',!avisos.length);return avisos}
+function limparFormFerias(){['feriasColaborador','feriasMatricula','feriasArea','feriasFuncao','feriasAdmissao','feriasInicio','feriasFim','feriasRetorno','feriasObservacao'].forEach(id=>{if($(id))$(id).value=''});$('feriasDias').value='30';$('feriasAbono').value='NÃO';$('feriasDecimo').value='NÃO';$('alertaCadastroFerias').classList.add('hidden')}
+async function salvarFeriasManual(){if(!exigirPermissao('ferias_cadastrar'))return;const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio').value,fim=$('feriasFim').value,retorno=$('feriasRetorno').value;if(!c||!inicio||!fim){alert('Selecione o colaborador e informe a data de início.');return}const avisos=validarCadastroFerias();let justificativa='';if(avisos.length){if(!confirm(`${avisos.join('\n\n')}\n\nDeseja continuar mesmo assim?`))return;justificativa=prompt('Informe a justificativa para continuar com o alerta:')?.trim()||'';if(!justificativa){alert('A justificativa é obrigatória.');return}}const payload=payloadProgramacaoFerias({colaborador_id:c.id,nome_completo:c.nome_completo,matricula:c.matricula,funcao:c.funcao,area:c.area,data_admissao:c.data_admissao,inicio,fim,retorno,dias:$('feriasDias').value,abono:$('feriasAbono').value,decimo_terceiro:$('feriasDecimo').value,status_aprovacao:'PRÉ-PROGRAMADO',observacao:$('feriasObservacao').value.trim(),justificativa_conflito:justificativa,origem:'aplicativo'});const {data,error}=await db.from(FERIAS_TABLE).upsert(payload,{onConflict:'nome_chave,inicio,fim'}).select('*').single();if(error){alert(`Não foi possível salvar as férias. ${error.message||''}`);return}await db.from('xcmg_ferias_historico').insert({programacao_id:data.id,acao:'CADASTRO',status_novo:'PRÉ-PROGRAMADO',usuario:usuarioAtual?.nome||usuarioAtual?.login||'Usuário'});$('statusCadastroFerias').textContent='Programação salva como PRÉ-PROGRAMADO. Aguardando aprovação do RH.';limparFormFerias();await carregarProgramacaoFeriasNuvem()}
+async function acaoProgramacaoFerias(id,acao){const r=programacaoFerias.find(x=>String(x.id)===String(id));if(!r)return;if(acao==='aprovar'&&!exigirPermissao('ferias_aprovar'))return;if(acao==='reprogramar'&&!exigirPermissao('ferias_cadastrar'))return;const novo=acao==='aprovar'?'APROVADO':'REPROGRAMAR';if(acao==='aprovar'){const conflitos=programacaoFerias.filter(x=>String(x.id)!==String(id)&&normalizarTexto(x.funcao_colaborador||x.funcao)===normalizarTexto(r.funcao_colaborador||r.funcao)&&x.inicio<=r.fim&&x.fim>=r.inicio&&statusFeriasControle(x)!=='REALIZADO');if(conflitos.length&&!confirm(`ATENÇÃO: existe conflito com ${conflitos.map(x=>x.nome_completo).join(', ')}. Deseja aprovar mesmo assim?`))return}const motivo=acao==='reprogramar'?(prompt('Informe o motivo da reprogramação:')||'').trim():'';if(acao==='reprogramar'&&!motivo)return;const dados={status_aprovacao:novo,aprovado_por:acao==='aprovar'?(usuarioAtual?.nome||usuarioAtual?.login||'RH'):'',aprovado_em:acao==='aprovar'?new Date().toISOString():null,atualizado_em:new Date().toISOString()};const {error}=await db.from(FERIAS_TABLE).update(dados).eq('id',id);if(error){alert('Não foi possível atualizar a programação.');return}await db.from('xcmg_ferias_historico').insert({programacao_id:id,acao:novo,status_anterior:r.status_aprovacao||'A PROGRAMAR',status_novo:novo,usuario:usuarioAtual?.nome||usuarioAtual?.login||'Usuário',observacao:motivo});await carregarProgramacaoFeriasNuvem()}
+function renderizarProgramacaoFeriasLegacyB(){const el=$('listaProgramacaoFerias'),total=$('totalProgramacaoFerias');if(!el)return;const q=normalizarTexto($('pesquisaProgramacaoFerias')?.value||''),filtro=$('filtroStatusFerias')?.value||'Todos';const lista=[...programacaoFerias].filter(r=>{const st=statusFeriasControle(r,$('dataPainel')?.value||hoje());return(!q||normalizarTexto(`${r.nome_completo} ${r.matricula} ${r.funcao}`).includes(q))&&(filtro==='Todos'||st===filtro)}).sort((a,b)=>a.inicio.localeCompare(b.inicio));if(total)total.textContent=`${lista.length} programação(ões)`;if($('resumoFeriasModulo'))$('resumoFeriasModulo').textContent=`${programacaoFerias.length} programações`;const conflitosTodos=programacaoFerias.filter((r,i,a)=>a.some((x,j)=>j!==i&&normalizarTexto(x.funcao)===normalizarTexto(r.funcao)&&x.inicio<=r.fim&&x.fim>=r.inicio&&statusFeriasControle(x)!=='REALIZADO')).length;if($('kpiFeriasAProgramar'))$('kpiFeriasAProgramar').textContent=programacaoFerias.filter(r=>statusFeriasControle(r,$('dataPainel')?.value||hoje())==='A PROGRAMAR').length;if($('kpiFeriasAprovadas'))$('kpiFeriasAprovadas').textContent=programacaoFerias.filter(r=>statusFeriasControle(r,$('dataPainel')?.value||hoje())==='APROVADO').length;if($('kpiFerias60Dias'))$('kpiFerias60Dias').textContent=programacaoFerias.filter(r=>statusFeriasControle(r,$('dataPainel')?.value||hoje())==='A PROGRAMAR'&&antecedenciaFerias(r.inicio)<=60).length;if($('kpiFeriasConflitos'))$('kpiFeriasConflitos').textContent=conflitosTodos;if(!lista.length){el.innerHTML='<div class="empty">Nenhuma programação encontrada.</div>';return}el.innerHTML=`<div class="vacation-control-table"><table><thead><tr><th>Área</th><th>Matrícula</th><th>Colaborador</th><th>Função</th><th>Início</th><th>Fim</th><th>Retorno</th><th>Dias</th><th>Status</th><th>Ações</th></tr></thead><tbody>${lista.map(r=>{const st=statusFeriasControle(r,$('dataPainel')?.value||hoje()),ant=antecedenciaFerias(r.inicio);return`<tr><td>${escapar(r.area||'—')}</td><td>${escapar(r.matricula||'—')}</td><td><strong>${escapar(r.nome_completo)}</strong>${ant<=60&&st==='A PROGRAMAR'?'<small class="vacation-deadline-alert">⚠ Prazo de 60 dias</small>':''}</td><td>${escapar(r.funcao||'—')}</td><td>${dataBR(r.inicio)}</td><td>${dataBR(r.fim)}</td><td>${dataBR(r.retorno)}</td><td>${r.dias}</td><td><span class="vacation-status-control">${escapar(st)}</span></td><td><div class="effective-row-actions">${st==='A PROGRAMAR'?`<button class="success small-button" data-approve-vacation="${r.id}">Aprovar RH</button>`:''}<button class="secondary small-button" data-reschedule-vacation="${r.id}">Reprogramar</button></div></td></tr>`}).join('')}</tbody></table></div>`}
+
+function preencherSelectFerias(){const el=$('feriasColaborador');if(!el)return;const atual=el.value;el.innerHTML='<option value="">Selecione o colaborador</option>'+colaboradores.filter(colaboradorAtivo).sort((a,b)=>String(a.nome_completo).localeCompare(String(b.nome_completo),'pt-BR')).map(c=>`<option value="${c.id}">${escapar(String(c.nome_completo||'').toUpperCase())}</option>`).join('');el.value=atual}
+function colaboradorFeriasSelecionado(){return colaboradores.find(c=>String(c.id)===String($('feriasColaborador')?.value))||null}
+function preencherDadosFerias(){const c=colaboradorFeriasSelecionado();$('feriasMatricula').value=c?.matricula||'';$('feriasArea').value=String(c?.area||'').toUpperCase();$('feriasFuncao').value=String(c?.funcao||'').toUpperCase();$('feriasAdmissao').value=dataISOFlex(c?.data_admissao);const ciclo=c?.data_admissao?cicloPorReferencia(c.data_admissao):null,minimo=ciclo?.aquisitivo?somarDiasInclusivosISO(ciclo.aquisitivo,1):'';if($('feriasInicio')){if(minimo)$('feriasInicio').min=minimo;else $('feriasInicio').removeAttribute('min')}calcularDatasFerias()}
+function calcularDatasFerias(){const inicio=$('feriasInicio')?.value||'',dias=Number($('feriasDias')?.value||0),fim=somarDiasInclusivosISO(inicio,dias);if($('feriasFim'))$('feriasFim').value=fim;const ret=fim?somarDiasInclusivosISO(fim,2):'';if($('feriasRetorno'))$('feriasRetorno').value=ret;mostrarAlertasFormularioFerias()}
+function ehFeriasImportada(r){
+  const origem=normalizarTexto(r?.origem||'');
+  return origem==='planilha'||origem.includes('planilha');
+}
+function aprovacaoRHConfirmada(r){
+  const base=String(r?.status_aprovacao||'').trim().toUpperCase();
+  return ['APROVADO','PROGRAMADO','APROVADO PELO RH'].includes(base)
+}
+function statusFeriasControle(r,ref){
+  // v6.10.14 — motor único de status usado por Férias, Dashboard, Efetivo e Registros.
+  const referencia=dataISOFlex(ref||$('dataPainel')?.value||hoje())||hoje();
+  const item=normalizarProgramacaoFerias(r);if(!item?.inicio)return'';
+  const inicio=dataISOFlex(item.inicio),fim=dataISOFlex(item.fim)||somarDiasInclusivosISO(inicio,item.dias||30);
+  const raw=String(item.status_aprovacao||'PRÉ-PROGRAMADO').trim();
+  const base=statusPlanilhaParaApp(raw);
+
+  // Estados administrativos finais nunca viram férias por causa da data.
+  if(['CANCELADO','NÃO APROVADO','REPROGRAMAR'].includes(base))return base;
+
+  // O período efetivamente programado prevalece para férias válidas.
+  if(inicio&&fim&&referencia>=inicio&&referencia<=fim)return'EM FÉRIAS';
+  if(fim&&referencia>fim)return'REALIZADO';
+
+  const ante=diferencaDiasISO(referencia,inicio);
+  if(ante===null)return'PRÉ-PROGRAMADO';
+
+  // Programações importadas representam a matriz oficial já existente: preservar a situação da planilha.
+  if(ehFeriasImportada(item)){
+    if(base==='REALIZADO')return'REALIZADO';
+    if(base==='PROGRAMADO')return'PROGRAMADO';
+    if(base==='ALERTA PARA ENVIAR AO RH')return'ALERTA PARA ENVIAR AO RH';
+    if(base==='AGUARDANDO APROVAÇÃO RH')return'AGUARDANDO APROVAÇÃO RH';
+    if(base==='APROVAÇÃO RH PENDENTE')return'APROVAÇÃO RH PENDENTE';
+    return base==='A PROGRAMAR'?'PRÉ-PROGRAMADO':base==='PRÉ-PROGRAMADO'?'PRÉ-PROGRAMADO':'PRÉ-PROGRAMADO';
+  }
+
+  // Novas programações do aplicativo seguem o fluxo automático combinado.
+  const aprovado=aprovacaoRHConfirmada(item);
+  // v6.10.37 — aprovação antecipada do RH é válida em qualquer antecedência.
+  // Os marcos de 60/50 dias continuam como alertas de fluxo, não como trava.
+  if(aprovado&&ante>=1)return'PROGRAMADO';
+  if(ante>60)return'PRÉ-PROGRAMADO';
+  if(ante>=51&&ante<=60)return'ALERTA PARA ENVIAR AO RH';
+  if(ante>=44&&ante<=50)return aprovado?'APROVADO':'AGUARDANDO APROVAÇÃO RH';
+  if(ante>=1&&ante<=43)return aprovado?'PROGRAMADO':'APROVAÇÃO RH PENDENTE';
+  return aprovado?'PROGRAMADO':'PRÉ-PROGRAMADO';
+}
+
+function diasAntecedenciaFerias(inicio,ref){return diferencaDiasISO(dataISOFlex(ref||$('dataPainel')?.value||hoje())||hoje(),dataISOFlex(inicio))}
+function adicionarAnosISO(data,anos){const iso=dataISOFlex(data);if(!iso)return'';const d=new Date(`${iso}T12:00:00`);if(Number.isNaN(d.getTime()))return'';d.setFullYear(d.getFullYear()+Number(anos||0));return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function cicloPorReferencia(dataAdmissao,ref){
+  const adm=dataISOFlex(dataAdmissao),referencia=dataISOFlex(ref||$('dataPainel')?.value||hoje())||hoje();
+  if(!adm)return{periodo:'',aquisitivo:'',limite:''};
+  let inicio=adm;let aquisitivo=adicionarAnosISO(inicio,1);
+  // Avança o ciclo enquanto o próximo aquisitivo já ficou para trás.
+  let guard=0;while(aquisitivo&&referencia>adicionarAnosISO(aquisitivo,1)&&guard++<80){inicio=aquisitivo;aquisitivo=adicionarAnosISO(inicio,1)}
+  return{periodo:inicio,aquisitivo,limite:adicionarAnosISO(aquisitivo,1)};
+}
+function cicloAquisitivoFerias(r){return cicloPorReferencia(r?.data_admissao||dadosEfetivoFerias(r)?.data_admissao,r?.inicio||$('dataPainel')?.value||hoje())}
+function conflitoFerias(r,idIgnorar){
+  const funcao=normalizarTexto(r?.funcao_colaborador||r?.funcao||''),inicio=dataISOFlex(r?.inicio),fim=dataISOFlex(r?.fim);
+  if(!funcao||!inicio||!fim)return[];
+  return programacaoFerias.map(dadosEfetivoFerias).filter(Boolean).filter(x=>String(x.id||'')!==String(idIgnorar||'')&&normalizarTexto(x.funcao_colaborador||x.funcao||'')===funcao&&dataISOFlex(x.inicio)<=fim&&dataISOFlex(x.fim)>=inicio&&!['REALIZADO','CANCELADO'].includes(statusFeriasControle(x,$('dataPainel')?.value||hoje())));
+}
+function alertaLimiteConcessao(r){const ciclo=cicloAquisitivoFerias(r),dias=diferencaDiasISO($('dataPainel')?.value||hoje(),ciclo?.limite);if(dias===null)return'';if(dias<0)return`CONCESSIVO VENCIDO HÁ ${Math.abs(dias)} DIA(S)`;if(dias<=30)return`CONCESSIVO URGENTE • ${dias} DIA(S) PARA O LIMITE`;if(dias<=60)return`CONCESSIVO CRÍTICO • ${dias} DIA(S) PARA O LIMITE`;if(dias<=90)return`CONCESSIVO EM ALERTA • ${dias} DIA(S)`;if(dias<=120)return`PLANEJAR PRÓXIMO CICLO • ${dias} DIA(S)`;return''}
+
+function fecharEditorLateralFerias(){const area=document.getElementById('vacationFormArea');area?.classList.remove('vacation-edit-drawer');document.body.classList.remove('vacation-drawer-open')}
+function limparFormFerias(){editandoFeriasId=null;cicloProgramacaoSelecionado=null;['feriasColaborador','feriasMatricula','feriasArea','feriasFuncao','feriasAdmissao','feriasInicio','feriasFim','feriasRetorno','feriasObservacao'].forEach(id=>{if($(id))$(id).value=''});$('feriasDias').value='30';$('feriasAbono').value='NÃO';$('feriasDecimo').value='NÃO';$('alertaCadastroFerias').classList.add('hidden');$('alertaCadastroFerias').innerHTML='';$('tituloFormFerias').textContent='Cadastrar programação';$('btnSalvarFerias').textContent='Salvar como PRÉ-PROGRAMADO';$('btnCancelarFerias').classList.add('hidden');fecharEditorLateralFerias()}
+function editarProgramacaoFerias(id){const r=programacaoFerias.find(x=>String(x.id)===String(id));if(!r)return;if(statusFeriasControle(r,$('dataPainel')?.value||hoje())==='REALIZADO'){alert('Férias realizadas permanecem protegidas no histórico.');return}const d=dadosEfetivoFerias(r);const areaForm=document.getElementById('vacationFormArea');areaForm?.classList.remove('hidden');areaForm?.classList.add('vacation-edit-drawer');document.body.classList.add('vacation-drawer-open');editandoFeriasId=r.id;$('feriasColaborador').value=String(d.colaborador_id||'');preencherDadosFerias();$('feriasInicio').value=dataISOFlex(d.inicio);$('feriasDias').value=String(d.dias||diasInclusivosISO(d.inicio,d.fim)||30);$('feriasAbono').value=d.abono||'NÃO';$('feriasDecimo').value=d.decimo_terceiro||'NÃO';$('feriasObservacao').value=d.observacao||'';calcularDatasFerias();$('tituloFormFerias').textContent='Editar / reprogramar férias';$('btnSalvarFerias').textContent='Salvar alterações e enviar ao RH';$('btnCancelarFerias').classList.remove('hidden');setTimeout(()=>$('feriasInicio')?.focus(),50)}
+function iniciarProgramacaoColaborador(id,indiceCiclo=null){
+  // v6.10.41 — ao programar a partir de Pendências, preserva a posição atual da rolagem.
+  // Só troca para a página Férias quando a chamada vier de outra página; dentro de Férias não volta ao topo.
+  const scrollAtual=window.scrollY||document.documentElement.scrollTop||0;
+  const paginaFerias=document.getElementById('ferias');
+  const jaNaPaginaFerias=!!paginaFerias?.classList.contains('active');
+  if(!jaNaPaginaFerias)abrirPagina('ferias');
+  const areaForm=document.getElementById('vacationFormArea');
+  areaForm?.classList.remove('hidden');
+  areaForm?.classList.add('vacation-edit-drawer');
+  document.body.classList.add('vacation-drawer-open');
+  editandoFeriasId=null;
+  $('feriasColaborador').value=String(id);
+  preencherDadosFerias();
+  const c=colaboradorFeriasSelecionado();
+  const idx=indiceCiclo===null?null:Number(indiceCiclo);
+  cicloProgramacaoSelecionado=(c&&Number.isInteger(idx))?cicloFeriasPorIndice(c.data_admissao,idx):null;
+  ['feriasInicio','feriasFim','feriasRetorno','feriasObservacao'].forEach(campoId=>{if($(campoId))$(campoId).value=''});
+  if($('feriasDias'))$('feriasDias').value='30';
+  if($('feriasAbono'))$('feriasAbono').value='NÃO';
+  if($('feriasDecimo'))$('feriasDecimo').value='NÃO';
+  $('tituloFormFerias').textContent='Programar férias';
+  $('btnSalvarFerias').textContent='Salvar como PRÉ-PROGRAMADO';
+  $('btnCancelarFerias').classList.add('hidden');
+  $('alertaCadastroFerias')?.classList.add('hidden');
+  const campo=$('feriasInicio');
+  if(campo){
+    if(cicloProgramacaoSelecionado?.inicioConcessao)campo.min=cicloProgramacaoSelecionado.inicioConcessao;
+    else campo.removeAttribute('min');
+    setTimeout(()=>{try{campo.focus({preventScroll:true})}catch(_){campo.focus()}if(jaNaPaginaFerias)window.scrollTo({top:scrollAtual,left:0,behavior:'auto'})},50);
+  }
+}
+async function registrarHistoricoFerias(programacaoId,acao,statusAnterior,statusNovo,observacao=''){
+  if(!db||!estaOnline())return false;
+  try{
+    const payload={programacao_id:programacaoId,acao:String(acao||''),status_anterior:String(statusAnterior||''),status_novo:String(statusNovo||''),usuario:usuarioAtual?.nome||usuarioAtual?.login||'Usuário',observacao:String(observacao||'')};
+    const {error}=await db.from('xcmg_ferias_historico').insert(payload);
+    if(error){console.warn('Não foi possível registrar o histórico de férias.',error);return false}
+    return true;
+  }catch(e){console.warn('Histórico de férias indisponível.',e);return false}
+}
+function chaveCancelamentoFerias(r){
+  const base=chaveNomeFerias(r?.nome_completo||r?.nome||'colaborador')||'colaborador';
+  return `cancelado-${r?.id||Date.now()}-${base}`.slice(0,240);
+}
+async function salvarFeriasManual(){
+  if(!exigirPermissao('ferias_cadastrar'))return;const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio').value,dias=Number($('feriasDias').value),fim=$('feriasFim').value,retorno=$('feriasRetorno').value;if(!c||!inicio||!fim){alert('Selecione o colaborador e informe a data de início.');return}const validacaoEscala=validarInicioFeriasNaEscala(c,inicio);if(!validacaoEscala.valido){alert(validacaoEscala.mensagem);$('feriasInicio')?.focus();return}const cicloPlanejado=cicloProgramacaoSelecionado||cicloPendenteFerias(c,$('dataPainel')?.value||hoje()),primeiroDiaPermitido=cicloPlanejado?.inicioConcessao||'';if(primeiroDiaPermitido&&inicio<primeiroDiaPermitido){alert(`Data inválida: o período aquisitivo termina em ${dataBR(cicloPlanejado.fim)}. Para este ciclo, as férias podem iniciar a partir de ${dataBR(primeiroDiaPermitido)}.`);$('feriasInicio')?.focus();return}
+  // v6.10.42 — proteção gerencial: uma nova programação não pode ocupar um ciclo já vinculado.
+  if(!editandoFeriasId&&cicloPlanejado){const existente=programacaoDoCicloFerias(c,cicloPlanejado,$('dataPainel')?.value||hoje());if(existente){const ex=existente.d||existente.r||{};alert(`Já existe uma programação de férias vinculada a este período aquisitivo (${dataBR(cicloPlanejado.inicio)} a ${dataBR(cicloPlanejado.fim)}).\n\nProgramação existente: ${dataBR(ex.inicio)} a ${dataBR(ex.fim)}.\n\nA nova programação não será salva para evitar duplicidade.`);return}}
+  const conflitos=conflitoFerias({id:editandoFeriasId,funcao:c.funcao,inicio,fim},editandoFeriasId),ante=diasAntecedenciaFerias(inicio);let justificativa='';if(conflitos.length||(ante>=0&&ante<60)){const motivo=prompt(`${conflitos.length?'Existe conflito com colaborador da mesma função.\n':''}${ante>=0&&ante<60?`A antecedência é de ${ante} dia(s), abaixo de 60.\n`:''}\nInforme uma justificativa para continuar:`);if(!motivo?.trim())return;justificativa=motivo.trim()}
+  const payload=payloadProgramacaoFerias({colaborador_id:c.id,nome_completo:c.nome_completo,matricula:c.matricula,funcao:c.funcao,area:c.area,data_admissao:c.data_admissao,inicio,fim,retorno,dias,abono:$('feriasAbono').value,decimo_terceiro:$('feriasDecimo').value,status_aprovacao:'PRÉ-PROGRAMADO',observacao:$('feriasObservacao').value.trim(),justificativa_conflito:justificativa,origem:'aplicativo'});
+  let data,error,acao='Programação cadastrada',anterior='';if(editandoFeriasId){const atual=programacaoFerias.find(x=>String(x.id)===String(editandoFeriasId));anterior=atual?.status_aprovacao||'';({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',editandoFeriasId).select('*').single());acao='Férias editadas / reprogramadas'}else({data,error}=await db.from(FERIAS_TABLE).insert(payload).select('*').single());
+  if(error){alert(`Não foi possível salvar as férias. ${error.message||''}`);return}await registrarHistoricoFerias(data.id,acao,anterior,'PRÉ-PROGRAMADO',justificativa||payload.observacao);$('statusCadastroFerias').textContent=editandoFeriasId?'Alterações salvas. A programação voltou para aprovação do RH.':'Programação salva. Aguardando o fluxo de aprovação do RH.';limparFormFerias();await carregarProgramacaoFeriasNuvem();renderizarProgramacaoFerias();atualizarDashboard()
+}
+async function alterarStatusFerias(id,novo){
+  const permissao=['APROVADO','PROGRAMADO','NÃO APROVADO'].includes(novo)?'ferias_aprovar':'ferias_cadastrar';
+  if(!exigirPermissao(permissao,'Usuário sem permissão para esta ação.'))return;
+  const atual=programacaoFerias.find(r=>String(r.id)===String(id));if(!atual)return;
+  const situacao=statusFeriasControle(atual),ante=diasAntecedenciaFerias(atual.inicio);
+  if(['REALIZADO','EM FÉRIAS'].includes(situacao)){alert('Férias em andamento ou realizadas não podem ter o status alterado.');return}
+  if(novo==='APROVADO'){
+    if(!(ante>=1)){alert('A aprovação do RH só pode ser confirmada para férias com início futuro.');return}
+    const baseEfetivo=Array.isArray(colaboradores)?colaboradores:[];
+    const colaborador=baseEfetivo.find(c=>String(c.id||'')===String(atual.colaborador_id||''))||baseEfetivo.find(c=>String(c.matricula||'').trim()===String(atual.matricula||'').trim());
+    if(colaborador){
+      const ini=dataISOFlex(atual.inicio),adm=dataISOFlex(colaborador.data_admissao);
+      let cicloDaData=null;
+      // v6.10.40: a aprovação é validada pelo ciclo em que a DATA DAS FÉRIAS realmente se encaixa.
+      // Não bloqueia uma programação válida só porque existe ciclo anterior sem histórico no aplicativo.
+      if(ini&&adm){
+        for(let i=0;i<80;i++){
+          const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)break;
+          if(ini>=ciclo.inicioConcessao&&ini<=ciclo.limite){cicloDaData=ciclo;break}
+          if(ini<ciclo.inicioConcessao)break;
+        }
+      }
+      if(!cicloDaData){
+        const primeiro=cicloFeriasPorIndice(adm,0);
+        if(primeiro&&ini<primeiro.inicioConcessao){
+          alert(`Não é possível aprovar: as férias começam antes da abertura do primeiro período válido. Para este colaborador, podem iniciar a partir de ${dataBR(primeiro.inicioConcessao)}.`);return
+        }
+        alert('Não foi possível identificar um período aquisitivo/concessivo válido para esta data de férias. Verifique a data de admissão e o início das férias.');return
+      }
+      // Se houver ciclos anteriores sem registro, apenas orienta; não impede a aprovação da data válida.
+      const consumidos=ciclosConsumidosFerias(colaborador,$('dataPainel')?.value||hoje());
+      const anterioresAbertos=[];
+      for(let i=0;i<cicloDaData.indice;i++)if(!consumidos.has(i))anterioresAbertos.push(i);
+      if(anterioresAbertos.length){
+        const cicloAnt=cicloFeriasPorIndice(adm,anterioresAbertos[0]);
+        if(!confirm(`A data ${dataBR(ini)} está válida para o período ${dataBR(cicloDaData.inicio)} a ${dataBR(cicloDaData.fim)}.\n\nExiste período anterior sem férias registradas no sistema (${dataBR(cicloAnt.inicio)} a ${dataBR(cicloAnt.fim)}). Isso pode indicar férias realizadas em outra turma.\n\nDeseja aprovar mesmo assim?`))return;
+      }
+    }
+  }
+  const statusPersistir=novo==='PROGRAMADO'?'APROVADO':novo;
+  let observacao='';
+  if(statusPersistir==='APROVADO'){
+    if(!confirm(`Confirmar que o RH APROVOU as férias de ${atual.nome_completo||'este colaborador'}?`))return;
+    observacao=`RH aprovado manualmente com ${ante} dia(s) de antecedência.`
+  }else if(['NÃO APROVADO','CANCELADO'].includes(statusPersistir)){
+    observacao=(prompt(`Informe o motivo para ${statusPersistir==='CANCELADO'?'cancelar':'não aprovar'}:`)||'').trim();if(!observacao)return
+  }
+  const anterior=atual.status_aprovacao||'A PROGRAMAR';
+  if(statusPersistir==='CANCELADO'){
+    if(!confirm(`Cancelar esta programação de férias de ${atual.nome_completo||'este colaborador'}?
+
+A programação será retirada da lista ativa e o colaborador voltará para A PROGRAMAR. O cancelamento ficará somente no histórico.`))return;
+    // Não excluímos fisicamente porque o histórico possui vínculo com a programação.
+    // Em vez disso, marcamos CANCELADO e trocamos nome_chave para liberar a chave única.
+    const dadosCancelamento={status_aprovacao:'CANCELADO',nome_chave:chaveCancelamentoFerias(atual),atualizado_em:new Date().toISOString(),observacao:[atual.observacao||'',`Cancelamento: ${observacao}`].filter(Boolean).join(' | ')};
+    const {error}=await db.from(FERIAS_TABLE).update(dadosCancelamento).eq('id',id);
+    if(error){alert(`Não foi possível cancelar as férias. ${error.message||''}`);return}
+    await registrarHistoricoFerias(id,'CANCELADO',anterior,'CANCELADO',observacao);
+    programacaoFerias=programacaoFerias.filter(r=>String(r.id)!==String(id));
+    gravarLocal(FERIAS_KEY,programacaoFerias);
+    await carregarProgramacaoFeriasNuvem();renderizarProgramacaoFerias();renderizarPendenciasFerias();atualizarDashboard();
+    alert('Férias canceladas. O colaborador voltou para A PROGRAMAR e está liberado para uma nova programação.');
+    return;
+  }
+  const dados={status_aprovacao:statusPersistir,atualizado_em:new Date().toISOString(),justificativa_conflito:observacao||atual.justificativa_conflito||'',aprovado_por:statusPersistir==='APROVADO'?(usuarioAtual?.nome||usuarioAtual?.login||'Usuário'):'',aprovado_em:statusPersistir==='APROVADO'?new Date().toISOString():null};
+  const {error}=await db.from(FERIAS_TABLE).update(dados).eq('id',id);if(error){alert('Não foi possível alterar o status.');return}
+  await registrarHistoricoFerias(id,statusPersistir==='APROVADO'?'APROVAÇÃO RH CONFIRMADA':statusPersistir,anterior,statusPersistir,observacao);
+  await carregarProgramacaoFeriasNuvem();renderizarProgramacaoFerias();atualizarDashboard()
+}
+function somarDiasCalendarioISO(data,dias){
+  const iso=dataISOFlex(data),qtd=Number.parseInt(dias,10);if(!iso||!Number.isInteger(qtd))return'';
+  const d=new Date(`${iso}T12:00:00`);if(Number.isNaN(d.getTime()))return'';
+  d.setDate(d.getDate()+qtd);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fimPeriodoAquisitivoISO(inicio){const prox=adicionarAnosISO(inicio,1);return prox?somarDiasCalendarioISO(prox,-1):''}
+function cicloFeriasPorIndice(dataAdmissao,indice=0){
+  const adm=dataISOFlex(dataAdmissao);if(!adm)return null;
+  const inicio=adicionarAnosISO(adm,indice),fim=fimPeriodoAquisitivoISO(inicio),inicioConcessao=somarDiasCalendarioISO(fim,1),limite=fimPeriodoAquisitivoISO(inicioConcessao);
+  return{indice,inicio,fim,inicioConcessao,limite};
+}
+// v6.10.24 — férias válidas consomem os períodos aquisitivos em ordem cronológica.
+// Ex.: 1ª férias realizada consome o 1º período; a próxima programação consome o 2º período.
+function programacoesValidasDoColaborador(c,refPainel){
+  const matricula=String(c?.matricula||'').trim(),id=String(c?.id||'');
+  return programacaoFerias.map(r=>({r,d:dadosEfetivoFerias(r)||r,status:statusFeriasControle(r,refPainel)})).filter(x=>{
+    if(['CANCELADO','NÃO APROVADO','REPROGRAMAR'].includes(x.status))return false;
+    const mesmo=(id&&String(x.d?.colaborador_id||'')===id)||(matricula&&String(x.d?.matricula||'').trim()===matricula);
+    return mesmo&&!!dataISOFlex(x.d?.inicio);
+  }).sort((a,b)=>String(dataISOFlex(a.d?.inicio)||'').localeCompare(String(dataISOFlex(b.d?.inicio)||'')));
+}
+function ciclosConsumidosFerias(c,refPainel){
+  const adm=dataISOFlex(c?.data_admissao);if(!adm)return new Set();
+  // v6.10.35: férias anteriores fora do sistema consomem os primeiros ciclos.
+  // As férias registradas no XCMG Control continuam consumindo os ciclos seguintes, sem duplicidade.
+  const externos=qtdFeriasForaSistema(c);
+  const consumidos=new Set();for(let i=0;i<externos;i++)consumidos.add(i);let proximoIndice=externos;
+  for(const item of programacoesValidasDoColaborador(c,refPainel)){
+    const ini=dataISOFlex(item.d?.inicio);if(!ini)continue;
+    for(let i=proximoIndice;i<80;i++){
+      const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)break;
+      // Uma férias só pode consumir um ciclo já adquirido. Sempre consome o ciclo mais antigo ainda aberto.
+      if(ini>=ciclo.inicioConcessao){consumidos.add(i);proximoIndice=i+1;break}
+      // Se a férias for anterior ao fim do próximo ciclo ainda não adquirido, ela não pode pular para ciclos futuros.
+      if(ini<ciclo.inicioConcessao)break;
+    }
+  }
+  return consumidos;
+}
+function programacaoCobreCicloFerias(c,ciclo,refPainel){
+  if(!ciclo)return false;
+  return ciclosConsumidosFerias(c,refPainel).has(Number(ciclo.indice));
+}
+// v6.10.42 — vincula cada programação válida ao ciclo que ela consome,
+// seguindo exatamente a mesma ordem usada no cálculo dos períodos pendentes.
+function atribuicoesCiclosFerias(c,refPainel){
+  const adm=dataISOFlex(c?.data_admissao);if(!adm)return [];
+  const externos=qtdFeriasForaSistema(c),atribuicoes=[];let proximoIndice=externos;
+  for(const item of programacoesValidasDoColaborador(c,refPainel)){
+    const ini=dataISOFlex(item.d?.inicio);if(!ini)continue;
+    for(let i=proximoIndice;i<80;i++){
+      const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)break;
+      if(ini>=ciclo.inicioConcessao){atribuicoes.push({indice:i,ciclo,item});proximoIndice=i+1;break}
+      if(ini<ciclo.inicioConcessao)break;
+    }
+  }
+  return atribuicoes;
+}
+function programacaoDoCicloFerias(c,ciclo,refPainel,idIgnorar=''){
+  if(!ciclo)return null;
+  const achou=atribuicoesCiclosFerias(c,refPainel).find(a=>Number(a.indice)===Number(ciclo.indice)&&String(a.item?.r?.id||a.item?.d?.id||'')!==String(idIgnorar||''));
+  return achou?.item||null;
+}
+function proximaProgramacaoFuturaFerias(c,refPainel){
+  const ref=dataISOFlex(refPainel)||hoje();
+  return programacoesValidasDoColaborador(c,ref).find(x=>{
+    const ini=dataISOFlex(x.d?.inicio),st=statusFeriasControle(x.r||x.d,ref);
+    return !!ini&&ini>=ref&&!['REALIZADO','CANCELADO','NÃO APROVADO','REPROGRAMAR'].includes(st);
+  })||null;
+}
+function indiceMinimoManualFerias(c){
+  const id=String(c?.id||'');if(!id)return null;
+  const valor=ajustesCiclosFerias?.[id]?.indice;
+  const n=Number(valor);return Number.isInteger(n)&&n>=0?n:null;
+}
+function temPrimeiroCicloRealizadoNoApp(c,refPainel){
+  const adm=dataISOFlex(c?.data_admissao);if(!adm)return false;
+  const ciclo0=cicloFeriasPorIndice(adm,0);if(!ciclo0)return false;
+  const matricula=String(c?.matricula||'').trim(),id=String(c?.id||''),ref=dataISOFlex(refPainel)||($('dataPainel')?.value||hoje());
+  return programacaoFerias.some(r=>{
+    const d=dadosEfetivoFerias(r)||r;
+    const mesmo=(id&&String(d?.colaborador_id||'')===id)||(matricula&&String(d?.matricula||'').trim()===matricula);
+    if(!mesmo)return false;
+    const ini=dataISOFlex(d?.inicio);if(!ini||ini<ciclo0.inicioConcessao)return false;
+    return statusFeriasControle(r,ref)==='REALIZADO';
+  });
+}
+function qtdFeriasForaSistema(c){
+  const id=String(c?.id||'');if(!id)return 0;
+  const a=ajustesCiclosFerias?.[id];
+  // Ajuste manual sempre tem prioridade, inclusive quando o valor informado é zero.
+  if(a&&Object.prototype.hasOwnProperty.call(a,'ferias_fora_sistema')){
+    const manual=Number(a.ferias_fora_sistema);return Number.isInteger(manual)&&manual>=0?manual:0;
+  }
+  if(a&&Object.prototype.hasOwnProperty.call(a,'indice')){
+    const legado=Number(a.indice);return Number.isInteger(legado)&&legado>=0?legado:0;
+  }
+  // v6.10.43: regularização inicial do efetivo admitido em 2024.
+  // Considera 1 férias anterior fora do sistema somente quando o XCMG Control
+  // ainda não possui uma férias REALIZADA capaz de representar o primeiro ciclo.
+  const adm=dataISOFlex(c?.data_admissao);
+  if(adm&&adm.startsWith('2024-')&&!temPrimeiroCicloRealizadoNoApp(c))return 1;
+  return 0;
+}
+function cicloPendenteFeriasAutomatico(c,refPainel){
+  const adm=dataISOFlex(c?.data_admissao);if(!adm)return null;
+  const ref=dataISOFlex(refPainel)||hoje(),consumidos=ciclosConsumidosFerias(c,ref);
+  for(let i=0;i<80;i++){
+    const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)return null;
+    if(!consumidos.has(i))return ciclo;
+  }
+  return null;
+}
+function cicloPendenteFerias(c,refPainel){
+  const adm=dataISOFlex(c?.data_admissao);if(!adm)return null;
+  const ref=dataISOFlex(refPainel)||hoje(),consumidos=ciclosConsumidosFerias(c,ref);
+  // v6.10.35: ciclos externos + férias válidas do aplicativo formam uma única sequência automática.
+  for(let i=0;i<80;i++){
+    const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)return null;
+    if(!consumidos.has(i))return ciclo;
+  }
+  return null;
+}
+async function carregarAjustesCiclosFerias(){
+  const cache=lerLocal(FERIAS_CICLOS_KEY,{});ajustesCiclosFerias=cache&&typeof cache==='object'?cache:{};
+  if(!db||!estaOnline())return ajustesCiclosFerias;
+  try{
+    const {data,error}=await db.from('xcmg_efetivo_historico').select('colaborador_id,valor_novo,motivo,created_at').eq('campo','ferias_ciclo_minimo').order('created_at',{ascending:true});
+    if(error)throw error;
+    const mapa={...ajustesCiclosFerias};
+    for(const h of data||[]){
+      const id=String(h.colaborador_id||'');if(!id)continue;
+      if(String(h.valor_novo||'').toUpperCase()==='AUTO')delete mapa[id];
+      else{const indice=Number(h.valor_novo);if(Number.isInteger(indice)&&indice>=0)mapa[id]={indice,ferias_fora_sistema:indice,motivo:h.motivo||'',atualizado_em:h.created_at||''}}
+    }
+    ajustesCiclosFerias=mapa;gravarLocal(FERIAS_CICLOS_KEY,mapa);
+  }catch(e){console.warn('Ajustes manuais dos períodos aquisitivos carregados apenas do cache local.',e)}
+  return ajustesCiclosFerias;
+}
+async function ajustarPeriodoAquisitivo(id){
+  const c=colaboradores.find(x=>String(x.id)===String(id));if(!c)return;
+  if(!exigirPermissao('ferias_cadastrar','Usuário sem permissão para ajustar o período aquisitivo.'))return;
+  const atual=qtdFeriasForaSistema(c),adm=dataISOFlex(c.data_admissao);if(!adm){alert('Não foi possível calcular o período aquisitivo. Verifique a data de admissão.');return}
+  const resposta=prompt(`Ajustar controle de férias de ${c.nome_completo}.\n\nInforme QUANTAS FÉRIAS ANTERIORES esta pessoa já realizou FORA DO SISTEMA (ex.: em outra turma).\n\nQuantidade atual: ${atual}\n\nUse 0 quando não houver férias anteriores fora do sistema.`);
+  if(resposta===null)return;
+  const qtd=Number(String(resposta).trim());if(!Number.isInteger(qtd)||qtd<0||qtd>50){alert('Informe uma quantidade válida entre 0 e 50.');return}
+  if(qtd===atual){alert('A quantidade informada já está aplicada.');return}
+  const motivo=qtd>0?(prompt('Informe o motivo do ajuste (ex.: férias anteriores realizadas em outra turma):')?.trim()||''):'';
+  if(qtd>0&&!motivo){alert('Informe o motivo para registrar o ajuste.');return}
+  const anterior=String(atual),novo=String(qtd),idc=String(c.id);
+  // Em admitidos em 2024, zero precisa ficar registrado para permitir uma exceção manual
+  // à regularização automática de 1 férias anterior fora do sistema.
+  const adm2024=String(adm).startsWith('2024-');
+  if(qtd===0&&!adm2024)delete ajustesCiclosFerias[idc];
+  else ajustesCiclosFerias[idc]={indice:qtd,ferias_fora_sistema:qtd,motivo,atualizado_em:new Date().toISOString()};
+  gravarLocal(FERIAS_CICLOS_KEY,ajustesCiclosFerias);
+  const proximo=cicloPendenteFerias(c,$('dataPainel')?.value||hoje());
+  const descricao=qtd===0?'Férias anteriores fora do sistema zeradas. O controle voltou a considerar somente o histórico do XCMG Control.':`${qtd} férias anterior(es) fora do sistema registrada(s). Próximo período calculado automaticamente: ${proximo?dataBR(proximo.inicio)+' a '+dataBR(proximo.fim):'—'}.`;
+  if(db&&estaOnline()){
+    const {error}=await db.from('xcmg_efetivo_historico').insert({colaborador_id:c.id,tipo:'Ajuste período aquisitivo',campo:'ferias_ciclo_minimo',valor_anterior:anterior,valor_novo:novo,motivo,descricao});
+    if(error)console.warn('O ajuste foi salvo neste aparelho, mas não foi possível registrar no histórico da nuvem.',error);
+  }
+  renderizarPendenciasFerias();renderizarProgramacaoFerias();
+  alert(descricao);
+}
+function acompanhamentoCicloFerias(c,refPainel){
+  const ref=dataISOFlex(refPainel)||hoje();
+  // Enquanto uma programação vinculada ao ciclo ainda não terminou, o painel acompanha esse ciclo.
+  const ativa=atribuicoesCiclosFerias(c,ref).find(a=>{
+    const st=statusFeriasControle(a.item?.r||a.item?.d,ref);
+    return !['REALIZADO','CANCELADO','NÃO APROVADO','REPROGRAMAR'].includes(st);
+  });
+  if(ativa)return{ciclo:ativa.ciclo,programacao:ativa.item?.r||ativa.item?.d,status:statusFeriasControle(ativa.item?.r||ativa.item?.d,ref)};
+  return{ciclo:cicloPendenteFerias(c,ref),programacao:null,status:''};
+}
+function renderizarPendenciasFerias(){
+  const el=$('listaPendenciasFerias'),total=$('totalPendenciasFerias');if(!el)return;
+  const refPainel=$('dataPainel')?.value||hoje(),termo=normalizarTexto($('pesquisaPendenciasFerias')?.value||''),filtro=$('filtroPendenciasFerias')?.value||'TODOS';
+  const base=colaboradores.filter(colaboradorAtivo).map(c=>{
+    const acompanhamento=acompanhamentoCicloFerias(c,refPainel),ciclo=acompanhamento.ciclo;if(!ciclo)return null;
+    const diasLimite=diferencaDiasISO(refPainel,ciclo.limite),diasAbertura=diferencaDiasISO(refPainel,ciclo.inicioConcessao);
+    let alerta='PENDENTE DE PROGRAMAÇÃO',tipo='PENDENTE',prioridade=2,ordem=diasLimite??99999;
+    if(acompanhamento.programacao){
+      const st=acompanhamento.status,ini=dataBR(acompanhamento.programacao.inicio),fim=dataBR(acompanhamento.programacao.fim);
+      if(st==='EM FÉRIAS'){
+        tipo='EMFERIAS';prioridade=3;ordem=0;alerta=`EM FÉRIAS • ${ini}${fim?' A '+fim:''}`;
+      }else{
+        tipo=['PROGRAMADO','APROVADO'].includes(st)?'PROGRAMADO':'PREPROGRAMADO';prioridade=tipo==='PROGRAMADO'?4:3;ordem=diferencaDiasISO(refPainel,acompanhamento.programacao.inicio)??99999;
+        alerta=`${tipo==='PROGRAMADO'?'PROGRAMADO':'PRÉ-PROGRAMADO'} • ${ini}${fim?' A '+fim:''}`;
+      }
+    }else if(ciclo.inicioConcessao>refPainel){tipo='AGUARDANDO';prioridade=5;ordem=diasAbertura??99999;alerta=`AGUARDANDO ABERTURA • ${diasAbertura} DIA(S)`}
+    else if(diasLimite!==null){if(diasLimite<0){tipo='VENCIDA';prioridade=1;ordem=diasLimite;alerta=`FÉRIAS VENCIDAS • ${Math.abs(diasLimite)} DIA(S)`}else if(diasLimite<=60)alerta=`PROGRAMAÇÃO URGENTE • ${diasLimite} DIA(S) PARA O FIM DO CONCESSIVO`;else if(diasLimite<=90)alerta=`PROGRAMAÇÃO PENDENTE • ${diasLimite} DIA(S)`}
+    return{...c,ciclo,programacao:acompanhamento.programacao,alerta,tipo,prioridade,ordem};
+  }).filter(Boolean).sort((a,b)=>a.prioridade-b.prioridade||a.ordem-b.ordem||String(a.nome_completo||'').localeCompare(String(b.nome_completo||''),'pt-BR'));
+  const set=(id,v)=>{const n=$(id);if(n)n.textContent=String(v)};
+  set('kpiPendVencidas',base.filter(x=>x.tipo==='VENCIDA').length);set('kpiPendProgramacao',base.filter(x=>x.tipo==='PENDENTE').length);set('kpiPendPreProgramado',base.filter(x=>x.tipo==='PREPROGRAMADO').length);set('kpiPendProgramado',base.filter(x=>x.tipo==='PROGRAMADO').length);set('kpiPendEmFerias',base.filter(x=>x.tipo==='EMFERIAS').length);set('kpiPendAguardando',base.filter(x=>x.tipo==='AGUARDANDO').length);
+  const lista=base.filter(c=>{if(filtro!=='TODOS'&&c.tipo!==filtro)return false;if(!termo)return true;return normalizarTexto(`${c.matricula||''} ${c.nome_completo||''}`).includes(termo)});
+  if(total)total.textContent=`${lista.length} de ${base.length} colaborador(es)`;
+  if(!lista.length){el.innerHTML='<div class="empty">Nenhum colaborador encontrado para este filtro.</div>';return}
+  el.innerHTML=`<div class="vacation-control-table vacation-pending-table"><table><thead><tr><th>Matrícula</th><th>Colaborador</th><th>Período aquisitivo</th><th>Fim do concessivo</th><th>Situação</th><th>Ações</th></tr></thead><tbody>${lista.map(c=>{const classe=c.tipo==='VENCIDA'?'danger':c.tipo==='AGUARDANDO'?'waiting':c.tipo==='EMFERIAS'?'inprogress':c.tipo==='PROGRAMADO'?'programmed':c.tipo==='PREPROGRAMADO'?'preprogrammed':'pending';const acaoPrincipal=c.programacao?`<button class="secondary small-button" data-edit-vacation="${c.programacao.id}">Ver programação</button>`:`<button class="primary small-button" data-start-vacation="${c.id}" data-cycle-index="${c.ciclo.indice}">Programar</button>`;return `<tr><td>${escapar(c.matricula||'—')}</td><td><strong>${escapar(String(c.nome_completo||'').toUpperCase())}</strong><small>${escapar(String(c.area||'').toUpperCase())}${c.funcao?' • '+escapar(String(c.funcao).toUpperCase()):''}</small></td><td><strong>${dataBR(c.ciclo.inicio)} – ${dataBR(c.ciclo.fim)}</strong></td><td>${dataBR(c.ciclo.limite)||'—'}</td><td><span class="vacation-pending-status ${classe}">${escapar(c.alerta)}</span></td><td><details class="vacation-actions-menu"><summary>Ações</summary><div class="vacation-actions-popover">${acaoPrincipal}<button class="secondary small-button" data-adjust-cycle="${c.id}">Ajustar período</button></div></details></td></tr>`}).join('')}</tbody></table></div>`;
+}
+function renderizarProgramacaoFerias(){
+  const el=$('listaProgramacaoFerias'),total=$('totalProgramacaoFerias');if(!el)return;
+  if(!programacaoFerias.length){const legados=(Array.isArray(registros)?registros:[]).filter(ehRegistroFerias).map(normalizarProgramacaoFerias).filter(Boolean);if(legados.length)salvarProgramacaoFerias(legados)}
+  const refPainel=$('dataPainel')?.value||hoje();
+  const base=programacoesFeriasEfetivoAtivo();
+  const situacoes=base.map(r=>statusFeriasControle(r,refPainel));
+  // KPIs usam a MESMA base exibida no total. Nenhum cálculo auxiliar pode impedir estes números.
+  const setKpi=(id,valor)=>{const n=$(id);if(n)n.textContent=String(valor)};
+  setKpi('kpiFeriasAProgramar',situacoes.filter(x=>x==='PRÉ-PROGRAMADO').length);
+  setKpi('kpiFeriasAguardandoRH',situacoes.filter(x=>['ALERTA PARA ENVIAR AO RH','AGUARDANDO APROVAÇÃO RH','APROVAÇÃO RH PENDENTE'].includes(x)).length);
+  setKpi('kpiFeriasAprovadas',situacoes.filter(x=>['APROVADO','PROGRAMADO'].includes(x)).length);
+  setKpi('kpiFeriasEmFerias',situacoes.filter(x=>x==='EM FÉRIAS').length);
+  setKpi('kpiFeriasRealizadas',situacoes.filter(x=>x==='REALIZADO').length);
+  if($('resumoFeriasModulo'))$('resumoFeriasModulo').textContent=`${base.length} programações`;
+  // Programação urgente: conta somente ciclos pendentes, já abertos, sem programação e a 60 dias ou menos do fim do concessivo.
+  let programacaoUrgente=0;
+  try{for(const c of (Array.isArray(colaboradores)?colaboradores:[]).filter(colaboradorAtivo)){const acompanhamento=acompanhamentoCicloFerias(c,refPainel);if(acompanhamento.programacao)continue;const ciclo=acompanhamento.ciclo;if(!ciclo||ciclo.inicioConcessao>refPainel)continue;const dias=diferencaDiasISO(refPainel,ciclo.limite);if(dias!==null&&dias>=0&&dias<=60)programacaoUrgente++}}catch(e){console.warn('Indicador de programação urgente ignorado:',e)}
+  setKpi('kpiFeriasProgramacaoUrgente',programacaoUrgente);
+  const q=normalizarTexto($('pesquisaProgramacaoFerias')?.value||''),filtro=$('filtroStatusFerias')?.value||'Todos';
+  const prioridade={'EM FÉRIAS':0,'PROGRAMADO':1,'APROVADO':2,'APROVAÇÃO RH PENDENTE':3,'AGUARDANDO APROVAÇÃO RH':4,'ALERTA PARA ENVIAR AO RH':5,'PRÉ-PROGRAMADO':6,'A PROGRAMAR':6,'REPROGRAMAR':7,'NÃO APROVADO':8,'CANCELADO':9,'REALIZADO':99};
+  const lista=base.filter(r=>{const st=statusFeriasControle(r,refPainel);return(!q||normalizarTexto(`${r.nome_completo} ${r.matricula} ${r.funcao_colaborador||r.funcao}`).includes(q))&&(filtro==='Todos'||st===filtro)}).sort((a,b)=>{const sa=statusFeriasControle(a,refPainel),sb=statusFeriasControle(b,refPainel),pa=prioridade[sa]??50,pb=prioridade[sb]??50;if(pa!==pb)return pa-pb;if(sa==='REALIZADO'&&sb==='REALIZADO')return String(b.fim||b.inicio||'').localeCompare(String(a.fim||a.inicio||''));return String(a.inicio||'').localeCompare(String(b.inicio||''))||String(a.nome_completo||'').localeCompare(String(b.nome_completo||''),'pt-BR')});
+  if(total)total.textContent=`${base.length} programação(ões)`;
+  if(!lista.length){el.innerHTML='<div class="empty">Nenhuma programação encontrada para este filtro.</div>';try{renderizarPendenciasFerias()}catch(e){console.warn(e)}return}
+  el.innerHTML=`<div class="vacation-control-table vacation-management-table"><table><thead><tr><th>Área</th><th>Matrícula</th><th>Colaborador</th><th>Função</th><th>Status</th><th>Início</th><th>Fim</th><th>Alertas</th><th>Ações</th></tr></thead><tbody>${lista.map(r=>{const st=statusFeriasControle(r,refPainel),ante=diasAntecedenciaFerias(r.inicio,refPainel),futuro=ante!==null&&ante>=1,aprovado=aprovacaoRHConfirmada(r);let conf=0;try{conf=conflitoFerias(r,r.id).length}catch{}const chips=[conf?'<span class="vacation-alert-chip conflict">⚠ Conflito</span>':'',st==='ALERTA PARA ENVIAR AO RH'?'<span class="vacation-alert-chip rh">Enviar RH</span>':st==='AGUARDANDO APROVAÇÃO RH'?'<span class="vacation-alert-chip rh">Aprovação RH</span>':st==='APROVAÇÃO RH PENDENTE'?'<span class="vacation-alert-chip conflict">RH pendente</span>':st==='APROVADO'?'<span class="vacation-alert-chip ok">RH aprovado</span>':st==='PROGRAMADO'?'<span class="vacation-alert-chip ok">Programado</span>':'',ante!==null&&ante>=0&&st!=='REALIZADO'?`<span class="vacation-alert-chip days">${ante} dia${ante===1?'':'s'}</span>`:''].filter(Boolean).join('')||'<span class="vacation-muted">—</span>';const temDataInicio=!!String(r.inicio||'').trim();const encerrado=['REALIZADO','CANCELADO','EM FÉRIAS'].includes(st);const podeAprovar=temDataInicio&&futuro&&!aprovado&&!encerrado&&!['PROGRAMADO','APROVADO'].includes(st);const podeRejeitar=temDataInicio&&futuro&&!aprovado&&!encerrado&&!['PROGRAMADO','APROVADO'].includes(st);const acoes=encerrado?'—':`<button class="secondary small-button" data-edit-vacation="${r.id}">Editar</button>${podeAprovar?`<button class="success small-button vacation-approve-compact" data-approve-vacation="${r.id}" title="Aprovado pelo RH">✓ RH</button>`:''}${podeRejeitar?`<button class="danger small-button" data-reject-vacation="${r.id}" title="Não aprovado pelo RH">Não</button>`:''}<button class="danger small-button" data-cancel-vacation="${r.id}">Cancelar</button>`;const dias=r.dias||diasInclusivosISO(r.inicio,r.fim)||'—';return`<tr class="vacation-main-row"><td>${escapar(r.area||r.local||'—')}</td><td>${escapar(r.matricula||'—')}</td><td><strong>${escapar(r.nome_completo||r.nome||'—')}</strong><button class="vacation-details-toggle" type="button" data-vacation-details="${r.id}">Detalhes</button></td><td>${escapar(r.funcao_colaborador||r.funcao||'—')}</td><td><span class="vacation-program-status ${normalizarTexto(st).replace(/\s+/g,'-')}">${st}</span></td><td>${dataBR(r.inicio)||'—'}</td><td>${dataBR(r.fim)||'—'}</td><td><div class="vacation-alert-chips">${chips}</div></td><td>${acoes==='—'?'<span class="vacation-muted">—</span>':`<details class="vacation-actions-menu"><summary>Ações</summary><div class="vacation-actions-popover">${acoes}</div></details>`}</td></tr><tr class="vacation-detail-row hidden" data-vacation-detail-row="${r.id}"><td colspan="9"><div class="vacation-detail-grid"><span><b>Admissão</b>${dataBR(r.data_admissao)||'—'}</span><span><b>Retorno</b>${dataBR(r.retorno)||'—'}</span><span><b>Dias</b>${dias}</span><span><b>Abono</b>${escapar(r.abono||'NÃO')}</span><span><b>1ª parcela 13º</b>${escapar(r.decimo_terceiro||'NÃO')}</span><span><b>Situação</b>${escapar(st)}</span></div></td></tr>`}).join('')}</tbody></table></div>`;
+  try{renderizarPendenciasFerias()}catch(e){console.warn('Pendências de férias não renderizadas:',e)}
+}
+
+function exportarFeriasExcel(){
+  if(!window.XLSX){alert('A biblioteca de planilha não foi carregada. Verifique a conexão com a internet.');return}
+  const refPainel=$('dataPainel')?.value||hoje();
+  const q=normalizarTexto($('pesquisaProgramacaoFerias')?.value||''),filtro=$('filtroStatusFerias')?.value||'Todos';
+  const base=programacoesFeriasEfetivoAtivo();
+  const lista=base.filter(r=>{const st=statusFeriasControle(r,refPainel);return(!q||normalizarTexto(`${r.nome_completo} ${r.matricula} ${r.funcao_colaborador||r.funcao}`).includes(q))&&(filtro==='Todos'||st===filtro)}).sort((a,b)=>String(a.inicio||'').localeCompare(String(b.inicio||'')));
+  const dados=lista.map(r=>{
+    const st=statusFeriasControle(r,refPainel),c=colaboradores.find(x=>(r.matricula&&String(x.matricula)===String(r.matricula))||normalizarTexto(x.nome_completo||x.nome_exibicao)===normalizarTexto(r.nome_completo||r.nome));
+    let periodo='—';
+    try{const ciclos=programacoesValidasDoColaborador(c||r,refPainel);const pos=ciclos.findIndex(x=>String(x.id)===String(r.id)||chaveProgramacaoFeriasCanonica(x)===chaveProgramacaoFeriasCanonica(r));const ciclo=cicloFeriasPorIndice(dataISOFlex(r.data_admissao||c?.data_admissao),Math.max(0,pos));if(ciclo)periodo=`${dataBR(ciclo.inicio)} a ${dataBR(ciclo.fim)}`}catch(e){}
+    return {'Área':r.area||c?.area||'','Matrícula':r.matricula||c?.matricula||'','Colaborador':r.nome_completo||r.nome||c?.nome_completo||'','Função':r.funcao_colaborador||r.funcao||c?.funcao||'','Data admissão':dataBR(r.data_admissao||c?.data_admissao)||'','Período aquisitivo':periodo,'Status':st,'Início férias':dataBR(r.inicio)||'','Fim':dataBR(r.fim)||'','Retorno':dataBR(r.retorno)||'','Dias':r.dias||diasInclusivosISO(r.inicio,r.fim)||'','Abono':r.abono||'NÃO','1ª parcela 13º':r.decimo_terceiro||'NÃO','Observação':r.observacao||''};
+  });
+
+  // Segunda aba: planejamento dos colaboradores ativos que ainda possuem ciclo a controlar.
+  const pendencias=colaboradores.filter(colaboradorAtivo).map(c=>{
+    const ciclo=cicloPendenteFerias(c,refPainel);if(!ciclo)return null;
+    const diasLimite=diferencaDiasISO(refPainel,ciclo.limite),diasAbertura=diferencaDiasISO(refPainel,ciclo.inicioConcessao);
+    let tipo='PENDENTE',situacao='PENDENTE DE PROGRAMAÇÃO',dias='';
+    if(ciclo.inicioConcessao>refPainel){tipo='AGUARDANDO';situacao='AGUARDANDO ABERTURA DO PERÍODO';dias=diasAbertura===null?'':diasAbertura}
+    else if(diasLimite!==null&&diasLimite<0){tipo='VENCIDA';situacao='FÉRIAS VENCIDAS';dias=Math.abs(diasLimite)}
+    else if(diasLimite!==null&&diasLimite<=60){situacao='PROGRAMAÇÃO URGENTE';dias=diasLimite}
+    else{dias=diasLimite===null?'':diasLimite}
+    return{c,ciclo,tipo,situacao,dias,manual:indiceMinimoManualFerias(c)!==null};
+  }).filter(Boolean).sort((a,b)=>(({VENCIDA:1,PENDENTE:2,AGUARDANDO:3}[a.tipo]||9)-({VENCIDA:1,PENDENTE:2,AGUARDANDO:3}[b.tipo]||9))||String(a.c.nome_completo||'').localeCompare(String(b.c.nome_completo||''),'pt-BR'));
+
+  if(!dados.length&&!pendencias.length){alert('Não há informações de férias para exportar.');return}
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(dados.length?dados:[{'Informação':'Nenhuma programação encontrada no filtro atual.'}]);
+  ws['!cols']=[{wch:12},{wch:12},{wch:34},{wch:32},{wch:15},{wch:25},{wch:24},{wch:15},{wch:15},{wch:15},{wch:8},{wch:10},{wch:15},{wch:38}];
+  XLSX.utils.book_append_sheet(wb,ws,'PROGRAMAÇÕES DE FÉRIAS');
+
+  const vencidas=pendencias.filter(x=>x.tipo==='VENCIDA').length,pendentes=pendencias.filter(x=>x.tipo==='PENDENTE').length,aguardando=pendencias.filter(x=>x.tipo==='AGUARDANDO').length;
+  const linhasPend=[
+    ['PENDÊNCIAS E PRÓXIMOS PERÍODOS'],
+    ['Data de referência',dataBR(refPainel)],
+    ['Férias vencidas',vencidas,'Pendentes de programação',pendentes,'Aguardando abertura',aguardando],
+    [],
+    ['Área','Matrícula','Colaborador','Função','Admissão','Período aquisitivo','Fim do concessivo','Situação','Dias para abertura/fim do concessivo','Origem do período']
+  ];
+  pendencias.forEach(x=>linhasPend.push([x.c.area||'',x.c.matricula||'',x.c.nome_completo||'',x.c.funcao||'',dataBR(x.c.data_admissao)||'',`${dataBR(x.ciclo.inicio)} a ${dataBR(x.ciclo.fim)}`,dataBR(x.ciclo.limite)||'',x.situacao,x.dias,x.manual?'AJUSTE MANUAL':'AUTOMÁTICO']));
+  const wsPend=XLSX.utils.aoa_to_sheet(linhasPend);wsPend['!cols']=[{wch:14},{wch:12},{wch:34},{wch:32},{wch:15},{wch:26},{wch:18},{wch:32},{wch:23},{wch:18}];wsPend['!freeze']={xSplit:0,ySplit:5};
+  XLSX.utils.book_append_sheet(wb,wsPend,'PENDÊNCIAS E PRÓXIMOS');
+
+  const sufixo=filtro==='Todos'?'TODAS':normalizarTexto(filtro).replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
+  XLSX.writeFile(wb,`XCMG_Ferias_${sufixo}_${refPainel}.xlsx`);
 }
 
 function detalheRegistro(r){return [r.motivo,r.descricao,r.cid?`CID: ${r.cid}`:'',r.observacao].filter(Boolean).join(' • ')}
@@ -539,8 +1253,7 @@ function salvarMotivoPersonalizado(motivo){motivo=String(motivo||'').trim();cons
 function sincronizarTipoComMotivo(){if($('tipo')&&$('motivo'))$('tipo').value=tipoPorMotivo($('motivo').value,$('categoriaMotivo')?.value)}
 function limparForm(){editando=null;fotoAtual={url:'',path:''};removerFotoAtual=false;['nome','matricula','funcaoColaborador','area','funcao','inicio','dias','fim','cid','descricao','observacao'].forEach(id=>$(id).value='');$('foto').value='';$('categoriaMotivo').value='';$('motivo').value='';$('tipo').value='Outras justificativas';atualizarListaMotivos();$('local').value='';$('atestadoFisico').value='N/A';$('enviadoGrupo').value='N/A';mostrarFoto('');$('btnSalvar').textContent='Adicionar registro';$('btnCancelar').classList.add('hidden');$('formTitle').textContent='Adicionar ocorrência'}
 
-async function carregarNuvem(silencioso=false){if(carregando)return;if(!estaOnline()){carregarCacheOffline();return}carregando=true;if(!silencioso)statusNuvem('Sincronizando...');try{const [{data:regs,error:er},{data:cfg,error:ec},{data:cols,error:ecl}]=await Promise.all([db.from('xcmg_registros').select('*').order('created_at',{ascending:true}),db.from('xcmg_config').select('*').eq('id',1).maybeSingle(),db.from('xcmg_colaboradores').select('*').order('nome_exibicao',{ascending:true})]);if(er)throw er;if(ec)throw ec;if(ecl)throw ecl;registros=(regs||[]).map(r=>({id:r.id,tipo:r.tipo,categoria:r.categoria||'',motivo:r.motivo||'',nome:r.nome,nome_completo:r.nome_completo||'',matricula:r.matricula||'',funcao_colaborador:r.funcao_colaborador||'',area:r.area||'',funcao:r.funcao||'',local:r.local||'',inicio:r.inicio||'',fim:r.fim||'',cid:r.cid||'',descricao:r.descricao||'',atestado_fisico:r.atestado_fisico||'N/A',enviado_grupo:r.enviado_grupo||'N/A',observacao:r.observacao||'',foto_url:r.foto_url||'',foto_path:r.foto_path||'',created_at:r.created_at||''}));colaboradores=cols||[];config=cfg?{turma:cfg.turma,efetivoTotal:cfg.efetivo_total,nomeSistema:cfg.nome_sistema,desenvolvedor:cfg.desenvolvedor,estiloSimbolos:cfg.estilo_simbolos,periodosFechamento:Array.isArray(cfg.periodos_fechamento)?cfg.periodos_fechamento:lerLocal(CFG_KEY,{})?.periodosFechamento||[]}:{...PADRAO,...lerLocal(CFG_KEY,{})};normalizarPeriodosFechamento();if(Array.isArray(cfg?.categorias_rh)&&cfg.categorias_rh.length){categoriasRH=cfg.categorias_rh;normalizarCategoriasRH();localStorage.setItem(CATEGORIAS_KEY,JSON.stringify(categoriasRH));atualizarSelectCategorias();renderizarGestaoCategorias()}const feriasOk=await carregarProgramacaoFeriasNuvem();if(!feriasOk&&!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();await migrarDadosLocaisSeNecessario();carregarConfig();salvarCacheLocal();atualizarTudo();statusNuvem('Sincronizado')}catch(e){console.error(e);carregarCacheOffline();if(!silencioso&&estaOnline())console.warn('A nuvem não respondeu. Dados locais carregados.')}finally{carregando=false}}
-async function migrarDadosLocaisSeNecessario(){if(localStorage.getItem(MIG_KEY)==='1')return;const locais=lerLocal(REG_KEY,[]),cfgLocal=lerLocal(CFG_KEY,null);if(registros.length===0&&Array.isArray(locais)&&locais.length){const payload=locais.map(r=>({tipo:r.tipo,categoria:r.categoria||'',motivo:r.motivo||'',nome:r.nome,nome_completo:r.nome_completo||r.nome||'',matricula:r.matricula||'',funcao_colaborador:r.funcao_colaborador||'',area:r.area||'',funcao:r.funcao||'',local:r.local||'',inicio:r.inicio||null,fim:r.fim||null,cid:r.cid||'',descricao:r.descricao||'',atestado_fisico:r.atestado_fisico||'N/A',enviado_grupo:r.enviado_grupo||'N/A',observacao:r.observacao||'',foto_url:r.foto_url||'',foto_path:r.foto_path||''}));const {error}=await db.from('xcmg_registros').insert(payload);if(error)throw error}if(cfgLocal){const {error}=await db.from('xcmg_config').upsert({id:1,turma:cfgLocal.turma||PADRAO.turma,efetivo_total:Number(cfgLocal.efetivoTotal||0),nome_sistema:cfgLocal.nomeSistema||PADRAO.nomeSistema,desenvolvedor:cfgLocal.desenvolvedor||PADRAO.desenvolvedor,estilo_simbolos:cfgLocal.estiloSimbolos||PADRAO.estiloSimbolos});if(error)throw error}localStorage.setItem(MIG_KEY,'1');if((locais&&locais.length)||cfgLocal){const {data:regs}=await db.from('xcmg_registros').select('*').order('created_at',{ascending:true});const {data:cfg}=await db.from('xcmg_config').select('*').eq('id',1).maybeSingle();registros=(regs||[]).map(r=>({id:r.id,tipo:r.tipo,categoria:r.categoria||'',motivo:r.motivo||'',nome:r.nome,nome_completo:r.nome_completo||'',matricula:r.matricula||'',funcao_colaborador:r.funcao_colaborador||'',area:r.area||'',funcao:r.funcao||'',local:r.local||'',inicio:r.inicio||'',fim:r.fim||'',cid:r.cid||'',descricao:r.descricao||'',atestado_fisico:r.atestado_fisico||'N/A',enviado_grupo:r.enviado_grupo||'N/A',observacao:r.observacao||'',foto_url:r.foto_url||'',foto_path:r.foto_path||'',created_at:r.created_at||''}));if(cfg)config={turma:cfg.turma,efetivoTotal:cfg.efetivo_total,nomeSistema:cfg.nome_sistema,desenvolvedor:cfg.desenvolvedor,estiloSimbolos:cfg.estilo_simbolos}}}
+async function carregarNuvem(silencioso=false){if(carregando)return;if(!estaOnline()){carregarCacheOffline();return}carregando=true;if(!silencioso)statusNuvem('Sincronizando...');try{const cacheRegs=lerLocal(REG_KEY,[]),cacheCols=recuperarColaboradoresLocais();const [{data:regs,error:er},{data:cfg,error:ec},{data:cols,error:ecl}]=await Promise.all([db.from('xcmg_registros').select('*').order('created_at',{ascending:true}),db.from('xcmg_config').select('*').eq('id',1).maybeSingle(),db.from('xcmg_colaboradores').select('*').order('nome_exibicao',{ascending:true})]);if(er)throw er;if(ec)throw ec;if(ecl)throw ecl;const regsNuvem=(regs||[]).map(r=>({id:r.id,tipo:r.tipo,categoria:r.categoria||'',motivo:r.motivo||'',nome:r.nome,nome_completo:r.nome_completo||'',matricula:r.matricula||'',funcao_colaborador:r.funcao_colaborador||'',area:r.area||'',funcao:r.funcao||'',local:r.local||'',inicio:r.inicio||'',fim:r.fim||'',cid:r.cid||'',descricao:r.descricao||'',atestado_fisico:r.atestado_fisico||'N/A',enviado_grupo:r.enviado_grupo||'N/A',observacao:r.observacao||'',foto_url:r.foto_url||'',foto_path:r.foto_path||'',created_at:r.created_at||''}));registros=regsNuvem.length?regsNuvem:(Array.isArray(cacheRegs)?cacheRegs:[]);const colsNuvem=Array.isArray(cols)?cols:[];colaboradores=colsNuvem.length?colsNuvem:cacheCols;config=cfg?{turma:cfg.turma,efetivoTotal:cfg.efetivo_total,nomeSistema:cfg.nome_sistema,desenvolvedor:cfg.desenvolvedor,estiloSimbolos:cfg.estilo_simbolos,periodosFechamento:Array.isArray(cfg.periodos_fechamento)?cfg.periodos_fechamento:lerLocal(CFG_KEY,{})?.periodosFechamento||[]}:{...PADRAO,...lerLocal(CFG_KEY,{})};normalizarPeriodosFechamento();if(Array.isArray(cfg?.categorias_rh)&&cfg.categorias_rh.length){categoriasRH=cfg.categorias_rh;normalizarCategoriasRH();localStorage.setItem(CATEGORIAS_KEY,JSON.stringify(categoriasRH));atualizarSelectCategorias();renderizarGestaoCategorias()}if(colaboradores.length)gravarLocal(COL_KEY,colaboradores);if(registros.length)gravarLocal(REG_KEY,registros);await carregarAjustesCiclosFerias();const feriasOk=await carregarProgramacaoFeriasNuvem();if(!feriasOk&&!programacaoFerias.length)reconstruirProgramacaoFeriasDosRegistros();await migrarDadosLocaisSeNecessario();carregarConfig();salvarCacheLocal();atualizarTudo();statusNuvem('Sincronizado')}catch(e){console.error(e);carregarCacheOffline();if(!silencioso&&estaOnline())console.warn('A nuvem não respondeu. Dados locais carregados.')}finally{carregando=false}}
 function iniciarRealtime(){if(!estaOnline())return;if(canalRealtime)db.removeChannel(canalRealtime);canalRealtime=db.channel('xcmg-publico').on('postgres_changes',{event:'*',schema:'public',table:'xcmg_registros'},()=>carregarNuvem(true)).on('postgres_changes',{event:'*',schema:'public',table:'xcmg_config'},()=>carregarNuvem(true)).on('postgres_changes',{event:'*',schema:'public',table:'xcmg_colaboradores'},()=>{if(!importandoColaboradores)carregarColaboradores().catch(console.error)}).on('postgres_changes',{event:'*',schema:'public',table:FERIAS_TABLE},()=>carregarProgramacaoFeriasNuvem().then(()=>atualizarTudo()).catch(console.error)).subscribe()}
 
 async function enviarFoto(file){if(!file)return fotoAtual;if(!file.type.startsWith('image/'))throw new Error('Selecione um arquivo de imagem.');if(file.size>5*1024*1024)throw new Error('A foto deve ter no máximo 5 MB.');const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-zA-Z0-9]/g,'').toLowerCase();const path=`ocorrencias/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;const {error}=await db.storage.from('xcmg-ocorrencias').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;const {data}=db.storage.from('xcmg-ocorrencias').getPublicUrl(path);return{url:data.publicUrl,path}}
@@ -549,7 +1262,40 @@ function editar(id){const r=registros.find(x=>String(x.id)===String(id));if(!r)r
 async function excluir(id){if(!confirm('Deseja excluir este registro?'))return;const r=registros.find(x=>String(x.id)===String(id));if(!estaOnline()||String(id).startsWith('local-')){registros=registros.filter(x=>String(x.id)!==String(id));if(!String(id).startsWith('local-'))adicionarFilaOffline({entidade:'registro',operacao:'delete',id});salvarCacheLocal();atualizarTudo();return}const {error}=await db.from('xcmg_registros').delete().eq('id',id);if(error){alert('Não foi possível excluir o registro.');return}if(r&&r.foto_path)await db.storage.from('xcmg-ocorrencias').remove([r.foto_path]);await carregarNuvem(true)}
 function gerarMensagem(){const data=$('dataPainel').value,ativos=ativosNaData(data);const estilo=config.estiloSimbolos||'completo';const simbolos={completo:{cab:'📋',data:'📅',item:'👤',funcao:'⚙️',periodo:'🗓️',local:'📍',obs:'📝',categorias:{'Férias':'🏖️','Atestado':'🩺','Falta não justificada':'⚠️','Desligamento':'🚪','Outras justificativas':'📄','Folga compensada':'🔄'}},simples:{cab:'■',data:'▣',item:'•',funcao:'-',periodo:'-',local:'-',obs:'-',categorias:{'Férias':'◆','Atestado':'✚','Falta não justificada':'!','Desligamento':'□','Outras justificativas':'•','Folga compensada':'↻'}},nenhum:{cab:'',data:'',item:'',funcao:'',periodo:'',local:'',obs:'',categorias:{'Férias':'','Atestado':'','Falta não justificada':'','Desligamento':'','Outras justificativas':'','Folga compensada':''}}}[estilo];const p=(icone,texto)=>icone?`${icone} ${texto}`:texto;let txt=`${p(simbolos.cab,`*Controle de Férias e Ausências – ${config.turma}*`)}\n${p(simbolos.data,`*${dataBR(data)}*`)}\n`;CATS.forEach(cat=>{const itens=ativos.filter(x=>x.tipo===cat);txt+=`\n${p(simbolos.categorias[cat],`*${cat} (${itens.length})*`)}\n`;txt+=itens.length?itens.map(r=>{const linhas=[p(simbolos.item,`*${nomeExibicao(nomeCompletoRegistro(r))||'Colaborador não informado'}*`)];if(r.funcao)linhas.push(p(simbolos.funcao,r.funcao));if(periodo(r.inicio,r.fim))linhas.push(p(simbolos.periodo,periodo(r.inicio,r.fim)));if(r.local)linhas.push(p(simbolos.local,r.local));if(r.descricao)linhas.push(p(simbolos.obs,r.descricao));else if(r.observacao)linhas.push(p(simbolos.obs,r.observacao));return linhas.join('\n')}).join('\n\n'):'Não informado';txt+='\n'});$('mensagemGerada').textContent=txt.trim();return txt.trim()}
 function diasPeriodo(inicio,fim){if(!inicio)return'';const a=new Date(`${inicio}T00:00:00`),b=new Date(`${(fim||inicio)}T00:00:00`);return Math.max(1,Math.round((b-a)/86400000)+1)}
-function gerarPlanilhaExcel(){if(!window.XLSX){alert('A biblioteca de planilha não foi carregada. Verifique a internet.');return}const nomeCompletoRegistro=r=>{if(r.nome_completo)return r.nome_completo;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.nome_completo||r.nome||''};const funcaoRegistro=r=>{if(r.funcao_colaborador)return r.funcao_colaborador;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.funcao||''};const matriculaRegistro=r=>{if(r.matricula)return r.matricula;const c=colaboradores.find(x=>x.nome_exibicao===r.nome);return c?.matricula||''};const areaRegistro=r=>{if(r.area)return r.area;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.area||r.local||''};const lista=historicoAteData($('dataPainel')?.value||hoje()).sort((a,b)=>(a.inicio||'').localeCompare(b.inicio||''));if(!lista.length){alert('Não há registros para exportar.');return}const dados=lista.map(r=>({Área:areaRegistro(r),Matrícula:matriculaRegistro(r),'Nome completo':nomeCompletoRegistro(r),Função:funcaoRegistro(r),Equipamento:r.funcao||'','Data início':dataBR(r.inicio),'Dias':diasPeriodo(r.inicio,r.fim),'Data final':dataBR(r.fim||r.inicio),'Período':periodoFechamento(r.inicio),Motivo:r.motivo||r.tipo||'',CID:r.cid||'N/A',Descrição:r.descricao||r.observacao||'','Atestado físico?':r.atestado_fisico||'N/A','Enviado no grupo?':r.enviado_grupo||'N/A'}));const ws=XLSX.utils.json_to_sheet(dados);ws['!cols']=[{wch:12},{wch:14},{wch:32},{wch:30},{wch:18},{wch:13},{wch:8},{wch:13},{wch:23},{wch:24},{wch:12},{wch:40},{wch:18},{wch:18}];const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ausências');XLSX.writeFile(wb,`XCMG_Ausencias_${hoje()}.xlsx`)}
+function gerarPlanilhaExcel(){
+  if(!window.XLSX){alert('A biblioteca de planilha não foi carregada. Verifique a internet.');return}
+  const nomeCompletoRegistro=r=>{if(r.nome_completo)return r.nome_completo;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.nome_completo||r.nome||''};
+  const funcaoRegistro=r=>{if(r.funcao_colaborador)return r.funcao_colaborador;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.funcao||''};
+  const matriculaRegistro=r=>{if(r.matricula)return r.matricula;const c=colaboradores.find(x=>x.nome_exibicao===r.nome);return c?.matricula||''};
+  const areaRegistro=r=>{if(r.area)return r.area;const c=colaboradores.find(x=>(r.matricula&&x.matricula===r.matricula)||x.nome_exibicao===r.nome);return c?.area||r.local||''};
+  const lista=registrosFiltrados();
+  if(!lista.length){alert('Não há registros no filtro atual para exportar.');return}
+  const dados=lista.map(r=>({
+    Tipo:r.tipo||'',
+    Área:areaRegistro(r),
+    Local:r.local||'',
+    Matrícula:matriculaRegistro(r),
+    'Nome completo':nomeCompletoRegistro(r),
+    Função:funcaoRegistro(r),
+    Equipamento:r.funcao||'',
+    'Data início':dataBR(r.inicio),
+    Dias:diasPeriodo(r.inicio,r.fim),
+    'Data final':dataBR(r.fim||r.inicio),
+    Período:periodoFechamento(r.inicio),
+    Motivo:r.motivo||r.tipo||'',
+    CID:r.cid||'N/A',
+    Descrição:r.descricao||r.observacao||'',
+    'Atestado físico?':r.atestado_fisico||'N/A',
+    'Enviado no grupo?':r.enviado_grupo||'N/A',
+    Anexo:r.foto_url||''
+  }));
+  const ws=XLSX.utils.json_to_sheet(dados);
+  ws['!cols']=[{wch:22},{wch:12},{wch:14},{wch:14},{wch:32},{wch:30},{wch:18},{wch:13},{wch:8},{wch:13},{wch:23},{wch:28},{wch:12},{wch:40},{wch:18},{wch:18},{wch:28}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'REGISTROS');
+  const dataPainel=$('dataPainel')?.value||hoje();
+  XLSX.writeFile(wb,`XCMG_Registros_${dataPainel}.xlsx`)
+}
 function carregarConfig(){$('turma').value=config.turma||'Turma D';$('efetivoTotal').value=efetivoAtual();$('nomeSistema').value=config.nomeSistema||'XCMG Control';$('desenvolvedor').value=config.desenvolvedor||'Edson de Oliveira Alves';$('estiloSimbolos').value=config.estiloSimbolos||'completo'}
 async function salvarConfig(){const nova={turma:$('turma').value.trim()||'Turma D',efetivoTotal:efetivoAtual(),nomeSistema:$('nomeSistema').value.trim()||'XCMG Control',desenvolvedor:$('desenvolvedor').value.trim()||'Edson de Oliveira Alves',estiloSimbolos:$('estiloSimbolos').value||'completo',periodosFechamento:normalizarPeriodosFechamento()};const payload={id:1,turma:nova.turma,efetivo_total:nova.efetivoTotal,nome_sistema:nova.nomeSistema,desenvolvedor:nova.desenvolvedor,estilo_simbolos:nova.estiloSimbolos,periodos_fechamento:nova.periodosFechamento};if(!estaOnline()){config=nova;gravarLocal(CFG_KEY,config);adicionarFilaOffline({entidade:'config',operacao:'upsert',dados:payload});$('statusConfig').textContent='Configurações salvas offline.';atualizarTudo();return}const {error}=await db.from('xcmg_config').upsert(payload);if(error){config=nova;gravarLocal(CFG_KEY,config);adicionarFilaOffline({entidade:'config',operacao:'upsert',dados:payload});$('statusConfig').textContent='Salvo neste aparelho; sincronização pendente.';atualizarTudo();return}config=nova;gravarLocal(CFG_KEY,config);$('statusConfig').textContent='Configurações salvas e sincronizadas.';atualizarTudo();setTimeout(()=>$('statusConfig').textContent='',2500)}
 function exportar(){const blob=new Blob([JSON.stringify({versao:'4.1',exportadoEm:new Date().toISOString(),configuracoes:config,registros},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`xcmg-control-backup-${hoje()}.json`;a.click();URL.revokeObjectURL(a.href)}
@@ -564,17 +1310,95 @@ function editarPeriodoFechamento(id){if(!exigirPermissao('configuracoes_alterar'
 async function excluirPeriodoFechamento(id){if(!exigirPermissao('configuracoes_alterar'))return;const p=normalizarPeriodosFechamento().find(x=>x.id===id);if(!p)return;const qtd=registros.filter(r=>r.inicio>=p.inicio&&r.inicio<=p.fim).length;if(!confirm(`Excluir o período ${dataBR(p.inicio)} a ${dataBR(p.fim)}?\n\nNenhum registro será apagado. ${qtd?`${qtd} registro(s) voltarão a usar o período automático padrão.`:'Os registros não serão alterados.'}`))return;config.periodosFechamento=config.periodosFechamento.filter(x=>x.id!==id);await persistirPeriodosFechamento('Período excluído. Nenhum registro foi apagado.')}
 function cancelarEdicaoPeriodo(){editandoPeriodoId=null;$('periodoInicio').value='';$('periodoFim').value='';$('btnSalvarPeriodo').textContent='Adicionar período';$('statusPeriodos').textContent='Edição cancelada.'}
 
-function atualizarTudo(){atualizarDashboard();renderizarRegistros();preencherSelectColaboradores();renderizarColaboradores();renderizarProgramacaoFerias();gerarMensagem()}
+
+
+// v6.10.61 — Calendário automático de escala 3×3 compacto
+const ESCALA_BASE_ISO='2026-09-02';
+let escalaMesAtual=null;
+let escalaDataSelecionada='';
+function escalaDataUTC(iso){const [a,m,d]=String(iso||'').split('-').map(Number);return new Date(Date.UTC(a,m-1,d))}
+function escalaISODate(d){return `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`}
+function escalaDiffDias(iso){return Math.round((escalaDataUTC(iso)-escalaDataUTC(ESCALA_BASE_ISO))/86400000)}
+function escalaGrupoDoDia(iso){const mod=((escalaDiffDias(iso)%6)+6)%6;return mod<3?'AB':'CD'}
+function escalaInfoDoDia(iso){const grupo=escalaGrupoDoDia(iso);return grupo==='AB'?{servico:'A / B',folga:'C / D',classe:'schedule-ab',rotulo:'A / B'}:{servico:'C / D',folga:'A / B',classe:'schedule-cd',rotulo:'C / D'}}
+function escalaTurmaTrabalha(iso,turma){const g=escalaGrupoDoDia(iso);return g==='AB'?['A','B'].includes(turma):['C','D'].includes(turma)}
+// v6.10.64 — Férias integradas à escala 3×3.
+// Início permitido somente no 1º ou 2º dia de trabalho da turma do colaborador.
+function escalaPosicaoTrabalhoDaTurma(iso,turma){
+  const t=String(turma||'').trim().toUpperCase();if(!['A','B','C','D'].includes(t))return 0;
+  const mod=((escalaDiffDias(iso)%6)+6)%6;
+  if(['A','B'].includes(t))return mod<=2?mod+1:0;
+  return mod>=3?mod-2:0;
+}
+function proximosIniciosFeriasPermitidos(turma,apartir,quantidade=2){
+  const t=String(turma||'').trim().toUpperCase(),base=dataISOFlex(apartir);if(!base||!['A','B','C','D'].includes(t))return[];
+  const d=escalaDataUTC(base),out=[];
+  for(let i=0;i<18&&out.length<quantidade;i++){
+    const x=new Date(d.getTime()+i*86400000),iso=escalaISODate(x),pos=escalaPosicaoTrabalhoDaTurma(iso,t);
+    if(pos===1||pos===2)out.push(iso);
+  }
+  return out;
+}
+function validarInicioFeriasNaEscala(colaborador,inicio){
+  const iso=dataISOFlex(inicio),turma=String(colaborador?.turma||'').trim().toUpperCase();
+  if(!iso)return{valido:false,mensagem:'Informe uma data de início válida para as férias.'};
+  if(!['A','B','C','D'].includes(turma))return{valido:false,mensagem:`Não foi possível validar a escala: a turma do colaborador não está cadastrada como A, B, C ou D no Efetivo. Atualize a turma antes de programar as férias.`};
+  const pos=escalaPosicaoTrabalhoDaTurma(iso,turma),horario=['A','C'].includes(turma)?'06:00 às 18:00':'18:00 às 06:00';
+  if(pos===1||pos===2)return{valido:true,turma,posicao:pos,horario,mensagem:`Data válida: ${pos}º dia de trabalho da Turma ${turma}.`};
+  const proximas=proximosIniciosFeriasPermitidos(turma,iso,2),sug=proximas.length?` Próximas datas permitidas: ${proximas.map(dataBR).join(' ou ')}.`:'';
+  const motivo=pos===3?'o 3º dia de trabalho':'um dia de folga';
+  return{valido:false,turma,posicao:pos,horario,mensagem:`Data de início não permitida para a Turma ${turma}: ${dataBR(iso)} cai em ${motivo}. As férias só podem iniciar no 1º ou 2º dia de trabalho da escala 3×3.${sug}`};
+}
+function escalaDataPainelOuHoje(){const v=$('dataPainel')?.value;if(/^\d{4}-\d{2}-\d{2}$/.test(v||''))return v;const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`}
+function escalaHojeISO(){const n=new Date();return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`}
+function escalaNomeMes(ano,mes){return new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'}).format(new Date(Date.UTC(ano,mes,1))).replace(/^./,c=>c.toUpperCase())}
+function atualizarResumoEscala(iso){if(!iso)return;escalaDataSelecionada=iso;const info=escalaInfoDoDia(iso),rotuloData=dataBR(iso).slice(0,5);if($('escalaServicoLabel'))$('escalaServicoLabel').textContent=`Em serviço • ${rotuloData}`;if($('escalaFolgaLabel'))$('escalaFolgaLabel').textContent=`Em folga • ${rotuloData}`;if($('escalaTurmasServico'))$('escalaTurmasServico').textContent=info.servico;if($('escalaTurmasFolga'))$('escalaTurmasFolga').textContent=info.folga;document.querySelectorAll('.schedule-day').forEach(el=>el.classList.toggle('selected',el.dataset.date===iso))}
+function renderizarEscala(){
+  const cal=$('escalaCalendario');if(!cal)return;
+  if(!escalaMesAtual){const base=escalaDataPainelOuHoje();const d=escalaDataUTC(base);escalaMesAtual={ano:d.getUTCFullYear(),mes:d.getUTCMonth()};escalaDataSelecionada=base}
+  const {ano,mes}=escalaMesAtual;const filtro=$('filtroTurmaEscala')?.value||'TODAS';
+  if($('escalaMesTitulo'))$('escalaMesTitulo').textContent=escalaNomeMes(ano,mes);
+  const primeiro=new Date(Date.UTC(ano,mes,1));const ultimo=new Date(Date.UTC(ano,mes+1,0));const inicioGrade=new Date(primeiro);inicioGrade.setUTCDate(1-primeiro.getUTCDay());
+  const fimGrade=new Date(ultimo);fimGrade.setUTCDate(ultimo.getUTCDate()+(6-ultimo.getUTCDay()));
+  const hoje=escalaHojeISO();let html='';
+  for(let d=new Date(inicioGrade);d<=fimGrade;d.setUTCDate(d.getUTCDate()+1)){
+    const iso=escalaISODate(d),fora=d.getUTCMonth()!==mes,info=escalaInfoDoDia(iso),trabalha=filtro==='TODAS'?null:escalaTurmaTrabalha(iso,filtro);
+    const principal=filtro==='TODAS'?info.rotulo:(trabalha?'TRABALHO':'FOLGA');
+    html+=`<button type="button" class="schedule-day ${fora?'outside-month ':''}${info.classe} ${iso===hoje?'today ':''}${iso===escalaDataSelecionada?'selected ':''}" data-date="${iso}" role="gridcell" aria-label="${dataBR(iso)} - ${principal}"><span class="schedule-day-number">${d.getUTCDate()}</span><span class="schedule-day-shift">${principal}</span></button>`;
+  }
+  cal.innerHTML=html;atualizarResumoEscala(escalaDataSelecionada||escalaDataPainelOuHoje());
+}
+function moverMesEscala(delta){if(!escalaMesAtual)renderizarEscala();const d=new Date(Date.UTC(escalaMesAtual.ano,escalaMesAtual.mes+delta,1));escalaMesAtual={ano:d.getUTCFullYear(),mes:d.getUTCMonth()};renderizarEscala()}
+function irHojeEscala(){const iso=escalaHojeISO(),d=escalaDataUTC(iso);escalaMesAtual={ano:d.getUTCFullYear(),mes:d.getUTCMonth()};escalaDataSelecionada=iso;renderizarEscala()}
+
+function atualizarTudo(){atualizarDashboard();renderizarRegistros();preencherSelectColaboradores();preencherSelectFerias();renderizarColaboradores();renderizarProgramacaoFerias();renderizarEscala();gerarMensagem()}
 
 
 function temPermissao(codigo){return Boolean(usuarioAtual&&(usuarioAtual.administrador||usuarioAtual.permissoes?.includes(codigo)))}
 function exigirPermissao(codigo,mensagem='Você não possui permissão para esta ação.'){if(temPermissao(codigo))return true;alert(mensagem);return false}
 function permissoesSelecionadas(){return Array.from(document.querySelectorAll('#permissoesUsuario input:checked')).map(x=>x.value)}
-function limparFormularioUsuario(){editandoUsuarioId=null;['novoUsuarioNome','novoUsuarioLogin','novoUsuarioSenha'].forEach(id=>$(id).value='');$('novoUsuarioAdmin').checked=false;document.querySelectorAll('#permissoesUsuario input').forEach(x=>x.checked=false);$('btnCriarUsuario').textContent='Criar usuário'}
+const PERFIS_USUARIO={
+  lideranca:['dashboard_ver','ocorrencias_cadastrar','ocorrencias_editar','ocorrencias_fotos','registros_ver','whatsapp_gerar','colaboradores_ver','ferias_ver'],
+  rh:['dashboard_ver','ocorrencias_cadastrar','ocorrencias_editar','ocorrencias_fotos','registros_ver','registros_exportar','whatsapp_gerar','colaboradores_ver','colaboradores_cadastrar','colaboradores_importar','ferias_ver','ferias_cadastrar','ferias_importar','ferias_aprovar']
+};
+function abrirEditorUsuario(modo='novo'){
+  const editor=$('usuarioEditor'),backdrop=$('usuarioEditorBackdrop');if(!editor)return;
+  editor.classList.add('open');editor.setAttribute('aria-hidden','false');backdrop?.classList.add('open');backdrop?.setAttribute('aria-hidden','false');document.body.classList.add('user-editor-open');
+  $('usuarioEditorTitulo').textContent=modo==='editar'?'Editar usuário':'Novo usuário';$('usuarioEditorSubtitulo').textContent=modo==='editar'?'Revise o perfil e as permissões deste acesso.':'Defina um perfil ou personalize o acesso.';
+  setTimeout(()=>$('novoUsuarioNome')?.focus({preventScroll:true}),80)
+}
+function fecharEditorUsuario(){const editor=$('usuarioEditor'),backdrop=$('usuarioEditorBackdrop');editor?.classList.remove('open');editor?.setAttribute('aria-hidden','true');backdrop?.classList.remove('open');backdrop?.setAttribute('aria-hidden','true');document.body.classList.remove('user-editor-open')}
+function limparFormularioUsuario(fechar=false){editandoUsuarioId=null;['novoUsuarioNome','novoUsuarioLogin','novoUsuarioSenha'].forEach(id=>$(id).value='');$('novoUsuarioAdmin').checked=false;document.querySelectorAll('#permissoesUsuario input').forEach(x=>{x.checked=false;x.disabled=false});$('perfilAcessoUsuario').value='personalizado';$('btnCriarUsuario').textContent='Criar usuário';if(fechar)fecharEditorUsuario()}
+function aplicarPerfilUsuario(perfil){
+  const admin=perfil==='administrador';$('novoUsuarioAdmin').checked=admin;
+  const selecionadas=new Set(PERFIS_USUARIO[perfil]||[]);document.querySelectorAll('#permissoesUsuario input').forEach(x=>{if(perfil!=='personalizado')x.checked=selecionadas.has(x.value);x.disabled=admin});
+}
+function inferirPerfilUsuario(u){if(u.administrador)return'Administrador';const p=new Set(u.permissoes||[]);const igual=a=>p.size===a.length&&a.every(x=>p.has(x));if(igual(PERFIS_USUARIO.rh))return'RH';if(igual(PERFIS_USUARIO.lideranca))return'Liderança';return'Personalizado'}
+function siglaUsuario(nome=''){return nome.trim().split(/\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'U'}
 function aplicarPermissoes(){
-  const mapaPaginas={dashboard:'dashboard_ver',ocorrencias:'ocorrencias_cadastrar',colaboradores:'colaboradores_ver',registros:'registros_ver',mensagem:'whatsapp_gerar',configuracoes:'configuracoes_ver',usuarios:'usuarios_gerenciar'};
+  const mapaPaginas={dashboard:'dashboard_ver',ocorrencias:'ocorrencias_cadastrar',colaboradores:'colaboradores_ver',escala:'dashboard_ver',ferias:'ferias_ver',registros:'registros_ver',mensagem:'whatsapp_gerar',configuracoes:'configuracoes_ver',usuarios:'usuarios_gerenciar'};
   document.querySelectorAll('.nav-item').forEach(b=>{const p=mapaPaginas[b.dataset.page];b.classList.toggle('hidden',p&&!temPermissao(p))});
-  const mapa={btnSalvar:'ocorrencias_cadastrar',foto:'ocorrencias_fotos',btnRemoverFoto:'ocorrencias_fotos',btnAdicionarColaborador:'colaboradores_cadastrar',btnImportarColaboradores:'colaboradores_importar',planilhaColaboradores:'colaboradores_importar',btnImportarFerias:'colaboradores_importar',planilhaFerias:'colaboradores_importar',btnExportarExcel:'registros_exportar',btnExportarExcelRegistros:'registros_exportar',btnLimparTudo:'registros_limpar',btnGerar:'whatsapp_gerar',btnCopiar:'whatsapp_gerar',btnWhatsApp:'whatsapp_gerar',btnSalvarConfig:'configuracoes_alterar',btnGerenciarPeriodos:'configuracoes_alterar',btnExportar:'backup_gerenciar',arquivoBackup:'backup_gerenciar'};
+  const mapa={btnSalvar:'ocorrencias_cadastrar',foto:'ocorrencias_fotos',btnRemoverFoto:'ocorrencias_fotos',btnAdicionarColaborador:'colaboradores_cadastrar',btnImportarColaboradores:'colaboradores_importar',planilhaColaboradores:'colaboradores_importar',btnSalvarFerias:'ferias_cadastrar',btnImportarFerias:'ferias_importar',planilhaFerias:'ferias_importar',btnExportarExcel:'registros_exportar',btnExportarExcelRegistros:'registros_exportar',btnExportarFeriasExcel:'registros_exportar',btnLimparTudo:'registros_limpar',btnGerar:'whatsapp_gerar',btnCopiar:'whatsapp_gerar',btnWhatsApp:'whatsapp_gerar',btnSalvarConfig:'configuracoes_alterar',btnGerenciarPeriodos:'configuracoes_alterar',btnExportar:'backup_gerenciar',arquivoBackup:'backup_gerenciar'};
   Object.entries(mapa).forEach(([id,p])=>{const el=$(id);if(el)el.classList.toggle('hidden',!temPermissao(p))});
   document.querySelectorAll('[data-delete-colaborador]').forEach(x=>x.classList.toggle('hidden',!temPermissao('colaboradores_excluir')));
   document.querySelectorAll('[data-edit]').forEach(x=>x.classList.toggle('hidden',!temPermissao('ocorrencias_editar')));
@@ -656,9 +1480,11 @@ async function sair(){
   if(token){Promise.race([db.rpc('xcmg_logout',{p_token:token}),new Promise(r=>setTimeout(r,1500))]).catch(()=>{});}
   setTimeout(()=>{if(botao){botao.disabled=false;botao.textContent='↪ Sair'}saindo=false;$('loginUsuario').focus()},0);
 }
-async function carregarUsuarios(){if(!temPermissao('usuarios_gerenciar'))return;const {data,error}=await db.rpc('xcmg_listar_usuarios',{p_token:usuarioAtual.token});if(error){$('listaUsuarios').innerHTML='<div class="empty">Não foi possível carregar os usuários.</div>';return}const lista=data||[];$('listaUsuarios').innerHTML=lista.length?lista.map(u=>`<div class="user-row"><div><strong>${escapar(u.nome)}</strong><small>Login: ${escapar(u.login)} • ${u.administrador?'Administrador geral':`${(u.permissoes||[]).length} permissão(ões)`} • ${u.ativo?'Ativo':'Inativo'}</small></div><div class="user-row-actions"><button class="secondary" data-edit-user="${u.id}">Editar</button><button class="secondary" data-reset-user="${u.id}">Senha</button><button class="${u.ativo?'danger':'success'}" data-toggle-user="${u.id}" data-active="${u.ativo}">${u.ativo?'Desativar':'Ativar'}</button></div></div>`).join(''):'<div class="empty">Nenhum usuário cadastrado.</div>';window.__xcmgUsuarios=lista}
-async function salvarUsuario(){if(!exigirPermissao('usuarios_gerenciar'))return;const nome=$('novoUsuarioNome').value.trim(),login=$('novoUsuarioLogin').value.trim(),senha=$('novoUsuarioSenha').value,administrador=$('novoUsuarioAdmin').checked,permissoes=permissoesSelecionadas();if(!nome||!login){alert('Informe nome e login.');return}if(!editandoUsuarioId&&senha.length<6){alert('A senha inicial deve ter pelo menos 6 caracteres.');return}const fn=editandoUsuarioId?'xcmg_atualizar_usuario':'xcmg_criar_usuario';const args=editandoUsuarioId?{p_token:usuarioAtual.token,p_id:editandoUsuarioId,p_nome:nome,p_login:login,p_administrador:administrador,p_permissoes:permissoes}:{p_token:usuarioAtual.token,p_nome:nome,p_login:login,p_senha:senha,p_administrador:administrador,p_permissoes:permissoes};const {error}=await db.rpc(fn,args);if(error){alert(error.message||'Não foi possível salvar o usuário.');return}$('statusUsuario').textContent=editandoUsuarioId?'Usuário atualizado.':'Usuário criado.';limparFormularioUsuario();await carregarUsuarios();setTimeout(()=>$('statusUsuario').textContent='',2500)}
-function editarUsuario(id){const u=(window.__xcmgUsuarios||[]).find(x=>String(x.id)===String(id));if(!u)return;editandoUsuarioId=u.id;$('novoUsuarioNome').value=u.nome;$('novoUsuarioLogin').value=u.login;$('novoUsuarioSenha').value='';$('novoUsuarioAdmin').checked=u.administrador;document.querySelectorAll('#permissoesUsuario input').forEach(x=>x.checked=(u.permissoes||[]).includes(x.value));$('btnCriarUsuario').textContent='Salvar alterações';window.scrollTo({top:0,behavior:'smooth'})}
+async function carregarUsuarios(){if(!temPermissao('usuarios_gerenciar'))return;const {data,error}=await db.rpc('xcmg_listar_usuarios',{p_token:usuarioAtual.token});if(error){$('listaUsuarios').innerHTML='<div class="empty">Não foi possível carregar os usuários.</div>';return}const lista=data||[];window.__xcmgUsuarios=lista;
+  if($('usuariosResumoTotal'))$('usuariosResumoTotal').textContent=lista.length;if($('usuariosResumoAtivos'))$('usuariosResumoAtivos').textContent=lista.filter(u=>u.ativo).length;if($('usuariosResumoAdmins'))$('usuariosResumoAdmins').textContent=lista.filter(u=>u.administrador&&u.ativo).length;
+  $('listaUsuarios').innerHTML=lista.length?lista.map(u=>{const perfil=inferirPerfilUsuario(u),qtd=(u.permissoes||[]).length;return `<div class="user-row user-row-v2"><div class="user-row-main"><div class="user-avatar">${escapar(siglaUsuario(u.nome))}</div><div class="user-row-info"><strong>${escapar(u.nome)}</strong><small>Login: ${escapar(u.login)}</small><div class="user-badges"><span class="user-badge profile">${escapar(perfil)}</span><span class="user-badge ${u.ativo?'active':'inactive'}">${u.ativo?'Ativo':'Inativo'}</span>${u.administrador?'':`<span class="user-badge">${qtd} permissão(ões)</span>`}</div></div></div><details class="user-actions-menu"><summary>Ações ▾</summary><div class="user-actions-dropdown"><button class="secondary" data-edit-user="${u.id}">Editar acesso</button><button class="secondary" data-reset-user="${u.id}">Redefinir senha</button><button class="${u.ativo?'danger':'success'}" data-toggle-user="${u.id}" data-active="${u.ativo}">${u.ativo?'Desativar usuário':'Ativar usuário'}</button></div></details></div>`}).join(''):'<div class="empty">Nenhum usuário cadastrado.</div>'}
+async function salvarUsuario(){if(!exigirPermissao('usuarios_gerenciar'))return;const nome=$('novoUsuarioNome').value.trim(),login=$('novoUsuarioLogin').value.trim(),senha=$('novoUsuarioSenha').value,administrador=$('novoUsuarioAdmin').checked,permissoes=permissoesSelecionadas();if(!nome||!login){alert('Informe nome e login.');return}if(!editandoUsuarioId&&senha.length<6){alert('A senha inicial deve ter pelo menos 6 caracteres.');return}const eraEdicao=Boolean(editandoUsuarioId);const fn=eraEdicao?'xcmg_atualizar_usuario':'xcmg_criar_usuario';const args=eraEdicao?{p_token:usuarioAtual.token,p_id:editandoUsuarioId,p_nome:nome,p_login:login,p_administrador:administrador,p_permissoes:permissoes}:{p_token:usuarioAtual.token,p_nome:nome,p_login:login,p_senha:senha,p_administrador:administrador,p_permissoes:permissoes};const {error}=await db.rpc(fn,args);if(error){alert(error.message||'Não foi possível salvar o usuário.');return}$('statusUsuario').textContent=eraEdicao?'Usuário atualizado.':'Usuário criado.';await carregarUsuarios();setTimeout(()=>{limparFormularioUsuario(true);if($('statusUsuario'))$('statusUsuario').textContent=''},600)}
+function editarUsuario(id){const u=(window.__xcmgUsuarios||[]).find(x=>String(x.id)===String(id));if(!u)return;editandoUsuarioId=u.id;$('novoUsuarioNome').value=u.nome;$('novoUsuarioLogin').value=u.login;$('novoUsuarioSenha').value='';$('novoUsuarioAdmin').checked=u.administrador;document.querySelectorAll('#permissoesUsuario input').forEach(x=>{x.checked=(u.permissoes||[]).includes(x.value);x.disabled=u.administrador});$('perfilAcessoUsuario').value=u.administrador?'administrador':'personalizado';$('btnCriarUsuario').textContent='Salvar alterações';abrirEditorUsuario('editar')}
 async function alternarUsuario(id,ativo){const {error}=await db.rpc('xcmg_alterar_status_usuario',{p_token:usuarioAtual.token,p_id:Number(id),p_ativo:!ativo});if(error){alert(error.message);return}await carregarUsuarios()}
 async function redefinirSenhaUsuario(id){const senha=prompt('Digite a nova senha (mínimo 6 caracteres):');if(!senha)return;if(senha.length<6){alert('A senha deve ter pelo menos 6 caracteres.');return}const {error}=await db.rpc('xcmg_redefinir_senha_usuario',{p_token:usuarioAtual.token,p_id:Number(id),p_nova_senha:senha});if(error){alert(error.message);return}alert('Senha atualizada com sucesso.')}
 
@@ -781,12 +1607,30 @@ function agendarStickyMobileDashboard(){
 }
 window.addEventListener('resize',agendarStickyMobileDashboard,{passive:true});
 window.addEventListener('orientationchange',()=>setTimeout(atualizarStickyMobileDashboard,120),{passive:true});
+$('btnEscalaAnterior')?.addEventListener('click',()=>moverMesEscala(-1));$('btnEscalaProximo')?.addEventListener('click',()=>moverMesEscala(1));$('btnEscalaHoje')?.addEventListener('click',irHojeEscala);$('filtroTurmaEscala')?.addEventListener('change',renderizarEscala);$('escalaCalendario')?.addEventListener('click',e=>{const dia=e.target.closest('.schedule-day');if(dia)atualizarResumoEscala(dia.dataset.date)});
 document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>{abrirPagina(b.dataset.page);requestAnimationFrame(()=>{atualizarStickyMobileDashboard();atualizarMobileDashboardSummary()})}));document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{abrirPagina(b.dataset.go);requestAnimationFrame(()=>{atualizarStickyMobileDashboard();atualizarMobileDashboardSummary()})}));
 $('nome').addEventListener('change',preencherDadosColaborador);$('foto').addEventListener('change',()=>{const f=$('foto').files[0];removerFotoAtual=false;if(!f){mostrarFoto(fotoAtual.url);return}if(!f.type.startsWith('image/')||f.size>5*1024*1024){alert('Selecione uma imagem de até 5 MB.');$('foto').value='';mostrarFoto(fotoAtual.url);return}mostrarFoto(URL.createObjectURL(f))});$('btnRemoverFoto').addEventListener('click',()=>{removerFotoAtual=true;$('foto').value='';mostrarFoto('')});
-carregarCategoriasLocais();atualizarSelectCategorias();$('categoriaMotivo').addEventListener('change',()=>{$('motivo').value='';atualizarListaMotivos();sincronizarTipoComMotivo()});$('motivo').addEventListener('input',sincronizarTipoComMotivo);$('motivo').addEventListener('change',()=>{sincronizarTipoComMotivo();salvarMotivoPersonalizado($('motivo').value)});$('btnAdicionarColaborador').addEventListener('click',adicionarColaborador);$('novoColaboradorNome').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarColaborador()}});$('btnImportarColaboradores').addEventListener('click',importarColaboradores);$('btnImportarFerias')?.addEventListener('click',importarFerias);$('planilhaFerias')?.addEventListener('change',e=>{const st=$('statusImportacaoFerias');if(st)st.textContent=e.target.files?.[0]?`Arquivo selecionado: ${e.target.files[0].name}. Clique em Importar férias.`:''});$('pesquisaProgramacaoFerias')?.addEventListener('input',renderizarProgramacaoFerias);$('filtroStatusFerias')?.addEventListener('change',renderizarProgramacaoFerias);$('pesquisaColaborador').addEventListener('input',renderizarColaboradores);$('listaColaboradores').addEventListener('click',e=>{const id=e.target.dataset.deleteColaborador;if(id&&exigirPermissao('colaboradores_excluir'))excluirColaborador(id)});$('btnVerTodos').addEventListener('click',()=>abrirPagina('registros'));$('btnExportarRapido').addEventListener('click',exportar);$('inicio').addEventListener('change',()=>{if($('dias').value)atualizarPeriodoPorDias();else if($('fim').value)atualizarDiasPorPeriodo()});$('dias').addEventListener('input',()=>{const v=Number.parseInt($('dias').value,10);if($('dias').value&&(!Number.isInteger(v)||v<1)){$('dias').value='';return}atualizarPeriodoPorDias()});$('fim').addEventListener('change',atualizarDiasPorPeriodo);$('btnSalvar').addEventListener('click',salvarRegistro);$('btnCancelar').addEventListener('click',limparForm);$('btnSalvarConfig').addEventListener('click',salvarConfig);$('btnGerenciarPeriodos').addEventListener('click',abrirGestaoPeriodos);$('btnFecharPeriodos').addEventListener('click',fecharGestaoPeriodos);$('btnSalvarPeriodo').addEventListener('click',salvarPeriodoFechamento);$('btnCancelarPeriodo').addEventListener('click',cancelarEdicaoPeriodo);$('listaPeriodos').addEventListener('click',e=>{const ed=e.target.dataset.editPeriodo,del=e.target.dataset.deletePeriodo;if(ed)editarPeriodoFechamento(ed);if(del)excluirPeriodoFechamento(del)});$('modalPeriodos').addEventListener('click',e=>{if(e.target===$('modalPeriodos'))fecharGestaoPeriodos()});$('btnGerar').addEventListener('click',gerarMensagem);$('btnCopiar').addEventListener('click',async()=>{const t=gerarMensagem();try{await navigator.clipboard.writeText(t)}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}$('statusMensagem').textContent='Mensagem copiada com sucesso.';setTimeout(()=>$('statusMensagem').textContent='',2500)});$('btnWhatsApp').addEventListener('click',()=>window.open('https://wa.me/?text='+encodeURIComponent(gerarMensagem()),'_blank'));$('btnExportarExcel').addEventListener('click',gerarPlanilhaExcel);$('btnModoPrint').addEventListener('click',()=>{document.body.classList.toggle('records-print-mode');$('btnModoPrint').textContent=document.body.classList.contains('records-print-mode')?'✕ Sair do Print':'📷 Modo Print'});$('btnExportarExcelRegistros').addEventListener('click',gerarPlanilhaExcel);$('btnLimparTudo').addEventListener('click',async()=>{if(confirm('Deseja apagar todos os registros?')){const {error}=await db.from('xcmg_registros').delete().neq('id',0);if(error)alert('Não foi possível apagar os registros.');else await carregarNuvem(true)}});document.querySelectorAll('[data-occurrence-view]').forEach(btn=>btn.addEventListener('click',()=>selecionarVisualizacaoOcorrencias(btn.dataset.occurrenceView||'dia')));$('dataPainel').addEventListener('change',()=>{atualizarTudo();agendarMobileDashboardSummary()});$('mostrarTodosRegistros').checked=localStorage.getItem(VIEW_KEY)!=='0';$('mostrarTodosRegistros').addEventListener('change',()=>{localStorage.setItem(VIEW_KEY,$('mostrarTodosRegistros').checked?'1':'0');renderizarRegistros()});$('pesquisa').addEventListener('input',renderizarRegistros);$('filtroTipo').addEventListener('change',renderizarRegistros);$('filtroLocal').addEventListener('change',renderizarRegistros);$('filtroPeriodo').addEventListener('change',renderizarRegistros);$('listaRegistros').addEventListener('click',e=>{const ed=e.target.dataset.edit,del=e.target.dataset.delete;if(ed&&exigirPermissao('ocorrencias_editar'))editar(ed);if(del&&exigirPermissao('ocorrencias_excluir'))excluir(del)});$('btnExportar').addEventListener('click',exportar);$('arquivoBackup').addEventListener('change',e=>{if(e.target.files[0])importar(e.target.files[0]);e.target.value=''});
+carregarCategoriasLocais();atualizarSelectCategorias();$('categoriaMotivo').addEventListener('change',()=>{$('motivo').value='';atualizarListaMotivos();sincronizarTipoComMotivo()});$('motivo').addEventListener('input',sincronizarTipoComMotivo);$('motivo').addEventListener('change',()=>{sincronizarTipoComMotivo();salvarMotivoPersonalizado($('motivo').value)});$('btnAdicionarColaborador').addEventListener('click',adicionarColaborador);$('novoColaboradorNome').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();adicionarColaborador()}});$('btnImportarColaboradores').addEventListener('click',importarColaboradores);$('btnImportarFerias')?.addEventListener('click',importarFerias);$('btnExportarFeriasExcel')?.addEventListener('click',exportarFeriasExcel);$('planilhaFerias')?.addEventListener('change',e=>{const st=$('statusImportacaoFerias');if(st)st.textContent=e.target.files?.[0]?`Arquivo selecionado: ${e.target.files[0].name}. Clique em Importar férias.`:''});$('pesquisaProgramacaoFerias')?.addEventListener('input',renderizarProgramacaoFerias);$('filtroStatusFerias')?.addEventListener('change',renderizarProgramacaoFerias);$('pesquisaColaborador').addEventListener('input',renderizarColaboradores);$('listaColaboradores').addEventListener('click',e=>{const id=e.target.dataset.deleteColaborador;if(id&&exigirPermissao('colaboradores_excluir'))excluirColaborador(id)});$('btnVerTodos').addEventListener('click',()=>abrirPagina('registros'));$('btnExportarRapido').addEventListener('click',exportar);$('inicio').addEventListener('change',()=>{if($('dias').value)atualizarPeriodoPorDias();else if($('fim').value)atualizarDiasPorPeriodo()});$('dias').addEventListener('input',()=>{const v=Number.parseInt($('dias').value,10);if($('dias').value&&(!Number.isInteger(v)||v<1)){$('dias').value='';return}atualizarPeriodoPorDias()});$('fim').addEventListener('change',atualizarDiasPorPeriodo);$('btnSalvar').addEventListener('click',salvarRegistro);$('btnCancelar').addEventListener('click',limparForm);$('btnSalvarConfig').addEventListener('click',salvarConfig);$('btnGerenciarPeriodos').addEventListener('click',abrirGestaoPeriodos);$('btnFecharPeriodos').addEventListener('click',fecharGestaoPeriodos);$('btnSalvarPeriodo').addEventListener('click',salvarPeriodoFechamento);$('btnCancelarPeriodo').addEventListener('click',cancelarEdicaoPeriodo);$('listaPeriodos').addEventListener('click',e=>{const ed=e.target.dataset.editPeriodo,del=e.target.dataset.deletePeriodo;if(ed)editarPeriodoFechamento(ed);if(del)excluirPeriodoFechamento(del)});$('modalPeriodos').addEventListener('click',e=>{if(e.target===$('modalPeriodos'))fecharGestaoPeriodos()});$('btnGerar').addEventListener('click',gerarMensagem);$('btnCopiar').addEventListener('click',async()=>{const t=gerarMensagem();try{await navigator.clipboard.writeText(t)}catch{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}$('statusMensagem').textContent='Mensagem copiada com sucesso.';setTimeout(()=>$('statusMensagem').textContent='',2500)});$('btnWhatsApp').addEventListener('click',()=>window.open('https://wa.me/?text='+encodeURIComponent(gerarMensagem()),'_blank'));$('btnExportarExcel')?.addEventListener('click',gerarPlanilhaExcel);$('btnModoPrint').addEventListener('click',()=>{document.body.classList.toggle('records-print-mode');$('btnModoPrint').textContent=document.body.classList.contains('records-print-mode')?'✕ Sair do Print':'📷 Modo Print'});$('btnExportarExcelRegistros').addEventListener('click',gerarPlanilhaExcel);$('btnLimparTudo').addEventListener('click',async()=>{if(confirm('Deseja apagar todos os registros?')){const {error}=await db.from('xcmg_registros').delete().neq('id',0);if(error)alert('Não foi possível apagar os registros.');else await carregarNuvem(true)}});document.querySelectorAll('[data-occurrence-view]').forEach(btn=>btn.addEventListener('click',()=>selecionarVisualizacaoOcorrencias(btn.dataset.occurrenceView||'dia')));$('dataPainel').addEventListener('change',()=>{atualizarTudo();agendarMobileDashboardSummary()});$('mostrarTodosRegistros').checked=localStorage.getItem(VIEW_KEY)!=='0';$('mostrarTodosRegistros').addEventListener('change',()=>{localStorage.setItem(VIEW_KEY,$('mostrarTodosRegistros').checked?'1':'0');renderizarRegistros()});$('pesquisa').addEventListener('input',renderizarRegistros);$('filtroTipo').addEventListener('change',renderizarRegistros);$('filtroLocal').addEventListener('change',renderizarRegistros);$('filtroPeriodo').addEventListener('change',renderizarRegistros);$('listaRegistros').addEventListener('click',e=>{const ed=e.target.dataset.edit,del=e.target.dataset.delete;if(ed&&exigirPermissao('ocorrencias_editar'))editar(ed);if(del&&exigirPermissao('ocorrencias_excluir'))excluir(del)});$('btnExportar').addEventListener('click',exportar);$('arquivoBackup').addEventListener('change',e=>{if(e.target.files[0])importar(e.target.files[0]);e.target.value=''});
+$('btnNovoColaboradorEfetivo')?.addEventListener('click',()=>{if(editandoEfetivoId)limparFormEfetivo();alternarPainelEfetivo('cadastro');});
+$('btnAbrirImportacaoEfetivo')?.addEventListener('click',()=>alternarPainelEfetivo('importacao'));
+$('btnCancelarEdicaoEfetivo')?.addEventListener('click',()=>{limparFormEfetivo();painelEfetivo('cadastro',false)});
+$('btnFecharCadastroEfetivo')?.addEventListener('click',()=>{if(editandoEfetivoId)limparFormEfetivo();painelEfetivo('cadastro',false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('effectiveCadastroBox')?.classList.contains('effective-edit-drawer')){limparFormEfetivo();painelEfetivo('cadastro',false)}});
+['filtroEfetivoArea','filtroEfetivoTurma','filtroEfetivoStatus'].forEach(id=>$(id)?.addEventListener('change',renderizarColaboradores));
+$('btnCopiarEfetivo')?.addEventListener('click',copiarTabelaEfetivo);$('btnExportarEfetivo')?.addEventListener('click',exportarEfetivoExcel);
+$('listaColaboradores')?.addEventListener('click',e=>{const editarId=e.target.dataset.editColaborador,historicoId=e.target.dataset.historyColaborador;if(editarId&&exigirPermissao('colaboradores_cadastrar'))editarColaboradorEfetivo(editarId);if(historicoId)abrirHistoricoEfetivo(historicoId);if(editarId||historicoId)e.target.closest('details')?.removeAttribute('open')});
+$('btnFecharHistoricoEfetivo')?.addEventListener('click',()=>$('modalHistoricoEfetivo').classList.add('hidden'));$('modalHistoricoEfetivo')?.addEventListener('click',e=>{if(e.target===$('modalHistoricoEfetivo'))e.currentTarget.classList.add('hidden')});
+$('novoColaboradorCpf')?.addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2')});
+$('feriasColaborador')?.addEventListener('change',preencherDadosFerias);
+$('feriasInicio')?.addEventListener('change',calcularDatasFerias);$('feriasDias')?.addEventListener('change',calcularDatasFerias);
+$('btnSalvarFerias')?.addEventListener('click',salvarFeriasManual);$('btnCancelarFerias')?.addEventListener('click',limparFormFerias);
+$('listaProgramacaoFerias')?.addEventListener('click',e=>{const aprovar=e.target.dataset.approveVacation,rejeitar=e.target.dataset.rejectVacation,cancelar=e.target.dataset.cancelVacation,editarFerias=e.target.dataset.editVacation,detalhes=e.target.dataset.vacationDetails;const executar=(promessa)=>Promise.resolve(promessa).catch(err=>{console.error('Falha na ação de férias:',err);alert(`Não foi possível concluir a ação de férias. ${err?.message||''}`)});if(aprovar)executar(alterarStatusFerias(aprovar,'APROVADO'));if(rejeitar)executar(alterarStatusFerias(rejeitar,'NÃO APROVADO'));if(cancelar)executar(alterarStatusFerias(cancelar,'CANCELADO'));if(editarFerias)editarProgramacaoFerias(editarFerias);if(detalhes){const row=document.querySelector(`[data-vacation-detail-row="${CSS.escape(detalhes)}"]`);if(row){row.classList.toggle('hidden');e.target.textContent=row.classList.contains('hidden')?'Detalhes':'Fechar'}}});
+$('listaPendenciasFerias')?.addEventListener('click',e=>{const editar=e.target.dataset.editVacation;if(editar){editarProgramacaoFerias(editar);return}const id=e.target.dataset.startVacation;if(id){iniciarProgramacaoColaborador(id,e.target.dataset.cycleIndex);return}const ajuste=e.target.dataset.adjustCycle;if(ajuste)ajustarPeriodoAquisitivo(ajuste)});
+$('pesquisaPendenciasFerias')?.addEventListener('input',renderizarPendenciasFerias);
+$('filtroPendenciasFerias')?.addEventListener('change',renderizarPendenciasFerias);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();promptInstalacao=e;$('btnInstalar').classList.remove('hidden')});$('btnInstalar').addEventListener('click',async()=>{if(!promptInstalacao)return;promptInstalacao.prompt();await promptInstalacao.userChoice;promptInstalacao=null;$('btnInstalar').classList.add('hidden')});if(location.protocol.startsWith('http')&&'serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
 $('btnTema').addEventListener('click',alternarTema);aplicarTema(document.documentElement.dataset.theme||'dark');
-$('btnAdicionarCategoria')?.addEventListener('click',adicionarCategoria);$('listaCategoriasAdmin')?.addEventListener('click',acaoCategoriaAdmin);$('btnEntrar').addEventListener('click',entrar);$('btnVerSenhaLogin').addEventListener('click',alternarVisibilidadeSenha);['loginUsuario','loginSenha'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')entrar()}));$('loginUsuario').value=localStorage.getItem(LAST_LOGIN_KEY)||'';if($('loginUsuario').value)$('loginSenha').focus();else $('loginUsuario').focus();$('btnSair').addEventListener('click',sair);$('btnCriarUsuario').addEventListener('click',salvarUsuario);$('novoUsuarioAdmin').addEventListener('change',()=>document.querySelectorAll('#permissoesUsuario input').forEach(x=>x.disabled=$('novoUsuarioAdmin').checked));$('listaUsuarios').addEventListener('click',e=>{const ed=e.target.dataset.editUser,rs=e.target.dataset.resetUser,tg=e.target.dataset.toggleUser;if(ed)editarUsuario(ed);if(rs)redefinirSenhaUsuario(rs);if(tg)alternarUsuario(tg,e.target.dataset.active==='true')});$('dataPainel').value=hoje();window.addEventListener('offline',()=>{conexaoReal=false;statusNuvem(`Offline • ${filaOffline().length} alteração(ões) pendente(s)`,true)});window.addEventListener('online',async()=>{statusNuvem('Verificando conexão...');if(await verificarConexaoReal()){statusNuvem('Internet restabelecida. Sincronizando...');sincronizarFilaOffline().catch(console.error)}});setInterval(()=>verificarConexaoReal().catch(()=>{}),4000);verificarConexaoReal().catch(()=>{});restaurarSessao();atualizarStickyMobileDashboard();atualizarMobileDashboardSummary();
+$('btnAdicionarCategoria')?.addEventListener('click',adicionarCategoria);$('listaCategoriasAdmin')?.addEventListener('click',acaoCategoriaAdmin);$('btnEntrar').addEventListener('click',entrar);$('btnVerSenhaLogin').addEventListener('click',alternarVisibilidadeSenha);['loginUsuario','loginSenha'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')entrar()}));$('loginUsuario').value=localStorage.getItem(LAST_LOGIN_KEY)||'';if($('loginUsuario').value)$('loginSenha').focus();else $('loginUsuario').focus();$('btnSair').addEventListener('click',sair);$('btnCriarUsuario').addEventListener('click',salvarUsuario);$('btnNovoUsuario')?.addEventListener('click',()=>{limparFormularioUsuario(false);abrirEditorUsuario('novo')});$('btnFecharUsuarioEditor')?.addEventListener('click',()=>{limparFormularioUsuario(false);fecharEditorUsuario()});$('btnCancelarUsuario')?.addEventListener('click',()=>{limparFormularioUsuario(false);fecharEditorUsuario()});$('usuarioEditorBackdrop')?.addEventListener('click',()=>{limparFormularioUsuario(false);fecharEditorUsuario()});$('perfilAcessoUsuario')?.addEventListener('change',e=>aplicarPerfilUsuario(e.target.value));$('novoUsuarioAdmin').addEventListener('change',()=>{const admin=$('novoUsuarioAdmin').checked;document.querySelectorAll('#permissoesUsuario input').forEach(x=>x.disabled=admin);if(admin)$('perfilAcessoUsuario').value='administrador';else if($('perfilAcessoUsuario').value==='administrador')$('perfilAcessoUsuario').value='personalizado'});$('listaUsuarios').addEventListener('click',e=>{const ed=e.target.dataset.editUser,rs=e.target.dataset.resetUser,tg=e.target.dataset.toggleUser;if(ed)editarUsuario(ed);if(rs)redefinirSenhaUsuario(rs);if(tg)alternarUsuario(tg,e.target.dataset.active==='true');if(ed||rs||tg)e.target.closest('details')?.removeAttribute('open')});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('usuarioEditor')?.classList.contains('open')){limparFormularioUsuario(false);fecharEditorUsuario()}});$('dataPainel').value=hoje();window.addEventListener('offline',()=>{conexaoReal=false;statusNuvem(`Offline • ${filaOffline().length} alteração(ões) pendente(s)`,true)});window.addEventListener('online',async()=>{statusNuvem('Verificando conexão...');if(await verificarConexaoReal()){statusNuvem('Internet restabelecida. Sincronizando...');sincronizarFilaOffline().catch(console.error)}});setInterval(()=>verificarConexaoReal().catch(()=>{}),4000);verificarConexaoReal().catch(()=>{});restaurarSessao();atualizarStickyMobileDashboard();atualizarMobileDashboardSummary();
 // Evita ciclo infinito: aplicarPermissoes altera textos e isso também gera mutações.
 const observerPermissoes=new MutationObserver(()=>{
   if(!usuarioAtual)return;
@@ -795,4 +1639,103 @@ const observerPermissoes=new MutationObserver(()=>{
   observerPermissoes.observe(document.body,{subtree:true,childList:true});
 });
 observerPermissoes.observe(document.body,{subtree:true,childList:true});
+})();
+
+// v6.10.10 — dropdown próprio para o filtro de status das férias.
+// Evita o menu nativo branco/invisível do Edge/Chrome no Windows e mantém
+// o <select> original como fonte de valor para toda a lógica existente.
+(function iniciarFiltroStatusFeriasCustom(){
+  const select=document.getElementById('filtroStatusFerias');
+  if(!select || select.dataset.customReady==='1') return;
+  select.dataset.customReady='1';
+  select.classList.add('vacation-native-select-hidden');
+
+  const root=document.createElement('div');
+  root.className='vacation-status-dropdown';
+  const trigger=document.createElement('button');
+  trigger.type='button';
+  trigger.className='vacation-status-trigger';
+  trigger.setAttribute('aria-haspopup','listbox');
+  trigger.setAttribute('aria-expanded','false');
+  const menu=document.createElement('div');
+  menu.className='vacation-status-menu';
+  menu.setAttribute('role','listbox');
+
+  const atualizar=()=>{
+    const opt=select.options[select.selectedIndex] || select.options[0];
+    trigger.textContent=opt?.textContent || 'Todos os status';
+    [...menu.querySelectorAll('.vacation-status-option')].forEach(btn=>{
+      const ativo=btn.dataset.value===select.value;
+      btn.classList.toggle('is-selected',ativo);
+      btn.setAttribute('aria-selected',ativo?'true':'false');
+    });
+  };
+  const fechar=()=>{
+    root.classList.remove('is-open');
+    trigger.setAttribute('aria-expanded','false');
+  };
+  const abrir=()=>{
+    root.classList.add('is-open');
+    trigger.setAttribute('aria-expanded','true');
+    const atual=menu.querySelector('.is-selected') || menu.querySelector('.vacation-status-option');
+    requestAnimationFrame(()=>atual?.focus({preventScroll:true}));
+  };
+
+  [...select.options].forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='vacation-status-option';
+    btn.dataset.value=opt.value;
+    btn.textContent=opt.textContent;
+    btn.setAttribute('role','option');
+    btn.addEventListener('click',()=>{
+      select.value=opt.value;
+      select.dispatchEvent(new Event('change',{bubbles:true}));
+      atualizar();
+      fechar();
+      trigger.focus();
+    });
+    menu.appendChild(btn);
+  });
+
+  trigger.addEventListener('click',()=>root.classList.contains('is-open')?fechar():abrir());
+  trigger.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown' || e.key==='Enter' || e.key===' '){e.preventDefault();abrir();}
+    if(e.key==='Escape'){e.preventDefault();fechar();}
+  });
+  menu.addEventListener('keydown',e=>{
+    const itens=[...menu.querySelectorAll('.vacation-status-option')];
+    const i=itens.indexOf(document.activeElement);
+    if(e.key==='ArrowDown'){e.preventDefault();(itens[Math.min(i+1,itens.length-1)]||itens[0])?.focus();}
+    if(e.key==='ArrowUp'){e.preventDefault();(itens[Math.max(i-1,0)]||itens[0])?.focus();}
+    if(e.key==='Escape'){e.preventDefault();fechar();trigger.focus();}
+  });
+  document.addEventListener('pointerdown',e=>{if(!root.contains(e.target))fechar();});
+  select.addEventListener('change',atualizar);
+
+  select.insertAdjacentElement('afterend',root);
+  root.append(trigger,menu);
+  atualizar();
+})();
+
+// v6.10.27 — formulário de férias expansível: a consulta fica como foco principal da tela.
+(function(){
+  function configurarPainelCadastroFerias(){
+    const area=document.getElementById('vacationFormArea');
+    const abrir=document.getElementById('btnNovaProgramacaoFerias');
+    const fechar=document.getElementById('btnFecharFormFerias');
+    if(!area||!abrir||abrir.dataset.boundVacationForm==='1') return;
+    abrir.dataset.boundVacationForm='1';
+    const mostrar=()=>{area.classList.remove('vacation-edit-drawer');document.body.classList.remove('vacation-drawer-open');area.classList.remove('hidden'); setTimeout(()=>area.scrollIntoView({behavior:'smooth',block:'start'}),20);};
+    const ocultar=()=>{area.classList.remove('vacation-edit-drawer');document.body.classList.remove('vacation-drawer-open');area.classList.add('hidden');};
+    abrir.addEventListener('click',mostrar);
+    fechar?.addEventListener('click',ocultar);
+    document.addEventListener('click',e=>{
+      const b=e.target.closest?.('[data-action="programar-ferias"],.btn-programar-ferias');
+      if(b) mostrar();
+    });
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&area.classList.contains('vacation-edit-drawer')){limparFormFerias();area.classList.add('hidden')}});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',configurarPainelCadastroFerias);
+  else configurarPainelCadastroFerias();
 })();

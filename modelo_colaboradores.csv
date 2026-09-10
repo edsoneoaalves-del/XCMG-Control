@@ -1,3 +1,2 @@
-﻿Matrícula,Nome completo,Função,Área
-120206,VENILSON CARDOSO DA SILVA,OPERADOR DE GUINDASTE I,Mina
-120207,LUCAS DA COSTA FERREIRA,SINALEIRO DE CARGA,Mina
+Área,Matrícula,Nome completo,Função,Data Admis,Data Nasc,CPF,Turma,Status
+Mina,120206,Edson de Oliveira Alves,Técnico de Programação,14/04/2025,27/10/1986,000.000.000-00,D,Ativo
