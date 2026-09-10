@@ -5231,3 +5231,114 @@ body.user-editor-open{overflow:hidden}
   .sidebar .brand-block .team-badge,
   .sidebar .brand-block .developer{display:none!important}
 }
+
+/* v6.10.78 — auditoria responsiva geral para celular/tablet, sem alterar regras */
+@media (max-width:1100px){
+  main{min-width:0!important;max-width:100%!important;overflow-x:hidden!important}
+  .page{min-width:0!important;max-width:100%!important}
+  .panel{max-width:100%!important}
+  .topbar{min-width:0!important}
+  .topbar>*{min-width:0!important}
+
+  /* Tabelas preservam leitura com rolagem apenas dentro do próprio bloco */
+  .records,.table-wrap,.vacation-management-table,.vacation-pending-table,.effective-table-wrap{max-width:100%!important;overflow-x:auto!important;overscroll-behavior-inline:contain}
+}
+
+@media (max-width:720px){
+  html,body{max-width:100%;overflow-x:hidden}
+  main{width:100%!important;padding:0!important}
+  .page{padding:10px!important}
+  .panel{padding:10px!important;border-radius:12px!important}
+
+  /* Navegação mobile: barra compacta no topo, sem aumentar a largura da página */
+  .sidebar{position:sticky!important;top:0!important;width:100%!important;max-width:100vw!important;height:auto!important;min-height:0!important;padding:6px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:thin;z-index:100!important}
+  .sidebar nav{display:flex!important;gap:4px!important;width:max-content!important;min-width:100%!important}
+  .sidebar .nav-item{flex:0 0 auto!important;min-width:auto!important;padding:8px 10px!important;border-radius:9px!important;gap:6px!important}
+  .sidebar .nav-item span:not(.nav-icon){font-size:.72rem!important}
+  .sidebar .nav-icon{font-size:.95rem!important}
+
+  /* Topo das páginas */
+  .topbar{padding:10px!important;gap:8px!important}
+  .topbar h1{font-size:1.25rem!important}
+  .topbar p{font-size:.68rem!important}
+  .date-control{width:100%!important;max-width:none!important}
+  .topbar-actions{gap:7px!important}
+  .topbar-user{min-width:0!important}
+
+  /* Dashboard: leitura confortável no celular */
+  #dashboard .metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important}
+  #dashboard .metric{height:76px!important;min-height:76px!important;padding:8px!important}
+  #dashboard .dashboard-main-grid{grid-template-columns:1fr!important;gap:10px!important}
+  #dashboard .vacation-alert-row,#dashboard .birthday-row{min-width:0!important}
+
+  /* ESCALA: calendário de 7 colunas realmente responsivo, SEM rolagem horizontal */
+  #escala .schedule-module{padding:8px!important}
+  #escala .schedule-main-heading h2{font-size:1rem!important}
+  #escala .schedule-main-heading p{font-size:.62rem!important}
+  #escala .schedule-toolbar{display:grid!important;grid-template-columns:1fr!important;align-items:stretch!important;gap:6px!important;margin:2px 0 5px!important}
+  #escala .schedule-month-nav{display:grid!important;grid-template-columns:30px auto 30px minmax(0,1fr)!important;gap:4px!important;align-items:center!important;flex-wrap:nowrap!important}
+  #escala .schedule-month-title{width:auto!important;margin:0 0 0 5px!important;font-size:.83rem!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  #escala .schedule-filter{width:100%!important;min-width:0!important;font-size:.6rem!important}
+  #escala .schedule-filter select{width:100%!important;height:30px!important}
+  #escala .schedule-summary{grid-template-columns:1fr 1fr!important;gap:5px!important;max-width:none!important;margin-bottom:5px!important}
+  #escala .schedule-summary-card{padding:5px 6px!important;gap:4px!important;min-width:0!important}
+  #escala .schedule-summary-card span{font-size:.52rem!important;white-space:nowrap!important}
+  #escala .schedule-summary-card strong{font-size:.72rem!important}
+  #escala .schedule-calendar-shell{width:100%!important;max-width:100%!important;overflow:hidden!important}
+  #escala .schedule-weekdays,#escala .schedule-calendar{width:100%!important;min-width:0!important;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+  #escala .schedule-weekdays span{padding:3px 0!important;font-size:.53rem!important;min-width:0!important}
+  #escala .schedule-day{min-width:0!important;min-height:44px!important;padding:3px!important;gap:2px!important;overflow:hidden!important}
+  #escala .schedule-day-number{width:17px!important;height:17px!important;font-size:.61rem!important}
+  #escala .schedule-day-shift{max-width:100%!important;padding:2px 4px!important;font-size:.54rem!important;line-height:1.05!important;letter-spacing:-.02em!important}
+  #escala .schedule-legend{grid-template-columns:1fr!important;gap:4px!important;margin-top:4px!important}
+  #escala .schedule-legend-item{padding:5px 7px!important}
+  #escala .schedule-legend-item strong{font-size:.66rem!important}
+  #escala .schedule-legend-item small{font-size:.56rem!important;overflow:visible!important;text-overflow:clip!important}
+
+  /* Efetivo: ações e filtros se adaptam; tabela continua rolável internamente */
+  #colaboradores .effective-main-heading{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  #colaboradores .effective-main-heading>div:first-child{min-width:0!important}
+  #colaboradores .effective-heading-right{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:7px!important;margin-left:0!important}
+  #colaboradores .effective-page-actions{grid-template-columns:1fr 1fr!important;gap:6px!important}
+  #colaboradores .effective-page-actions button{width:100%!important;min-width:0!important;padding:7px 8px!important;font-size:.68rem!important}
+  #colaboradores .effective-page-actions .success{grid-column:1/-1!important}
+  #colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:1fr 1fr!important;gap:6px!important}
+  #colaboradores .effective-toolbar .collaborator-filter>input{grid-column:1/-1!important}
+  #colaboradores .effective-table-wrap{max-height:calc(100dvh - 330px)!important;min-height:300px!important}
+
+  /* Férias: controles empilham; tabelas mantêm rolagem interna sem sobreposição */
+  #ferias .vacation-heading-actions{flex-wrap:wrap!important;gap:6px!important}
+  #ferias .vacation-management-filters,#ferias .vacation-pending-filters{grid-template-columns:1fr!important;gap:6px!important}
+  #ferias .vacation-summary-cards,#ferias .vacation-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #ferias .vacation-actions-popover{position:fixed!important;right:10px!important;left:auto!important;min-width:170px!important;max-width:calc(100vw - 20px)!important}
+
+  /* Ocorrências: cadastro em uma coluna, sem campos comprimidos */
+  #ocorrencias .form-panel{padding:12px!important}
+  #ocorrencias .form-grid{grid-template-columns:1fr!important;gap:9px!important}
+  #ocorrencias .form-grid label,#ocorrencias .form-grid label.full{grid-column:1/-1!important}
+  #ocorrencias .occurrence-dates-group.full{grid-template-columns:1fr!important;gap:8px!important}
+  #ocorrencias textarea#observacao{min-height:76px!important}
+
+  /* Registros: filtros empilhados e tabela protegida */
+  #registros .filters,#registros .records-filters{grid-template-columns:1fr!important;gap:6px!important}
+  #registros .records-view-bar{display:grid!important;grid-template-columns:1fr!important;gap:6px!important}
+  #registros .records-export-visible{width:100%!important}
+
+  /* Usuários: lista primeiro, editor em tela cheia */
+  #usuarios .users-summary,.users-summary{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+  .users-summary-card{padding:7px!important;display:grid!important;gap:2px!important}
+  .users-summary-card span{font-size:.56rem!important}.users-summary-card strong{font-size:.95rem!important}
+  .user-row.user-row-v2{grid-template-columns:minmax(0,1fr) auto!important}
+  .user-editor{width:100vw!important;max-width:100vw!important;border-radius:0!important}
+}
+
+@media (max-width:420px){
+  .page{padding:8px!important}
+  #escala .schedule-day{min-height:42px!important;padding:2px!important}
+  #escala .schedule-day-number{width:16px!important;height:16px!important;font-size:.58rem!important}
+  #escala .schedule-day-shift{padding:2px 3px!important;font-size:.5rem!important}
+  #escala .schedule-weekdays span{font-size:.49rem!important}
+  #dashboard .metrics{gap:5px!important}
+  #colaboradores .effective-toolbar .collaborator-filter{grid-template-columns:1fr!important}
+  #colaboradores .effective-toolbar .collaborator-filter>input{grid-column:auto!important}
+}
