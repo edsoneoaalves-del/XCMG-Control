@@ -1,3 +1,22 @@
+XCMG Control v6.10.85
+Novo módulo Homem × Frota.
+
+- Novo menu Homem × Frota logo abaixo de Efetivo.
+- Área + Função + Equipamento formam a posição operacional e permanecem no controle mesmo sem nome/matrícula.
+- Nome e matrícula são editáveis e podem ficar pendentes.
+- Painel automático com total de posições, disponíveis, pendentes, cobertura e déficit por função.
+- Ausências temporárias são identificadas pela data do painel usando Férias, Ocorrências e status do Efetivo.
+- Importação de Excel/CSV pela combinação Área + Função + Equipamento, sem apagar posições ausentes da planilha.
+- Exportação Excel com situação atual de cada posição.
+- Modelo de importação incluso: modelo_homem_frota.csv.
+- Preservado o menu mobile da v6.10.80 e os módulos já existentes.
+
+IMPORTANTE PARA SINCRONIZAR HOMEM × FROTA ENTRE APARELHOS:
+1. No Supabase, abra o SQL Editor.
+2. Execute o arquivo supabase_migracao_v6.10.82_homem_frota.sql uma única vez.
+3. Depois publique esta versão normalmente no mesmo projeto.
+4. Sem essa migração, o novo módulo continua funcionando localmente no aparelho, mas não sincroniza sua base entre dispositivos.
+
 XCMG Control v6.10.17
 Cancelamento de férias corrigido.
 
@@ -473,3 +492,18 @@ VERSÃO 6.10.37
 - Edição de férias abre em painel lateral fixo à esquerda, mantendo a posição da lista.
 - Formulário de edição não rola mais para o final da página.
 - Painel tem rolagem própria, cabeçalho e ações fixas, e fecha com Fechar/Cancelar edição/Esc.
+
+
+v6.10.83 — Integração Homem × Frota / Efetivo
+- Ao informar uma matrícula existente no Efetivo, Nome completo e Função são preenchidos automaticamente.
+- Sem matrícula, a Função continua editável e obrigatória para permitir posição pendente.
+- Ajustado cache do service worker para evitar referência a arquivo de migração inexistente.
+
+
+v6.10.85 — Vincular profissional no Homem × Frota
+- Posições pendentes agora exibem a ação “Vincular profissional”.
+- A lista de profissionais é carregada diretamente do Efetivo.
+- Matrícula, nome e função são exibidos na seleção.
+- Profissionais com função compatível aparecem primeiro.
+- O sistema alerta quando a função é diferente da posição ou quando o profissional já está vinculado a outra frota.
+- Área, função e equipamento da posição permanecem intactos durante o vínculo.

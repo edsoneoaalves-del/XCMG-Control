@@ -5406,3 +5406,35 @@ body.user-editor-open{overflow:hidden}
   .sidebar .nav-item.active:before{display:none!important}
   main{padding-bottom:0!important}
 }
+
+
+/* v6.10.82 — módulo Homem × Frota */
+.hf-module{display:grid;gap:16px}.hf-main-heading{align-items:flex-start}.hf-heading-actions{justify-content:flex-end;flex-wrap:wrap}.hf-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.hf-kpi{background:var(--card,#0d2233);border:1px solid rgba(120,160,190,.18);border-radius:14px;padding:14px;display:grid;gap:3px}.hf-kpi span{font-size:.78rem;opacity:.78}.hf-kpi strong{font-size:1.65rem}.hf-kpi small{font-size:.68rem;opacity:.62}.hf-kpi.hf-ok strong{color:#43d17a}.hf-kpi.hf-alert strong{color:#ff6574}.hf-deficit-card,.hf-list-section{border:1px solid rgba(120,160,190,.16);border-radius:14px;padding:14px;background:rgba(8,28,43,.38)}.hf-section-title{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}.hf-section-title h3{margin:0 0 3px}.hf-section-title p{margin:0;opacity:.65;font-size:.75rem}.hf-deficit-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.hf-deficit-row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 12px;border-radius:10px;background:rgba(255,92,107,.08);border:1px solid rgba(255,92,107,.18)}.hf-deficit-row div{display:grid;gap:2px}.hf-deficit-row small{opacity:.65}.hf-deficit-row>span{font-weight:800;color:#ff7080;white-space:nowrap}.hf-empty-ok{padding:12px;border-radius:10px;background:rgba(67,209,122,.09);color:#64dc91}.hf-editor,.hf-import{margin:0}.hf-filters{grid-template-columns:minmax(220px,2fr) minmax(130px,1fr) minmax(150px,1fr);margin-bottom:10px}.hf-table-wrap{overflow:auto;border-radius:10px}.hf-table{width:100%;border-collapse:collapse;min-width:930px}.hf-table th,.hf-table td{padding:10px 9px;border-bottom:1px solid rgba(120,160,190,.13);text-align:left;font-size:.78rem;vertical-align:middle}.hf-table th{position:sticky;top:0;background:#0b2234;z-index:1;font-size:.7rem;text-transform:uppercase;letter-spacing:.02em}.hf-name{min-width:210px}.hf-status{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:.68rem;font-weight:700;white-space:nowrap}.hf-status-ok{background:rgba(67,209,122,.12);color:#67dd94}.hf-status-warn{background:rgba(255,185,70,.12);color:#ffc568}.hf-status-danger{background:rgba(255,92,107,.12);color:#ff7482}.danger-text{color:#ff7482!important}
+@media(max-width:900px){.hf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.hf-deficit-list{grid-template-columns:1fr}.hf-filters{grid-template-columns:1fr 1fr}.hf-filters>input{grid-column:1/-1}}
+@media(max-width:720px){#homemfrota.page{padding:8px!important}.hf-module{gap:10px}.hf-main-heading{display:grid!important;gap:10px}.hf-heading-actions{display:grid!important;grid-template-columns:1fr 1fr 1fr;width:100%;gap:6px!important}.hf-heading-actions button{padding:8px 5px!important;font-size:.67rem!important}.hf-kpis{gap:6px}.hf-kpi{padding:9px;border-radius:10px}.hf-kpi strong{font-size:1.25rem}.hf-kpi span{font-size:.65rem}.hf-kpi small{font-size:.56rem}.hf-deficit-card,.hf-list-section{padding:9px}.hf-filters{grid-template-columns:1fr}.hf-filters>input{grid-column:auto}.hf-table-wrap{margin-left:-2px;margin-right:-2px}.hf-table{min-width:790px}.hf-table th,.hf-table td{padding:7px 6px;font-size:.68rem}.hf-name{min-width:170px}}
+
+
+/* v6.10.85 — Homem × Frota mais compacto e gerencial */
+.hf-module{gap:12px}
+.hf-main-heading{padding-bottom:2px}
+.hf-kpis{gap:8px}
+.hf-kpi{padding:11px 13px;border-radius:12px}
+.hf-kpi strong{font-size:1.5rem;line-height:1.05}
+.hf-deficit-card{padding:11px 14px}
+.hf-deficit-card .hf-section-title{margin-bottom:7px}
+.hf-deficit-list{display:block;border:1px solid rgba(120,160,190,.14);border-radius:10px;overflow:hidden}
+.hf-deficit-head,.hf-deficit-row{display:grid;grid-template-columns:minmax(0,1fr) 100px 80px;align-items:center;gap:10px}
+.hf-deficit-head{padding:6px 11px;background:rgba(120,160,190,.07);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;opacity:.72}
+.hf-deficit-row{width:100%;padding:7px 11px;border:0;border-top:1px solid rgba(255,92,107,.13);border-radius:0;background:rgba(255,92,107,.045);color:inherit;text-align:left;cursor:pointer;font:inherit}
+.hf-deficit-row:first-of-type{border-top:0}
+.hf-deficit-row:hover{background:rgba(255,92,107,.09)}
+.hf-deficit-row strong{font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf-deficit-row small{font-size:.72rem;opacity:.72;text-align:center}
+.hf-deficit-row>span{font-size:.75rem;font-weight:800;color:#ff7080;text-align:right;white-space:nowrap}
+.hf-list-section{padding:11px 14px}
+@media(max-width:720px){
+ .hf-module{gap:8px}.hf-kpi{padding:8px}.hf-deficit-card,.hf-list-section{padding:8px}
+ .hf-deficit-head,.hf-deficit-row{grid-template-columns:minmax(0,1fr) 62px 52px;gap:5px;padding-left:8px;padding-right:8px}
+ .hf-deficit-row strong{font-size:.67rem}.hf-deficit-row small,.hf-deficit-row>span{font-size:.64rem}
+ .hf-deficit-card .hf-section-title p{font-size:.62rem}
+}

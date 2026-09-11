@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v61079.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.10.80">
+  <link rel="stylesheet" href="css/style.css?v=6.10.85">
 </head>
 <body>
 <div id="loginScreen" class="login-screen login-corporate">
@@ -44,6 +44,7 @@
     <nav>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span data-mobile-label="Início">Dashboard</span></button>
       <button class="nav-item" data-page="colaboradores"><span class="nav-icon">👥</span><span data-mobile-label="Efetivo">Efetivo</span></button>
+      <button class="nav-item" data-page="homemfrota"><span class="nav-icon">⚙️</span><span data-mobile-label="H×Frota">Homem × Frota</span></button>
       <button class="nav-item" data-page="ferias"><span class="nav-icon">▦</span><span data-mobile-label="Férias">Férias</span></button>
       <button class="nav-item" data-page="escala"><span class="nav-icon">📅</span><span data-mobile-label="Escala">Escala</span></button>
       <button class="nav-item" data-page="ocorrencias"><span class="nav-icon">▣</span><span data-mobile-label="Ocorr.">Ocorrências</span></button>
@@ -59,7 +60,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.10.80</strong><span>Menu mobile corrigido</span></div>
+    <div class="version"><strong>Versão 6.10.84</strong><span>Homem × Frota</span></div>
   </aside>
 
   <main>
@@ -227,6 +228,73 @@
           </div>
           <div id="statusAcoesEfetivo" class="status"></div>
           <div id="listaColaboradores" class="effective-table-wrap"></div>
+        </div>
+      </article>
+    </section>
+
+
+    <section id="homemfrota" class="page">
+      <article class="panel hf-module">
+        <div class="panel-heading hf-main-heading">
+          <div><h2>Homem × Frota</h2><p>Controle automático das posições operacionais por área, função e equipamento.</p></div>
+          <div class="actions hf-heading-actions">
+            <button id="btnNovaPosicaoHF" class="primary" type="button">+ Adicionar frota</button>
+            <button id="btnAbrirImportacaoHF" class="secondary" type="button">Importar</button>
+            <button id="btnExportarHF" class="success" type="button">Exportar</button>
+          </div>
+        </div>
+
+        <div class="hf-kpis">
+          <div class="hf-kpi"><span>Posições</span><strong id="hfKpiTotal">0</strong><small>frota prevista</small></div>
+          <div class="hf-kpi hf-ok"><span>Cobertas</span><strong id="hfKpiDisponiveis">0</strong><small>com profissional disponível</small></div>
+          <div class="hf-kpi hf-alert"><span>Pendentes</span><strong id="hfKpiPendentes">0</strong><small>sem cobertura no painel</small></div>
+          <div class="hf-kpi"><span>Cobertura</span><strong id="hfKpiCobertura">0%</strong><small>das posições</small></div>
+        </div>
+
+        <div class="hf-deficit-card">
+          <div class="hf-section-title"><div><h3>Funções com déficit</h3><p>Clique em uma função para visualizar as posições sem cobertura.</p></div></div>
+          <div id="hfDeficitFuncoes" class="hf-deficit-list"></div>
+        </div>
+
+        <div id="hfEditorBox" class="collaborator-box hf-editor hidden">
+          <div class="effective-form-heading"><div><h3 id="hfEditorTitulo">Adicionar frota</h3><p class="section-subtitle">Área, Função e Equipamento definem a posição. Nome e matrícula podem ficar pendentes.</p></div><button id="btnFecharEditorHF" class="secondary" type="button">✕ Fechar</button></div>
+          <div class="form-grid compact-grid">
+            <label><span>Área *</span><input id="hfArea" type="text" placeholder="Ex.: Mina ou Usina"></label>
+            <label><span>Função *</span><input id="hfFuncao" type="text" placeholder="Ex.: Operador de Caminhão Tipo Munck"></label>
+            <label><span>Equipamento *</span><input id="hfEquipamento" type="text" placeholder="Ex.: 1JA343"></label>
+            <label><span>Matrícula</span><input id="hfMatricula" type="text" list="hfMatriculasEfetivo" placeholder="Opcional"></label>
+            <label class="full"><span>Nome completo</span><input id="hfNome" type="text" readonly placeholder="Preenchido automaticamente pelo Efetivo"></label>
+            <label class="full"><span>Observação</span><input id="hfObservacao" type="text" placeholder="Opcional"></label>
+          </div>
+          <datalist id="hfMatriculasEfetivo"></datalist>
+          <div class="actions"><button id="btnSalvarHF" class="primary" type="button">Salvar posição</button><button id="btnCancelarHF" class="secondary" type="button">Cancelar</button></div>
+          <div id="hfStatusEditor" class="status"></div>
+        </div>
+
+        <div id="hfVinculoBox" class="collaborator-box hf-editor hidden">
+          <div class="effective-form-heading"><div><h3>Vincular profissional</h3><p class="section-subtitle">Selecione um colaborador do Efetivo para ocupar esta posição.</p></div><button id="btnFecharVinculoHF" class="secondary" type="button">✕ Fechar</button></div>
+          <div id="hfVinculoPosicao" class="status"></div>
+          <div class="form-grid two-cols">
+            <label class="full"><span>Profissional *</span><select id="hfVinculoProfissional"><option value="">Selecione pelo nome ou matrícula</option></select></label>
+          </div>
+          <div id="hfVinculoDetalhes" class="status"></div>
+          <div class="actions"><button id="btnSalvarVinculoHF" class="primary" type="button">Vincular profissional</button><button id="btnCancelarVinculoHF" class="secondary" type="button">Cancelar</button></div>
+        </div>
+
+        <div id="hfImportBox" class="collaborator-box hf-import hidden">
+          <h3>Importar Homem × Frota</h3>
+          <p class="section-subtitle">Atualiza pela combinação Área + Função + Equipamento e não apaga posições que não estejam na planilha.</p>
+          <label class="file-drop"><span>Selecionar planilha</span><input id="planilhaHF" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"></label>
+          <small class="field-help">Colunas: Área, Matrícula, Nome completo, Função e Equipamento.</small>
+          <div class="actions"><button id="btnImportarHF" class="success" type="button">Importar e atualizar</button><a class="secondary download-model" href="modelo_homem_frota.csv" download>Baixar modelo</a><button id="btnFecharImportacaoHF" class="secondary" type="button">Fechar</button></div>
+          <div id="hfStatusImportacao" class="status"></div>
+        </div>
+
+        <div class="hf-list-section">
+          <div class="hf-section-title"><div><h3>Posições operacionais</h3><p>Área, função e equipamento permanecem no controle mesmo sem profissional vinculado.</p></div><strong id="hfTotalExibido" class="records-count">0 posições</strong></div>
+          <div class="filters hf-filters"><input id="hfPesquisa" type="search" placeholder="Pesquisar área, nome, matrícula, função ou equipamento..."><select id="hfFiltroArea"><option value="">Todas as áreas</option></select><select id="hfFiltroStatus"><option value="">Todos os status</option><option value="DISPONIVEL">Disponível</option><option value="AUSENTE">Ausência temporária</option><option value="PENDENTE">Sem profissional</option></select></div>
+          <div id="hfStatusGeral" class="status"></div>
+          <div id="hfLista" class="hf-table-wrap"></div>
         </div>
       </article>
     </section>
@@ -494,6 +562,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.10.80"></script>
+<script src="js/app.js?v=6.10.85"></script>
 </body>
 </html>
