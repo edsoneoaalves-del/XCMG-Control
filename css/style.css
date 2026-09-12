@@ -6441,3 +6441,48 @@ body.user-editor-open{overflow:hidden}
     overscroll-behavior-x:contain!important;
   }
 }
+
+
+/* v6.10.97 — menu mobile: o gesto horizontal fica isolado dentro da barra inferior */
+@media (max-width:720px){
+  html,body{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+  .app-shell,main,main>.page,main>.page.active{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+  }
+  .sidebar{
+    box-sizing:border-box!important;
+    left:0!important;
+    right:0!important;
+    width:100vw!important;
+    max-width:100vw!important;
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    contain:layout paint!important;
+  }
+  .sidebar nav{
+    box-sizing:border-box!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior-x:contain!important;
+    overscroll-behavior-y:none!important;
+    -webkit-overflow-scrolling:touch!important;
+    touch-action:pan-x!important;
+    scrollbar-width:none!important;
+  }
+  .sidebar nav::-webkit-scrollbar{display:none!important}
+  .sidebar .nav-item{
+    flex:0 0 auto!important;
+  }
+}

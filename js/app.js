@@ -1865,3 +1865,32 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',configurarPainelCadastroFerias);
   else configurarPainelCadastroFerias();
 })();
+
+
+/* v6.10.97 — isola o arraste horizontal do menu mobile para não deslocar a página */
+(function(){
+  function instalarArrasteMenuMobile(){
+    var nav=document.querySelector('.sidebar nav');
+    if(!nav || nav.dataset.dragIsolado==='1') return;
+    nav.dataset.dragIsolado='1';
+    var startX=0,startY=0,startScroll=0,dragHorizontal=false;
+    nav.addEventListener('touchstart',function(e){
+      if(window.innerWidth>720 || !e.touches || !e.touches[0]) return;
+      var t=e.touches[0];
+      startX=t.clientX; startY=t.clientY; startScroll=nav.scrollLeft; dragHorizontal=false;
+    },{passive:true});
+    nav.addEventListener('touchmove',function(e){
+      if(window.innerWidth>720 || !e.touches || !e.touches[0]) return;
+      var t=e.touches[0], dx=t.clientX-startX, dy=t.clientY-startY;
+      if(!dragHorizontal && Math.abs(dx)>6 && Math.abs(dx)>Math.abs(dy)) dragHorizontal=true;
+      if(dragHorizontal){
+        e.preventDefault();
+        nav.scrollLeft=startScroll-dx;
+      }
+    },{passive:false});
+    nav.addEventListener('touchend',function(){dragHorizontal=false;},{passive:true});
+    nav.addEventListener('touchcancel',function(){dragHorizontal=false;},{passive:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarArrasteMenuMobile);
+  else instalarArrasteMenuMobile();
+})();
