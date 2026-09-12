@@ -1940,3 +1940,61 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarMenuMobileV61098);
   else instalarMenuMobileV61098();
 })();
+
+
+/* v6.10.99 — trava o eixo X da viewport e entrega o gesto somente ao menu inferior */
+(function(){
+  function instalarBloqueioHorizontalDefinitivo(){
+    var nav=document.querySelector('.sidebar nav');
+    if(!nav || nav.dataset.lockX61099==='1') return;
+    nav.dataset.lockX61099='1';
+
+    var ativo=false,sx=0,sy=0,sl=0,lastY=0;
+    function zerarEixoX(){
+      try{
+        document.documentElement.scrollLeft=0;
+        document.body.scrollLeft=0;
+        if(Math.abs(window.scrollX||0)>0) window.scrollTo(0, window.scrollY||lastY||0);
+      }catch(_e){}
+    }
+
+    document.addEventListener('touchstart',function(e){
+      if(window.innerWidth>720 || !e.touches || e.touches.length!==1) return;
+      if(!nav.contains(e.target)) return;
+      var t=e.touches[0];
+      ativo=true; sx=t.clientX; sy=t.clientY; sl=nav.scrollLeft; lastY=window.scrollY||0;
+      zerarEixoX();
+    },{capture:true,passive:true});
+
+    document.addEventListener('touchmove',function(e){
+      if(!ativo || window.innerWidth>720 || !e.touches || !e.touches[0]) return;
+      var t=e.touches[0];
+      var dx=t.clientX-sx;
+      /* Qualquer movimento iniciado na barra pertence à barra, nunca à viewport. */
+      if(e.cancelable) e.preventDefault();
+      e.stopPropagation();
+      nav.scrollLeft=sl-dx;
+      zerarEixoX();
+    },{capture:true,passive:false});
+
+    function finalizar(){
+      if(!ativo) return;
+      ativo=false;
+      zerarEixoX();
+    }
+    document.addEventListener('touchend',finalizar,{capture:true,passive:true});
+    document.addEventListener('touchcancel',finalizar,{capture:true,passive:true});
+
+    /* Última barreira contra qualquer scroll horizontal/rubber-band do Safari. */
+    window.addEventListener('scroll',function(){
+      if(window.innerWidth<=720 && Math.abs(window.scrollX||0)>0) zerarEixoX();
+    },{passive:true});
+    window.addEventListener('resize',function(){ if(window.innerWidth<=720) zerarEixoX(); },{passive:true});
+    window.addEventListener('orientationchange',function(){ setTimeout(zerarEixoX,50); },{passive:true});
+
+    setTimeout(zerarEixoX,0);
+    setTimeout(zerarEixoX,250);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarBloqueioHorizontalDefinitivo);
+  else instalarBloqueioHorizontalDefinitivo();
+})();

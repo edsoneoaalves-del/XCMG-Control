@@ -6512,3 +6512,75 @@ body.user-editor-open{overflow:hidden}
   }
   main{padding-bottom:calc(68px + env(safe-area-inset-bottom))!important;}
 }
+
+
+/* v6.10.99 — bloqueio definitivo do deslocamento horizontal no mobile/iPhone */
+@media (max-width:720px){
+  html{
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:clip!important;
+    overscroll-behavior-x:none!important;
+  }
+  body{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:clip!important;
+    overscroll-behavior-x:none!important;
+    position:relative!important;
+  }
+  .app-shell{
+    display:block!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:clip!important;
+    position:relative!important;
+    left:0!important;
+    right:auto!important;
+    transform:none!important;
+  }
+  main,.page,.page.active,.topbar,.panel{
+    min-width:0!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+  main{
+    width:100%!important;
+    overflow-x:clip!important;
+    position:relative!important;
+    left:0!important;
+    transform:none!important;
+  }
+
+  /* O ASIDE nunca rola. Somente o NAV interno pode rolar horizontalmente. */
+  .sidebar{
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+    touch-action:none!important;
+    contain:layout paint!important;
+  }
+  .sidebar nav{
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    overscroll-behavior:none!important;
+    touch-action:none!important;
+    -webkit-overflow-scrolling:auto!important;
+    scrollbar-width:none!important;
+  }
+  .sidebar nav::-webkit-scrollbar{display:none!important}
+  .sidebar .nav-item{flex:0 0 auto!important;}
+
+  /* Containers largos podem rolar internamente, nunca aumentar a página. */
+  .records,.table-wrap,.effective-table-wrap,.vacation-management-table,
+  .vacation-pending-table,.schedule-calendar-shell{
+    max-width:100%!important;
+    contain:inline-size!important;
+  }
+}
