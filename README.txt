@@ -1,4 +1,4 @@
-XCMG Control v6.10.91
+XCMG Control v6.10.95
 
 - Corrigido o controle de permissão de importação do Efetivo.
 - O botão Importar do topo agora respeita colaboradores_importar.
@@ -537,4 +537,8 @@ v6.10.85 — Vincular profissional no Homem × Frota
 
 
 v6.10.90 — Férias: a ação Programar agora respeita a permissão ferias_cadastrar; botões Programar e Ajustar período ficam ocultos sem autorização e a abertura do formulário também é bloqueada. A permissão foi renomeada visualmente para “Programar férias”.
-v6.10.91 — Escala: redesign exclusivamente visual do calendário 3×3, com melhor hierarquia, navegação, cards de resumo, células, destaque do dia atual, badges A/B e C/D, legenda e responsividade. Nenhuma regra, cálculo, filtro, ID, evento ou comando da escala foi alterado.
+v6.10.93 — Escala: redesign exclusivamente visual do calendário 3×3, com melhor hierarquia, navegação, cards de resumo, células, destaque do dia atual, badges A/B e C/D, legenda e responsividade. Nenhuma regra, cálculo, filtro, ID, evento ou comando da escala foi alterado.
+
+v6.10.93 — Efetivo mobile: redesign exclusivamente visual. Cabeçalho e ações mais compactos, filtros responsivos em largura total e tabela convertida visualmente em cards de colaboradores no celular. Nenhum comando, ID, evento, permissão ou regra de negócio foi alterado.
+
+v6.10.95 — Homem × Frota mobile: redesign exclusivamente visual. Ações responsivas, KPIs 2×2, déficit compacto, filtros ajustados e tabela apresentada como cards no celular. Desktop, IDs, eventos, permissões e regras de negócio preservados.
