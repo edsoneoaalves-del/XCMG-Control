@@ -6585,7 +6585,7 @@ body.user-editor-open{overflow:hidden}
   }
 }
 
-/* v6.11.00 — menu mobile sem rolagem horizontal: 4 atalhos fixos + Mais */
+/* v6.11.01 — menu mobile sem rolagem horizontal: 4 atalhos fixos + Mais */
 .mobile-more-trigger,.mobile-more-menu,.mobile-more-backdrop{display:none}
 @media (max-width:720px){
   .sidebar{
@@ -6688,6 +6688,8 @@ body.user-editor-open{overflow:hidden}
     touch-action:pan-y!important;
   }
   .mobile-more-menu.is-open{display:grid!important}
+  .mobile-more-menu{pointer-events:auto!important;}
+  .mobile-more-menu.is-open,.mobile-more-menu.is-open *{pointer-events:auto!important;}
   .mobile-more-menu button{
     min-width:0!important;
     min-height:58px!important;

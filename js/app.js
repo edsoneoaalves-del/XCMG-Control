@@ -1999,15 +1999,15 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   else instalarBloqueioHorizontalDefinitivo();
 })();
 
-/* v6.11.00 — menu mobile fixo: Início, Efetivo, H×Frota, Férias e Mais */
+/* v6.11.01 — menu mobile fixo com navegação robusta: Início, Efetivo, H×Frota, Férias e Mais */
 (function(){
   function instalarMenuMobileFixo(){
     var trigger=document.getElementById('mobileMoreTrigger');
     var menu=document.getElementById('mobileMoreMenu');
     var backdrop=document.getElementById('mobileMoreBackdrop');
     var nav=document.querySelector('.sidebar nav');
-    if(!trigger||!menu||!backdrop||!nav||trigger.dataset.menuFixo61100==='1') return;
-    trigger.dataset.menuFixo61100='1';
+    if(!trigger||!menu||!backdrop||!nav||trigger.dataset.menuFixo61101==='1') return;
+    trigger.dataset.menuFixo61101='1';
     var principais=['dashboard','colaboradores','homemfrota','ferias'];
 
     function paginaAtiva(){
@@ -2048,13 +2048,38 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
 
     trigger.addEventListener('click',alternarMenu);
     backdrop.addEventListener('click',fecharMenu);
-    menu.addEventListener('click',function(e){
-      var btn=e.target.closest('[data-mobile-go]');
+    function navegarPeloMais(btn,e){
+      if(e){e.preventDefault();e.stopPropagation();}
       if(!btn || btn.hidden) return;
       var pagina=btn.dataset.mobileGo;
+      var origem=nav.querySelector('.nav-item[data-page="'+pagina+'"]');
       fecharMenu();
-      if(typeof abrirPagina==='function') abrirPagina(pagina);
+      /* Usa exatamente o mesmo botão de navegação do sistema para preservar permissões e comandos. */
+      if(origem && !origem.classList.contains('hidden')){
+        origem.click();
+      }else if(typeof abrirPagina==='function'){
+        abrirPagina(pagina);
+      }
       requestAnimationFrame(sincronizarOpcoes);
+    }
+    menu.querySelectorAll('[data-mobile-go]').forEach(function(btn){
+      btn.style.pointerEvents='auto';
+      btn.addEventListener('click',function(e){navegarPeloMais(btn,e);});
+      /* Fallback específico para iOS/PWA caso o click sintetizado seja perdido. */
+      var tx=0,ty=0,movido=false;
+      btn.addEventListener('touchstart',function(e){
+        if(!e.touches||!e.touches[0]) return;
+        tx=e.touches[0].clientX;ty=e.touches[0].clientY;movido=false;
+      },{passive:true});
+      btn.addEventListener('touchmove',function(e){
+        if(!e.touches||!e.touches[0]) return;
+        var dx=Math.abs(e.touches[0].clientX-tx),dy=Math.abs(e.touches[0].clientY-ty);
+        if(dx>8||dy>8) movido=true;
+      },{passive:true});
+      btn.addEventListener('touchend',function(e){
+        if(movido) return;
+        navegarPeloMais(btn,e);
+      },{passive:false});
     });
     nav.querySelectorAll('.nav-item').forEach(function(btn){
       btn.addEventListener('click',function(){fecharMenu();requestAnimationFrame(sincronizarOpcoes);});
