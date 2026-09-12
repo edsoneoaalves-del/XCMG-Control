@@ -6486,3 +6486,29 @@ body.user-editor-open{overflow:hidden}
     flex:0 0 auto!important;
   }
 }
+
+/* v6.10.98 — iPhone: barra inferior fixa e arraste horizontal totalmente isolado */
+@media (max-width:720px){
+  html,body{margin:0!important;left:0!important;right:0!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
+  body{position:relative!important;}
+  .app-shell{width:100%!important;max-width:100%!important;transform:none!important;}
+  .sidebar{
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;max-width:100%!important;
+    height:calc(64px + env(safe-area-inset-bottom))!important;
+    padding:4px 0 env(safe-area-inset-bottom)!important;
+    overflow:hidden!important;
+    transform:none!important;
+    z-index:1000!important;
+  }
+  .sidebar nav{
+    width:100%!important;max-width:100%!important;min-width:0!important;
+    height:56px!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
+    touch-action:none!important;
+    -webkit-overflow-scrolling:auto!important;
+    overscroll-behavior:none!important;
+  }
+  main{padding-bottom:calc(68px + env(safe-area-inset-bottom))!important;}
+}

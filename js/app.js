@@ -1894,3 +1894,49 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarArrasteMenuMobile);
   else instalarArrasteMenuMobile();
 })();
+
+/* v6.10.98 — arraste manual da barra mobile; impede o Safari de mover a viewport */
+(function(){
+  function instalarMenuMobileV61098(){
+    var nav=document.querySelector('.sidebar nav');
+    if(!nav || nav.dataset.gestoV61098==='1') return;
+    nav.dataset.gestoV61098='1';
+    var sx=0,sy=0,sl=0,ativo=false,horizontal=false;
+    function inicio(e){
+      if(window.innerWidth>720 || !e.touches || e.touches.length!==1) return;
+      var t=e.touches[0]; sx=t.clientX; sy=t.clientY; sl=nav.scrollLeft; ativo=true; horizontal=false;
+    }
+    function mover(e){
+      if(!ativo || window.innerWidth>720 || !e.touches || !e.touches[0]) return;
+      var t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+      if(!horizontal && Math.abs(dx)>4 && Math.abs(dx)>Math.abs(dy)) horizontal=true;
+      if(horizontal){
+        if(e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        nav.scrollLeft=sl-dx;
+        window.scrollTo(0,window.scrollY);
+      }
+    }
+    function fim(){ativo=false;horizontal=false;}
+    nav.addEventListener('touchstart',inicio,{passive:true});
+    nav.addEventListener('touchmove',mover,{passive:false});
+    nav.addEventListener('touchend',fim,{passive:true});
+    nav.addEventListener('touchcancel',fim,{passive:true});
+    document.addEventListener('touchmove',function(e){
+      if(window.innerWidth<=720 && nav.contains(e.target) && horizontal){
+        if(e.cancelable) e.preventDefault();
+      }
+    },{passive:false,capture:true});
+    function centralizarAtivo(){
+      if(window.innerWidth>720) return;
+      var item=nav.querySelector('.nav-item.active');
+      if(!item) return;
+      var alvo=item.offsetLeft-(nav.clientWidth-item.offsetWidth)/2;
+      nav.scrollLeft=Math.max(0,alvo);
+    }
+    nav.addEventListener('click',function(){setTimeout(centralizarAtivo,40);});
+    setTimeout(centralizarAtivo,120);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarMenuMobileV61098);
+  else instalarMenuMobileV61098();
+})();
