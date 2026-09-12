@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v61079.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.10.85">
+  <link rel="stylesheet" href="css/style.css?v=6.10.91">
 </head>
 <body>
 <div id="loginScreen" class="login-screen login-corporate">
@@ -462,9 +462,15 @@
           <div class="permissions-title-row"><h3>Permissões</h3><span class="critical-legend">● Acesso crítico</span></div>
           <div id="permissoesUsuario" class="permissions-groups">
             <details class="permission-group" open>
-              <summary><span>Dashboard e Escala</span><small>Visão geral e calendário 3×3</small></summary>
+              <summary><span>Dashboard</span><small>Visão geral do sistema</small></summary>
               <div class="permission-items">
-                <label><input type="checkbox" value="dashboard_ver"><span>Visualizar Dashboard e Escala</span></label>
+                <label><input type="checkbox" value="dashboard_ver"><span>Visualizar Dashboard</span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Escala</span><small>Calendário automático 3×3</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="escala_ver"><span>Visualizar Escala</span></label>
               </div>
             </details>
             <details class="permission-group">
@@ -480,25 +486,45 @@
               <summary><span>Registros</span><small>Consulta, exportação e limpeza</small></summary>
               <div class="permission-items">
                 <label><input type="checkbox" value="registros_ver"><span>Visualizar registros</span></label>
+                <label><input type="checkbox" value="registros_editar"><span>Editar registros</span></label>
+                <label class="permission-critical"><input type="checkbox" value="registros_excluir"><span>Excluir registros <em>Acesso crítico</em></span></label>
                 <label><input type="checkbox" value="registros_exportar"><span>Exportar Excel RH</span></label>
-                <label class="permission-critical"><input type="checkbox" value="registros_limpar"><span>Limpar registros <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="registros_limpar"><span>Limpar todos os registros <em>Acesso crítico</em></span></label>
               </div>
             </details>
             <details class="permission-group">
               <summary><span>Efetivo</span><small>Base de colaboradores</small></summary>
               <div class="permission-items">
                 <label><input type="checkbox" value="colaboradores_ver"><span>Visualizar efetivo</span></label>
-                <label><input type="checkbox" value="colaboradores_cadastrar"><span>Cadastrar e editar efetivo</span></label>
+                <label><input type="checkbox" value="colaboradores_cadastrar"><span>Cadastrar colaborador</span></label>
+                <label><input type="checkbox" value="colaboradores_editar"><span>Editar colaborador</span></label>
+                <label class="permission-critical"><input type="checkbox" value="colaboradores_excluir"><span>Excluir colaborador <em>Acesso crítico</em></span></label>
                 <label class="permission-critical"><input type="checkbox" value="colaboradores_importar"><span>Importar planilha do efetivo <em>Acesso crítico</em></span></label>
+                <label><input type="checkbox" value="colaboradores_exportar"><span>Exportar/copiar efetivo</span></label>
+              </div>
+            </details>
+            <details class="permission-group">
+              <summary><span>Homem × Frota</span><small>Consulta e alterações da frota</small></summary>
+              <div class="permission-items">
+                <label><input type="checkbox" value="homem_frota_ver"><span>Visualizar Homem × Frota</span></label>
+                <label><input type="checkbox" value="homem_frota_vincular"><span>Vincular profissional</span></label>
+                <label><input type="checkbox" value="homem_frota_desvincular"><span>Desvincular profissional</span></label>
+                <label><input type="checkbox" value="homem_frota_adicionar"><span>Adicionar frota</span></label>
+                <label><input type="checkbox" value="homem_frota_editar"><span>Editar frota</span></label>
+                <label class="permission-critical"><input type="checkbox" value="homem_frota_excluir"><span>Excluir frota <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="homem_frota_importar"><span>Importar planilha Homem × Frota <em>Acesso crítico</em></span></label>
+                <label><input type="checkbox" value="homem_frota_exportar"><span>Exportar Homem × Frota</span></label>
               </div>
             </details>
             <details class="permission-group">
               <summary><span>Férias</span><small>Planejamento e aprovação</small></summary>
               <div class="permission-items">
                 <label><input type="checkbox" value="ferias_ver"><span>Visualizar férias</span></label>
-                <label><input type="checkbox" value="ferias_cadastrar"><span>Cadastrar e editar férias</span></label>
+                <label><input type="checkbox" value="ferias_cadastrar"><span>Programar férias</span></label>
+                <label><input type="checkbox" value="ferias_editar"><span>Editar/reprogramar férias</span></label>
                 <label class="permission-critical"><input type="checkbox" value="ferias_importar"><span>Importar matriz de férias <em>Acesso crítico</em></span></label>
-                <label class="permission-critical"><input type="checkbox" value="ferias_aprovar"><span>Aprovar férias pelo RH <em>Acesso crítico</em></span></label>
+                <label class="permission-critical"><input type="checkbox" value="ferias_aprovar"><span>Aprovar/rejeitar férias pelo RH <em>Acesso crítico</em></span></label>
+                <label><input type="checkbox" value="ferias_exportar"><span>Exportar Excel de férias</span></label>
               </div>
             </details>
             <details class="permission-group">
@@ -519,7 +545,7 @@
           </div>
           <div class="user-editor-footer">
             <div id="statusUsuario" class="status"></div>
-            <div class="actions"><button id="btnCriarUsuario" class="primary">Criar usuário</button><button id="btnCancelarUsuario" class="secondary" type="button">Cancelar</button></div>
+            <div class="actions"><button id="btnCriarUsuario" class="primary" type="button">Criar usuário</button><button id="btnCancelarUsuario" class="secondary" type="button">Cancelar</button></div>
           </div>
         </aside>
         <div id="usuarioEditorBackdrop" class="user-editor-backdrop" aria-hidden="true"></div>
@@ -562,6 +588,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.10.85"></script>
+<script src="js/app.js?v=6.10.91"></script>
 </body>
 </html>

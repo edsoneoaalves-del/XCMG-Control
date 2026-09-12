@@ -1,3 +1,30 @@
+XCMG Control v6.10.91
+
+- Corrigido o controle de permissão de importação do Efetivo.
+- O botão Importar do topo agora respeita colaboradores_importar.
+- O painel de importação é fechado/bloqueado quando o usuário não possui a permissão.
+- A execução da importação continua protegida por validação de permissão.
+- Mantidas as demais funções e permissões da v6.10.88.
+
+XCMG Control v6.10.88
+
+- Revisão geral de Usuários e Permissões.
+- Registros: adicionadas permissões Editar e Excluir.
+- Efetivo: separadas Cadastrar, Editar, Excluir, Importar e Exportar/Copiar.
+- Homem × Frota: adicionadas permissões Importar e Exportar.
+- Férias: separadas Cadastrar, Editar/Reprogramar, Aprovar/Rejeitar, Importar e Exportar.
+- Proteções aplicadas também às ações/botões correspondentes.
+- Compatibilidade preservada para usuários cadastrados antes desta matriz de permissões.
+
+XCMG Control v6.10.86
+
+Atualização — Usuários e Permissões
+- Escala agora possui permissão própria: Visualizar Escala.
+- Homem × Frota agora possui permissões próprias para visualizar, vincular, desvincular, adicionar, editar e excluir frota.
+- Ações do Homem × Frota ficam bloqueadas/ocultas quando o usuário não possui a permissão correspondente.
+- Importação do Homem × Frota exige as permissões Adicionar frota e Editar frota, evitando alterações indevidas por usuários somente de consulta.
+- Administrador geral continua com acesso total.
+
 XCMG Control v6.10.85
 Novo módulo Homem × Frota.
 
@@ -507,3 +534,7 @@ v6.10.85 — Vincular profissional no Homem × Frota
 - Profissionais com função compatível aparecem primeiro.
 - O sistema alerta quando a função é diferente da posição ou quando o profissional já está vinculado a outra frota.
 - Área, função e equipamento da posição permanecem intactos durante o vínculo.
+
+
+v6.10.90 — Férias: a ação Programar agora respeita a permissão ferias_cadastrar; botões Programar e Ajustar período ficam ocultos sem autorização e a abertura do formulário também é bloqueada. A permissão foi renomeada visualmente para “Programar férias”.
+v6.10.91 — Escala: redesign exclusivamente visual do calendário 3×3, com melhor hierarquia, navegação, cards de resumo, células, destaque do dia atual, badges A/B e C/D, legenda e responsividade. Nenhuma regra, cálculo, filtro, ID, evento ou comando da escala foi alterado.
