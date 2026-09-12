@@ -1998,3 +1998,80 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarBloqueioHorizontalDefinitivo);
   else instalarBloqueioHorizontalDefinitivo();
 })();
+
+/* v6.11.00 — menu mobile fixo: Início, Efetivo, H×Frota, Férias e Mais */
+(function(){
+  function instalarMenuMobileFixo(){
+    var trigger=document.getElementById('mobileMoreTrigger');
+    var menu=document.getElementById('mobileMoreMenu');
+    var backdrop=document.getElementById('mobileMoreBackdrop');
+    var nav=document.querySelector('.sidebar nav');
+    if(!trigger||!menu||!backdrop||!nav||trigger.dataset.menuFixo61100==='1') return;
+    trigger.dataset.menuFixo61100='1';
+    var principais=['dashboard','colaboradores','homemfrota','ferias'];
+
+    function paginaAtiva(){
+      var ativo=nav.querySelector('.nav-item.active[data-page]');
+      return ativo?ativo.dataset.page:'';
+    }
+    function sincronizarOpcoes(){
+      menu.querySelectorAll('[data-mobile-go]').forEach(function(btn){
+        var pagina=btn.dataset.mobileGo;
+        var origem=nav.querySelector('.nav-item[data-page="'+pagina+'"]');
+        var indisponivel=!origem || origem.classList.contains('hidden');
+        btn.hidden=indisponivel;
+        btn.classList.toggle('is-active',pagina===paginaAtiva());
+      });
+      var secundaria=paginaAtiva() && principais.indexOf(paginaAtiva())===-1;
+      trigger.classList.toggle('is-active',!!secundaria);
+    }
+    function abrirMenu(){
+      sincronizarOpcoes();
+      menu.classList.add('is-open');
+      backdrop.classList.add('is-open');
+      menu.setAttribute('aria-hidden','false');
+      backdrop.setAttribute('aria-hidden','false');
+      trigger.setAttribute('aria-expanded','true');
+    }
+    function fecharMenu(){
+      menu.classList.remove('is-open');
+      backdrop.classList.remove('is-open');
+      menu.setAttribute('aria-hidden','true');
+      backdrop.setAttribute('aria-hidden','true');
+      trigger.setAttribute('aria-expanded','false');
+      sincronizarOpcoes();
+    }
+    function alternarMenu(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      if(menu.classList.contains('is-open')) fecharMenu(); else abrirMenu();
+    }
+
+    trigger.addEventListener('click',alternarMenu);
+    backdrop.addEventListener('click',fecharMenu);
+    menu.addEventListener('click',function(e){
+      var btn=e.target.closest('[data-mobile-go]');
+      if(!btn || btn.hidden) return;
+      var pagina=btn.dataset.mobileGo;
+      fecharMenu();
+      if(typeof abrirPagina==='function') abrirPagina(pagina);
+      requestAnimationFrame(sincronizarOpcoes);
+    });
+    nav.querySelectorAll('.nav-item').forEach(function(btn){
+      btn.addEventListener('click',function(){fecharMenu();requestAnimationFrame(sincronizarOpcoes);});
+    });
+    document.addEventListener('keydown',function(e){if(e.key==='Escape') fecharMenu();});
+    window.addEventListener('resize',function(){if(window.innerWidth>720) fecharMenu();sincronizarOpcoes();},{passive:true});
+
+    /* Permissões e troca de página alteram classes dos itens originais. */
+    var observer=new MutationObserver(function(){sincronizarOpcoes();});
+    nav.querySelectorAll('.nav-item').forEach(function(item){observer.observe(item,{attributes:true,attributeFilter:['class']});});
+
+    /* O menu deixou de ser rolável; qualquer scrollLeft legado é neutralizado. */
+    function zerarRolagemMenu(){if(window.innerWidth<=720 && nav.scrollLeft!==0) nav.scrollLeft=0;}
+    nav.addEventListener('scroll',zerarRolagemMenu,{passive:true});
+    setTimeout(function(){zerarRolagemMenu();sincronizarOpcoes();},80);
+    setTimeout(function(){zerarRolagemMenu();sincronizarOpcoes();},400);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',instalarMenuMobileFixo);
+  else instalarMenuMobileFixo();
+})();

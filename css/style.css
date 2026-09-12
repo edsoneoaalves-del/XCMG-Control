@@ -6584,3 +6584,133 @@ body.user-editor-open{overflow:hidden}
     contain:inline-size!important;
   }
 }
+
+/* v6.11.00 — menu mobile sem rolagem horizontal: 4 atalhos fixos + Mais */
+.mobile-more-trigger,.mobile-more-menu,.mobile-more-backdrop{display:none}
+@media (max-width:720px){
+  .sidebar{
+    overflow:visible!important;
+    touch-action:manipulation!important;
+  }
+  .sidebar nav{
+    display:grid!important;
+    grid-template-columns:repeat(5,minmax(0,1fr))!important;
+    align-items:stretch!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:56px!important;
+    overflow:hidden!important;
+    overflow-x:hidden!important;
+    overflow-y:hidden!important;
+    touch-action:manipulation!important;
+    overscroll-behavior:none!important;
+    -webkit-overflow-scrolling:auto!important;
+    scrollbar-width:none!important;
+  }
+  .sidebar nav::-webkit-scrollbar{display:none!important}
+
+  /* No celular só ficam quatro atalhos principais. Os demais vivem no botão Mais. */
+  .sidebar nav>.nav-item{display:none!important;min-width:0!important;width:auto!important;max-width:none!important;}
+  .sidebar nav>.nav-item[data-page="dashboard"],
+  .sidebar nav>.nav-item[data-page="colaboradores"],
+  .sidebar nav>.nav-item[data-page="homemfrota"],
+  .sidebar nav>.nav-item[data-page="ferias"]{
+    display:flex!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    width:auto!important;
+    max-width:none!important;
+    justify-content:center!important;
+    align-items:center!important;
+    flex-direction:column!important;
+    gap:2px!important;
+    padding:4px 2px!important;
+    margin:0!important;
+    border-radius:12px!important;
+    touch-action:manipulation!important;
+  }
+  .sidebar nav>.nav-item.hidden{display:none!important}
+
+  .mobile-more-trigger{
+    display:flex!important;
+    min-width:0!important;
+    width:auto!important;
+    border:0!important;
+    background:transparent!important;
+    color:#d7e1ee!important;
+    border-radius:12px!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex-direction:column!important;
+    gap:2px!important;
+    padding:4px 2px!important;
+    font:inherit!important;
+    font-size:.58rem!important;
+    line-height:1.1!important;
+    cursor:pointer!important;
+    touch-action:manipulation!important;
+  }
+  .mobile-more-trigger .nav-icon{font-size:1.22rem!important;line-height:1!important;height:auto!important;margin:0!important}
+  .mobile-more-trigger.is-active,
+  .mobile-more-trigger[aria-expanded="true"]{
+    background:#1670df!important;
+    color:#fff!important;
+    box-shadow:0 4px 12px rgba(0,91,211,.22)!important;
+  }
+
+  .mobile-more-backdrop{
+    position:fixed!important;
+    inset:0!important;
+    z-index:1190!important;
+    background:rgba(0,0,0,.18)!important;
+    display:none!important;
+    touch-action:manipulation!important;
+  }
+  .mobile-more-backdrop.is-open{display:block!important}
+  .mobile-more-menu{
+    position:fixed!important;
+    left:12px!important;
+    right:12px!important;
+    bottom:calc(72px + env(safe-area-inset-bottom))!important;
+    z-index:1200!important;
+    display:none!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:12px!important;
+    border:1px solid rgba(104,164,205,.38)!important;
+    border-radius:18px!important;
+    background:#082238!important;
+    box-shadow:0 -10px 32px rgba(0,0,0,.34)!important;
+    max-height:min(58vh,420px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    touch-action:pan-y!important;
+  }
+  .mobile-more-menu.is-open{display:grid!important}
+  .mobile-more-menu button{
+    min-width:0!important;
+    min-height:58px!important;
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding:10px 12px!important;
+    border:1px solid rgba(105,162,202,.24)!important;
+    border-radius:13px!important;
+    background:#0b2b44!important;
+    color:#eaf3fb!important;
+    text-align:left!important;
+    font:inherit!important;
+    touch-action:manipulation!important;
+  }
+  .mobile-more-menu button>span{font-size:1.15rem!important;flex:0 0 auto!important}
+  .mobile-more-menu button>strong{font-size:.80rem!important;white-space:normal!important;line-height:1.15!important}
+  .mobile-more-menu button.is-active{background:#126edb!important;border-color:#3b91f0!important;color:#fff!important}
+  .mobile-more-menu button[hidden]{display:none!important}
+
+  /* Não há motivo para gesto horizontal no menu nesta versão. */
+  .sidebar,.sidebar nav,.sidebar nav>*{overscroll-behavior-x:none!important}
+}
+@media (max-width:720px){
+  .sidebar{contain:none!important;}
+}

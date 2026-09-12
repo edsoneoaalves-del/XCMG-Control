@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v61079.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.10.99">
+  <link rel="stylesheet" href="css/style.css?v=6.11.00">
 </head>
 <body>
 <div id="loginScreen" class="login-screen login-corporate">
@@ -52,7 +52,17 @@
       <button class="nav-item" data-page="mensagem"><span class="nav-icon">◉</span><span data-mobile-label="WhatsApp">WhatsApp</span></button>
       <button class="nav-item" data-page="configuracoes"><span class="nav-icon">⚙</span><span data-mobile-label="Config.">Configurações</span></button>
       <button class="nav-item" data-page="usuarios" data-permission="usuarios_gerenciar"><span class="nav-icon">🔐</span><span data-mobile-label="Usuários">Usuários</span></button>
+      <button id="mobileMoreTrigger" class="mobile-more-trigger" type="button" aria-expanded="false" aria-controls="mobileMoreMenu"><span class="nav-icon">•••</span><span>Mais</span></button>
     </nav>
+    <div id="mobileMoreBackdrop" class="mobile-more-backdrop" aria-hidden="true"></div>
+    <div id="mobileMoreMenu" class="mobile-more-menu" aria-hidden="true">
+      <button type="button" data-mobile-go="escala"><span>📅</span><strong>Escala</strong></button>
+      <button type="button" data-mobile-go="ocorrencias"><span>▣</span><strong>Ocorrências</strong></button>
+      <button type="button" data-mobile-go="registros"><span>▤</span><strong>Registros</strong></button>
+      <button type="button" data-mobile-go="mensagem"><span>◉</span><strong>WhatsApp</strong></button>
+      <button type="button" data-mobile-go="configuracoes"><span>⚙</span><strong>Configurações</strong></button>
+      <button type="button" data-mobile-go="usuarios"><span>🔐</span><strong>Usuários</strong></button>
+    </div>
 
     <div class="sidebar-update">
       <span>◷ Última atualização</span>
@@ -60,7 +70,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.10.84</strong><span>Homem × Frota</span></div>
+    <div class="version"><strong>Versão 6.11.00</strong><span>Homem × Frota</span></div>
   </aside>
 
   <main>
@@ -588,6 +598,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.10.99"></script>
+<script src="js/app.js?v=6.11.00"></script>
 </body>
 </html>
