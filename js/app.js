@@ -10,11 +10,10 @@ const MOTIVOS_POR_CATEGORIA={
   'Saúde':['Atestado Médico','Exame Periódico'],
   'Ausências':['Falta justificada','Falta Não Justificada'],
   'Afastamentos':['INSS/Afastado','Licença-maternidade','Licença-paternidade','Outros afastamentos/licenças'],
-  'Eventos':['Casamento','Nascimento','Óbito de familiar'],
-  'Outros':['Desligamento','Outras justificativas']
+  'Eventos':['Casamento','Nascimento','Óbito de familiar']
 };
 const MOTIVOS_PADRAO=Object.values(MOTIVOS_POR_CATEGORIA).flat();
-const ICONES_CATEGORIA={'Férias':'📅','Saúde':'🏥','Ausências':'⚠️','Afastamentos':'↗️','Eventos':'🎉','Outros':'📄'};
+const ICONES_CATEGORIA={'Férias':'📅','Saúde':'🏥','Ausências':'⚠️','Afastamentos':'↗️','Eventos':'🎉'};
 let categoriasRH=[];
 const PADRAO={turma:'Turma D',efetivoTotal:0,nomeSistema:'XCMG Control',desenvolvedor:'Edson de Oliveira Alves',estiloSimbolos:'completo',periodosFechamento:[]};
 let registros=[],colaboradores=[],homemFrota=lerLocal(HF_KEY,[]),programacaoFerias=[],ajustesCiclosFerias=lerLocal(FERIAS_CICLOS_KEY,{}),feriasNuvemDisponivel=false,config={...PADRAO},editando=null,editandoEfetivoId=null,editandoFeriasId=null,cicloProgramacaoSelecionado=null,promptInstalacao=null,canalRealtime=null,carregando=false,importandoColaboradores=false,fotoAtual={url:'',path:''},removerFotoAtual=false,editandoPeriodoId=null,editandoHFId=null,hfVinculoId=null,hfNuvemDisponivel=false;
@@ -1229,7 +1228,7 @@ function mostrarFoto(url=''){const box=$('fotoPreview'),img=$('fotoPreviewImg');
 
 function categoriasPadrao(){return Object.entries(MOTIVOS_POR_CATEGORIA).map(([nome,motivos],ordem)=>({id:`padrao-${ordem}`,nome,icone:ICONES_CATEGORIA[nome]||'📁',motivos:[...motivos]}))}
 function carregarCategoriasLocais(){let salvo=null;try{salvo=JSON.parse(localStorage.getItem(CATEGORIAS_KEY)||'null')}catch{}categoriasRH=Array.isArray(salvo)&&salvo.length?salvo:categoriasPadrao();normalizarCategoriasRH()}
-function normalizarCategoriasRH(){categoriasRH=categoriasRH.map((c,i)=>({id:c.id||`cat-${Date.now()}-${i}`,nome:String(c.nome||'').trim(),icone:String(c.icone||'📁').trim()||'📁',motivos:[...new Set((Array.isArray(c.motivos)?c.motivos:[]).map(x=>String(x||'').trim()).filter(Boolean))]})).filter(c=>c.nome);if(!categoriasRH.some(c=>normalizarTexto(c.nome)==='afastamentos')){const padrao=categoriasPadrao().find(c=>c.nome==='Afastamentos');if(padrao)categoriasRH.splice(Math.min(3,categoriasRH.length),0,padrao)}}
+function normalizarCategoriasRH(){categoriasRH=categoriasRH.map((c,i)=>({id:c.id||`cat-${Date.now()}-${i}`,nome:String(c.nome||'').trim(),icone:String(c.icone||'📁').trim()||'📁',motivos:[...new Set((Array.isArray(c.motivos)?c.motivos:[]).map(x=>String(x||'').trim()).filter(Boolean))]})).filter(c=>c.nome&&normalizarTexto(c.nome)!=='outros');if(!categoriasRH.some(c=>normalizarTexto(c.nome)==='afastamentos')){const padrao=categoriasPadrao().find(c=>c.nome==='Afastamentos');if(padrao)categoriasRH.splice(Math.min(3,categoriasRH.length),0,padrao)}}
 function salvarCategoriasLocais(){normalizarCategoriasRH();localStorage.setItem(CATEGORIAS_KEY,JSON.stringify(categoriasRH));atualizarSelectCategorias();renderizarGestaoCategorias();atualizarTudo();if(usuarioAtual?.administrador){if(!estaOnline()){adicionarFilaOffline({entidade:'categorias',operacao:'update',dados:categoriasRH});$('statusCategorias').textContent='Alteração salva offline. Será sincronizada automaticamente.'}else db.from('xcmg_config').update({categorias_rh:categoriasRH}).eq('id',1).then(({error})=>{if(error){console.error(error);adicionarFilaOffline({entidade:'categorias',operacao:'update',dados:categoriasRH});$('statusCategorias').textContent='Alteração salva neste aparelho e ficou pendente de sincronização.'}else{$('statusCategorias').textContent='Categorias sincronizadas para todos os dispositivos.'}})}}
 function atualizarSelectCategorias(){const select=$('categoriaMotivo');if(!select)return;const atual=select.value;select.innerHTML='<option value="">Selecione a categoria</option>'+categoriasRH.map(c=>`<option value="${escapar(c.nome)}">${escapar(c.icone)} ${escapar(c.nome)}</option>`).join('');if(atual&&categoriasRH.some(c=>c.nome===atual))select.value=atual;atualizarListaMotivos()}
 function categoriaObj(nome){return categoriasRH.find(c=>c.nome===nome)||null}
