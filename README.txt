@@ -542,3 +542,8 @@ v6.10.93 — Escala: redesign exclusivamente visual do calendário 3×3, com mel
 v6.10.93 — Efetivo mobile: redesign exclusivamente visual. Cabeçalho e ações mais compactos, filtros responsivos em largura total e tabela convertida visualmente em cards de colaboradores no celular. Nenhum comando, ID, evento, permissão ou regra de negócio foi alterado.
 
 v6.10.95 — Homem × Frota mobile: redesign exclusivamente visual. Ações responsivas, KPIs 2×2, déficit compacto, filtros ajustados e tabela apresentada como cards no celular. Desktop, IDs, eventos, permissões e regras de negócio preservados.
+
+v6.11.02 - Correção do Efetivo
+- Corrigida a validação de permissão ao salvar edição de colaborador.
+- Alteração de status agora usa corretamente a permissão "Editar" em vez de "Cadastrar".
+- Mantida a exigência de motivo/observação quando o status for alterado, para preservar o histórico.

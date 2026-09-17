@@ -571,7 +571,7 @@ function alternarPainelEfetivo(tipo){
 }
 function editarColaboradorEfetivo(id){const c=colaboradores.find(x=>String(x.id)===String(id));if(!c)return;const scrollAtual=window.scrollY;painelEfetivo('cadastro',true);const box=$('effectiveCadastroBox');box?.classList.add('effective-edit-drawer');document.body.classList.add('effective-drawer-open');editandoEfetivoId=c.id;$('novoColaboradorMatricula').value=c.matricula||'';$('novoColaboradorNome').value=c.nome_completo||'';$('novoColaboradorFuncao').value=c.funcao||'';$('novoColaboradorArea').value=c.area||'';$('novoColaboradorAdmissao').value=c.data_admissao||'';$('novoColaboradorNascimento').value=c.data_nascimento||'';$('novoColaboradorCpf').value=c.cpf||'';$('novoColaboradorTurma').value=c.turma||'';$('novoColaboradorStatus').value=statusEfetivo(c);$('novoColaboradorMotivo').value='';$('tituloFormEfetivo').textContent='Editar colaborador';$('btnAdicionarColaborador').textContent='Salvar alterações';$('btnCancelarEdicaoEfetivo').classList.remove('hidden');requestAnimationFrame(()=>window.scrollTo({top:scrollAtual,behavior:'auto'}))}
 async function registrarHistoricoEfetivo(colaboradorId,anterior,novo,motivo){const alteracoes=[];const labels={matricula:'Matrícula',nome_completo:'Nome',funcao:'Função',area:'Área',data_admissao:'Data de admissão',data_nascimento:'Data de nascimento',cpf:'CPF',turma:'Turma',status:'Status'};for(const [campo,label] of Object.entries(labels)){if(String(anterior?.[campo]??'')!==String(novo?.[campo]??''))alteracoes.push({colaborador_id:colaboradorId,tipo:campo==='status'?'Alteração de status':'Atualização cadastral',campo,valor_anterior:String(anterior?.[campo]??''),valor_novo:String(novo?.[campo]??''),motivo:motivo||'',descricao:`${label}: ${anterior?.[campo]||'—'} → ${novo?.[campo]||'—'}`})}if(alteracoes.length&&estaOnline()){const {error}=await db.from('xcmg_efetivo_historico').insert(alteracoes);if(error)console.warn('Não foi possível gravar o histórico do efetivo.',error)}}
-async function adicionarColaborador(){const permissao=editandoColaboradorId?'colaboradores_editar':'colaboradores_cadastrar';if(!exigirPermissao(permissao))return;
+async function adicionarColaborador(){const permissao=editandoEfetivoId?'colaboradores_editar':'colaboradores_cadastrar';if(!exigirPermissao(permissao))return;
   const nomeCompleto=organizarNome($('novoColaboradorNome').value);
   if(!nomeCompleto){alert('Informe o nome completo do colaborador.');$('novoColaboradorNome').focus();return}
   const dados=dadosFormEfetivo(),anterior=editandoEfetivoId?colaboradores.find(c=>String(c.id)===String(editandoEfetivoId)):null,motivo=$('novoColaboradorMotivo').value.trim();
@@ -1999,7 +1999,7 @@ observerPermissoes.observe(document.body,{subtree:true,childList:true});
   else instalarBloqueioHorizontalDefinitivo();
 })();
 
-/* v6.11.01 — menu mobile fixo com navegação robusta: Início, Efetivo, H×Frota, Férias e Mais */
+/* v6.11.02 — menu mobile fixo com navegação robusta: Início, Efetivo, H×Frota, Férias e Mais */
 (function(){
   function instalarMenuMobileFixo(){
     var trigger=document.getElementById('mobileMoreTrigger');
