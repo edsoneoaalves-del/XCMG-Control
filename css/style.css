@@ -6716,3 +6716,6 @@ body.user-editor-open{overflow:hidden}
 @media (max-width:720px){
   .sidebar{contain:none!important;}
 }
+
+/* v6.11.04: 7 KPIs na mesma linha, sem aumentar a altura do dashboard desktop */
+@media(min-width:1051px){#dashboard .metrics{grid-template-columns:repeat(7,minmax(0,1fr))!important}#dashboard .metric{min-width:0!important}#dashboard .metric-content span{font-size:.61rem!important}#dashboard .metric-content strong{font-size:1.42rem!important}}
