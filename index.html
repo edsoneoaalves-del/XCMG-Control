@@ -159,11 +159,11 @@
     </section>
 
     <section id="ocorrencias" class="page">
-      <article class="panel form-panel"><h2 id="formTitle">Adicionar ocorrência</h2><p class="section-subtitle">Informe o motivo para o RH e o texto que aparecerá na mensagem.</p>
+      <article class="panel form-panel"><h2 id="formTitle">Adicionar ocorrência</h2><p class="section-subtitle">Selecione a categoria e o motivo da ocorrência. As informações serão usadas em todo o aplicativo.</p>
         <div class="form-grid">
           <input id="tipo" type="hidden" value="Outras justificativas">
           <label><span>Categoria</span><select id="categoriaMotivo"><option value="">Selecione a categoria</option></select><small class="field-help">A categoria organiza os motivos e facilita os indicadores.</small></label>
-          <label><span>Motivo para a planilha do RH</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Selecione uma sugestão ou digite um motivo novo. O novo motivo ficará salvo na categoria escolhida.</small></label>
+          <label><span>Motivo da ocorrência</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Os motivos acompanham a categoria escolhida e são usados em todo o aplicativo.</small><button id="btnGerenciarMotivos" class="secondary small-button motive-manage-button" type="button">⚙ Gerenciar motivos</button></label>
           <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o nome completo; os demais dados são preenchidos automaticamente.</small></label>
           <label><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
@@ -569,7 +569,7 @@
         <div class="actions"><button id="btnSalvarConfig" class="primary">Salvar configurações</button><button id="btnExportar" class="secondary">Exportar backup</button><label class="file-button secondary">Importar backup<input id="arquivoBackup" type="file" accept="application/json"></label></div><div id="statusConfig" class="status"></div>
       </article>
       <article id="gestaoCategoriasRH" class="panel admin-category-panel hidden">
-        <div class="panel-heading"><div><h2>📂 Categorias e motivos do RH</h2><p>Somente o administrador pode criar, renomear ou excluir categorias e motivos.</p></div></div>
+        <div class="panel-heading"><div><h2>📂 Categorias e motivos das ocorrências</h2><p>O administrador pode adicionar, renomear e editar os motivos de cada categoria. Os registros já lançados são preservados.</p></div></div>
         <div class="category-admin-create">
           <input id="novaCategoriaNome" type="text" placeholder="Nome da nova categoria">
           <input id="novaCategoriaIcone" type="text" maxlength="4" placeholder="Ícone, ex.: 📚">
@@ -599,6 +599,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.11.05"></script>
+<script src="js/app.js?v=6.11.06"></script>
 </body>
 </html>
