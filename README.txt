@@ -549,7 +549,7 @@ v6.11.03 - Correção do Efetivo
 - Mantida a exigência de motivo/observação quando o status for alterado, para preservar o histórico.
 
 
-VERSÃO 6.11.06 — MOTIVOS POR CATEGORIA
+VERSÃO 6.11.07 — MOTIVOS POR CATEGORIA
 - Campo renomeado para Motivo da ocorrência.
 - Motivos vinculados à categoria e usados em todo o aplicativo.
 - Botão Gerenciar motivos para administrador.
