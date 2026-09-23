@@ -554,3 +554,12 @@ VERSÃO 6.11.07 — MOTIVOS POR CATEGORIA
 - Motivos vinculados à categoria e usados em todo o aplicativo.
 - Botão Gerenciar motivos para administrador.
 - Motivos podem ser adicionados e editados por categoria.
+
+
+v6.12.03: Ajustados exclusivamente os KPIs do módulo Ativos para contagem sem duplicidade por Área: Mina, Usina e Usina / Mina. Preservados menus, estrutura e demais módulos.
+
+
+v6.12.04: No módulo Ativos, removidas da tabela principal as colunas Data de Mob. e Data de Desm. para uma visualização mais limpa. As datas permanecem no cadastro/edição e na exportação Excel completa. A exportação passa a respeitar pesquisa e filtros aplicados. Nenhum menu ou outro módulo foi alterado.
+
+
+v6.12.05: Adicionado filtro Regime no módulo Ativos, entre Área e Status. O filtro é combinado com pesquisa, Área e Status e também é respeitado na exportação Excel. Demais menus, estrutura e módulos preservados.

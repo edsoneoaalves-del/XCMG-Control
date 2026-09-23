@@ -6719,3 +6719,9 @@ body.user-editor-open{overflow:hidden}
 
 /* v6.11.04: 7 KPIs na mesma linha, sem aumentar a altura do dashboard desktop */
 @media(min-width:1051px){#dashboard .metrics{grid-template-columns:repeat(7,minmax(0,1fr))!important}#dashboard .metric{min-width:0!important}#dashboard .metric-content span{font-size:.61rem!important}#dashboard .metric-content strong{font-size:1.42rem!important}}
+
+/* Ativos v6.12.00 */
+.ativos-table td:nth-child(6){max-width:280px;white-space:normal}.ativo-badge{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800;background:#173653;color:#dbeafe}.ativo-badge.ok{background:#0b4a3b;color:#8ff0c2}.ativo-badge.warn{background:#55430e;color:#ffe08a}.ativo-badge.off{background:#333b46;color:#cbd5e1}@media(max-width:720px){.ativos-module .hf-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ativos-module .hf-heading-actions{display:grid;grid-template-columns:1fr 1fr 1fr;width:100%}.ativos-module .hf-heading-actions button{min-width:0;padding-left:8px;padding-right:8px}.ativos-table{min-width:980px}}
+
+/* v6.12.03 - KPIs exclusivos do módulo Ativos: 5 cards no desktop, sem alterar outros módulos */
+@media(min-width:901px){.ativos-module .hf-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}}

@@ -44,6 +44,7 @@
     <nav>
       <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span data-mobile-label="Início">Dashboard</span></button>
       <button class="nav-item" data-page="colaboradores"><span class="nav-icon">👥</span><span data-mobile-label="Efetivo">Efetivo</span></button>
+      <button class="nav-item" data-page="ativos"><span class="nav-icon">🚜</span><span data-mobile-label="Ativos">Ativos</span></button>
       <button class="nav-item" data-page="homemfrota"><span class="nav-icon">⚙️</span><span data-mobile-label="H×Frota">Homem × Frota</span></button>
       <button class="nav-item" data-page="ferias"><span class="nav-icon">▦</span><span data-mobile-label="Férias">Férias</span></button>
       <button class="nav-item" data-page="escala"><span class="nav-icon">📅</span><span data-mobile-label="Escala">Escala</span></button>
@@ -70,7 +71,7 @@
     </div>
 
     <button id="btnInstalar" class="install-button hidden">Instalar aplicativo</button>
-    <div class="version"><strong>Versão 6.11.02</strong><span>Homem × Frota</span></div>
+    <div class="version"><strong>Versão 6.12.05</strong><span>Homem × Frota</span></div>
   </aside>
 
   <main>
@@ -243,6 +244,20 @@
       </article>
     </section>
 
+
+
+    <section id="ativos" class="page">
+      <article class="panel ativos-module">
+        <div class="panel-heading hf-main-heading">
+          <div><h2>Ativos</h2><p>Cadastro mestre dos equipamentos da frota XCMG.</p></div>
+          <div class="actions hf-heading-actions"><button id="btnCadastrarAtivo" class="primary" type="button">+ Cadastrar ativo</button><button id="btnAbrirImportacaoAtivos" class="secondary" type="button">Importar</button><button id="btnExportarAtivos" class="success" type="button">Exportar</button></div>
+        </div>
+        <div class="hf-kpis"><div class="hf-kpi"><span>Total</span><strong id="ativosKpiTotal">0</strong><small>ativos cadastrados</small></div><div class="hf-kpi hf-ok"><span>Ativos</span><strong id="ativosKpiAtivos">0</strong><small>em operação</small></div><div class="hf-kpi"><span>Mina</span><strong id="ativosKpiMina">0</strong><small>somente mina</small></div><div class="hf-kpi"><span>Usina</span><strong id="ativosKpiUsina">0</strong><small>somente usina</small></div><div class="hf-kpi"><span>Usina / Mina</span><strong id="ativosKpiUsinaMina">0</strong><small>atuação compartilhada</small></div></div>
+        <div id="ativoEditorBox" class="collaborator-box hf-editor hidden"><div class="effective-form-heading"><div><h3 id="ativoEditorTitulo">Cadastro de Ativo</h3><p class="section-subtitle">Preencha os dados de identificação e mobilização do equipamento.</p></div><button id="btnFecharAtivo" class="secondary" type="button">✕ Fechar</button></div><div class="form-grid compact-grid"><label><span>Área *</span><input id="ativoArea" placeholder="Ex.: MINA"></label><label><span>Regime *</span><input id="ativoRegime" placeholder="Ex.: TURNO"></label><label><span>TAG *</span><input id="ativoTag" placeholder="Ex.: 1JA371"></label><label><span>Placa</span><input id="ativoPlaca"></label><label class="full"><span>Modelo</span><input id="ativoModelo"></label><label><span>Tipo *</span><input id="ativoTipo" placeholder="Ex.: EMPILHADEIRA"></label><label><span>Data de mobilização</span><input id="ativoMobilizacao" type="date"></label><label><span>Data de desmobilização</span><input id="ativoDesmobilizacao" type="date"></label><label><span>Status</span><select id="ativoStatus"><option>Ativo</option><option>Manutenção</option><option>Reserva</option><option>Desmobilizado</option></select></label></div><div class="actions"><button id="btnSalvarAtivo" class="primary">Salvar ativo</button><button id="btnCancelarAtivo" class="secondary">Cancelar</button></div><div id="ativoStatusEditor" class="status"></div></div>
+        <div id="ativoImportBox" class="collaborator-box hf-import hidden"><h3>Importar Ativos</h3><p class="section-subtitle">Aceita a mesma estrutura da planilha: Área, Regime, TAG, Placa, Modelo, Tipo, Data de Mob. e Data de Desm.</p><label class="file-drop"><span>Selecionar planilha</span><input id="planilhaAtivos" type="file" accept=".xlsx,.xls,.csv"></label><div class="actions"><button id="btnImportarAtivos" class="success">Importar e atualizar</button><button id="btnFecharImportacaoAtivos" class="secondary">Fechar</button></div><div id="ativoStatusImportacao" class="status"></div></div>
+        <div class="hf-list-section"><div class="hf-section-title"><div><h3>Relação de ativos</h3><p>Base central de equipamentos para integração com Homem × Frota.</p></div><strong id="ativosTotalExibido" class="records-count">0 ativos</strong></div><div class="filters hf-filters"><input id="ativosPesquisa" type="search" placeholder="Pesquisar TAG, placa, modelo ou tipo..."><select id="ativosFiltroArea"><option value="">Todas as áreas</option></select><select id="ativosFiltroRegime"><option value="">Todos os regimes</option></select><select id="ativosFiltroStatus"><option value="">Todos os status</option><option>Ativo</option><option>Manutenção</option><option>Reserva</option><option>Desmobilizado</option></select></div><div id="ativosLista" class="hf-table-wrap"></div></div>
+      </article>
+    </section>
 
     <section id="homemfrota" class="page">
       <article class="panel hf-module">
