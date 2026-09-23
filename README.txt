@@ -562,4 +562,4 @@ v6.12.03: Ajustados exclusivamente os KPIs do módulo Ativos para contagem sem d
 v6.12.04: No módulo Ativos, removidas da tabela principal as colunas Data de Mob. e Data de Desm. para uma visualização mais limpa. As datas permanecem no cadastro/edição e na exportação Excel completa. A exportação passa a respeitar pesquisa e filtros aplicados. Nenhum menu ou outro módulo foi alterado.
 
 
-v6.12.05: Adicionado filtro Regime no módulo Ativos, entre Área e Status. O filtro é combinado com pesquisa, Área e Status e também é respeitado na exportação Excel. Demais menus, estrutura e módulos preservados.
+v6.12.06: Adicionado filtro Regime no módulo Ativos, entre Área e Status. O filtro é combinado com pesquisa, Área e Status e também é respeitado na exportação Excel. Demais menus, estrutura e módulos preservados.
