@@ -10,7 +10,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v61079.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.11.05">
+  <link rel="stylesheet" href="css/style.css?v=6.12.07">
 </head>
 <body>
 <div id="loginScreen" class="login-screen login-corporate">
@@ -166,23 +166,23 @@
           <input id="tipo" type="hidden" value="Outras justificativas">
           <label><span>Categoria</span><select id="categoriaMotivo"><option value="">Selecione a categoria</option></select><small class="field-help">A categoria organiza os motivos e facilita os indicadores.</small></label>
           <label><span>Motivo da ocorrência</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Os motivos acompanham a categoria escolhida e são usados em todo o aplicativo.</small><button id="btnGerenciarMotivos" class="secondary small-button motive-manage-button" type="button">⚙ Gerenciar motivos</button></label>
-          <label><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o nome completo; os demais dados são preenchidos automaticamente.</small></label>
-          <label><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
-          <label><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
-          <label><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
-          <label><span>Equipamento</span><input id="funcao" type="text" placeholder="Ex.: GD 221, Munck, Prancha"></label>
-          <label><span>Local</span><select id="local"><option value="">Não informado</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></label>
+          <label class="occ-field-standard"><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o nome completo; os demais dados são preenchidos automaticamente.</small></label>
+          <label class="occ-field-standard"><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label class="occ-field-standard"><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label class="occ-field-standard"><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label class="occ-field-equipment"><span>Equipamento</span><input id="funcao" type="text" placeholder="Ex.: GD 221, Munck, Prancha"></label>
+          <label class="occ-field-standard"><span>Local</span><select id="local"><option value="">Não informado</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></label>
           <div class="occurrence-dates-group full">
             <label><span>Data inicial</span><input id="inicio" type="date"></label>
-            <label class="occurrence-days-field"><span>Dias</span><input id="dias" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex.: 20"><small class="field-help">Calcula o período.</small></label>
-            <label><span>Data final</span><input id="fim" type="date"></label>
+            <label class="occurrence-days-field occ-field-standard"><span>Dias</span><input id="dias" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex.: 20"><small class="field-help">Calcula o período.</small></label>
+            <label class="occ-field-standard"><span>Data final</span><input id="fim" type="date"></label>
           </div>
-          <label><span>CID</span><input id="cid" type="text" placeholder="Ex.: K40, N39.0 ou N/A"></label>
-          <label><span>Atestado físico?</span><select id="atestadoFisico"><option value="N/A">N/A</option><option value="Entregue">Entregue</option><option value="Não entregue">Não entregue</option></select></label>
-          <label><span>Enviado no grupo?</span><select id="enviadoGrupo"><option value="N/A">N/A</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></label>
+          <label class="occ-field-standard"><span>CID</span><input id="cid" type="text" placeholder="Ex.: K40, N39.0 ou N/A"></label>
+          <label class="occ-field-standard"><span>Atestado físico?</span><select id="atestadoFisico"><option value="N/A">N/A</option><option value="Entregue">Entregue</option><option value="Não entregue">Não entregue</option></select></label>
+          <label class="occ-field-standard"><span>Enviado no grupo?</span><select id="enviadoGrupo"><option value="N/A">N/A</option><option value="SIM">SIM</option><option value="NÃO">NÃO</option></select></label>
           <label class="full"><span>Informação da mensagem</span><input id="descricao" type="text" placeholder="Ex.: Em férias, consulta médica, ausência justificada..."><small class="field-help">Este texto será exibido na mensagem do WhatsApp.</small></label>
           <label class="full"><span>Observações</span><textarea id="observacao" rows="4" placeholder="Digite informações importantes sobre esta ocorrência..."></textarea></label>
-          <label class="full photo-field"><span>Foto ou comprovante <small>(opcional)</small></span><input id="foto" type="file" accept="image/*"><small class="field-help">Formatos de imagem, até 5 MB. A foto será sincronizada entre os aparelhos.</small><div id="fotoPreview" class="photo-preview hidden"><img id="fotoPreviewImg" alt="Pré-visualização do anexo"><button id="btnRemoverFoto" type="button" class="secondary">Remover foto</button></div></label>
+          <label class="full photo-field occ-field-standard"><span>Foto ou comprovante <small>(opcional)</small></span><input id="foto" type="file" accept="image/*"><small class="field-help">Formatos de imagem, até 5 MB. A foto será sincronizada entre os aparelhos.</small><div id="fotoPreview" class="photo-preview hidden"><img id="fotoPreviewImg" alt="Pré-visualização do anexo"><button id="btnRemoverFoto" type="button" class="secondary">Remover foto</button></div></label>
         </div>
         <div class="actions"><button id="btnSalvar" class="primary">Adicionar registro</button><button id="btnCancelar" class="secondary hidden">Cancelar edição</button></div>
         <div id="statusForm" class="status"></div>
@@ -615,6 +615,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="js/app.js?v=6.11.07"></script>
+<script src="js/app.js?v=6.12.07"></script>
 </body>
 </html>

@@ -6725,3 +6725,9 @@ body.user-editor-open{overflow:hidden}
 
 /* v6.12.03 - KPIs exclusivos do módulo Ativos: 5 cards no desktop, sem alterar outros módulos */
 @media(min-width:901px){.ativos-module .hf-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}}
+
+/* v6.12.07 - formulário simplificado para Falta de mão de obra.
+   Apenas oculta campos na interface; a estrutura de dados existente é preservada. */
+#ocorrencias .form-panel.occurrence-workforce-mode .occ-field-standard{display:none!important}
+#ocorrencias .form-panel.occurrence-workforce-mode .occurrence-dates-group{grid-template-columns:1fr!important}
+#ocorrencias .form-panel.occurrence-workforce-mode .occ-field-equipment{display:block!important}
