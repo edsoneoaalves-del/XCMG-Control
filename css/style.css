@@ -1385,7 +1385,6 @@ html[data-theme="dark"] #dashboard .vacation-alert-row{background:#0d2940!import
   }
   .mobile-dashboard-summary .mds-kpi[data-kind="ferias"]{border-bottom-color:#f4ad12}
   .mobile-dashboard-summary .mds-kpi[data-kind="disponiveis"]{border-bottom-color:#27b96d}
-  .mobile-dashboard-summary .mds-kpi[data-kind="desligamentos"]{border-bottom-color:#ef535d}
 }
 @media (max-width:390px){
   .mobile-dashboard-summary{left:5px;right:5px;padding-left:6px;padding-right:6px}
