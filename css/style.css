@@ -6731,3 +6731,4 @@ body.user-editor-open{overflow:hidden}
 #ocorrencias .form-panel.occurrence-workforce-mode .occ-field-standard{display:none!important}
 #ocorrencias .form-panel.occurrence-workforce-mode .occurrence-dates-group{grid-template-columns:1fr!important}
 #ocorrencias .form-panel.occurrence-workforce-mode .occ-field-equipment{display:block!important}
+#ocorrencias .form-panel.occurrence-workforce-mode .occ-field-local{display:block!important}
