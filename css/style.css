@@ -6731,3 +6731,9 @@ body.user-editor-open{overflow:hidden}
 #ocorrencias .form-panel.occurrence-workforce-mode .occurrence-dates-group{grid-template-columns:1fr!important}
 #ocorrencias .form-panel.occurrence-workforce-mode .occ-field-equipment{display:block!important}
 #ocorrencias .form-panel.occurrence-workforce-mode .occ-field-local{display:block!important}
+
+/* v6.12.07.6 — Card Falta de mão de obra: fonte exclusiva Homem × Frota */
+#cardFaltaMaoObra{cursor:pointer}
+#cardFaltaMaoObra:focus-visible{outline:2px solid #ff6b72;outline-offset:2px}
+@media(min-width:1451px){#dashboard .metrics{grid-template-columns:repeat(7,minmax(0,1fr))!important}}
+@media(max-width:1450px) and (min-width:1051px){#dashboard .metrics{grid-template-columns:repeat(4,minmax(0,1fr))!important}}

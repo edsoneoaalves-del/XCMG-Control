@@ -112,14 +112,6 @@ function identidadePessoa(r){
   return nome?`n:${nome}`:(matricula?`m:${matricula}`:'');
 }
 function chavePessoaPeriodo(r){
-  // v6.12.07.10 — registros sintéticos do Homem × Frota representam POSIÇÕES, não pessoas.
-  // A chave precisa preservar TAG + tipo da falta; caso contrário, duas posições de operador
-  // (ex.: 1JA374 e 1JA230) viram a mesma ocorrência por terem o mesmo nome "Falta de Operador".
-  if(r?.origem_homem_frota){
-    const tag=normalizarTexto(r?.funcao||r?.equipamento||'');
-    const falta=normalizarTexto(r?.motivo||r?.tipo||'');
-    return `hf|${tag}|${falta}|${dataISOFlex(r?.inicio)}|${dataISOFlex(r?.fim)}`;
-  }
   return `${normalizarTexto(r?.tipo||'')}|${identidadePessoa(r)}|${dataISOFlex(r?.inicio)}|${dataISOFlex(r?.fim)}`;
 }
 function mesmaPessoa(a,b){
@@ -467,26 +459,7 @@ function selecionarVisualizacaoOcorrencias(modo){
 }
 window.selecionarVisualizacaoOcorrencias=selecionarVisualizacaoOcorrencias;
 function dataCurtaDashboard(v){const br=dataBR(v);return br?`${br.slice(0,6)}${br.slice(-2)}`:'—'}
-// v6.12.07.8 — Ponte EXCLUSIVA Homem × Frota -> Registro/ ocorrência do dia.
-// Não altera ativosNaData(), férias, afastamentos, faltas ou qualquer outro fluxo existente.
-function hfMotivoFaltaMaoObra(p){
-  const f=normalizarTexto(p?.funcao||'');
-  return f.includes('sinaleiro')?'Falta de Sinaleiro':'Falta de Operador';
-}
-function hfRegistrosPendentes(data){
-  const ref=dataISOFlex(data);if(!ref)return[];
-  // v6.12.07.9 — a trava de duplicidade considera somente registros que REALMENTE
-  // aparecem ativos na data selecionada. Chave: TAG + tipo da falta (Operador/Sinaleiro).
-  // Assim a mesma TAG pode ter simultaneamente Falta de Operador e Falta de Sinaleiro.
-  const existentes=ativosNaData(ref).filter(ehFaltaMaoObraRegistro);
-  return homemFrota.filter(p=>hfAusencia(p,ref).status==='PENDENTE').map(p=>{
-    const motivo=hfMotivoFaltaMaoObra(p),equip=String(p?.equipamento||'').trim().toUpperCase(),area=String(p?.area||'').trim();
-    const duplicado=existentes.some(r=>normalizarTexto(r?.motivo)===normalizarTexto(motivo)&&normalizarTexto(r?.funcao)===normalizarTexto(equip));
-    if(duplicado)return null;
-    return {id:`hf-pendente-${String(p.id||hfChave(p))}-${ref}`,tipo:'Outras justificativas',categoria:'Falta de mão de obra',motivo,nome:motivo,nome_completo:motivo,matricula:'',funcao_colaborador:String(p?.funcao||'').trim(),area,funcao:equip,local:area,inicio:ref,fim:'',descricao:'Gerado automaticamente pelo Homem × Frota',observacao:'',created_at:p?.updated_at||p?.created_at||'',origem_homem_frota:true};
-  }).filter(Boolean);
-}
-function ocorrenciasDoDia(data){const ref=dataISOFlex(data);if(!ref)return[];return deduplicarRegistros([...ativosNaData(ref),...hfRegistrosPendentes(ref)])}
+function ocorrenciasDoDia(data){const ref=dataISOFlex(data);if(!ref)return[];return ativosNaData(ref)}
 function renderizarOcorrenciasPainel(ativos,data){
   // v6.5.56: o layout continua 100% igual nas duas abas, mas a fonte dos dados é independente.
   // 'Ocorrências do dia' respeita a data selecionada no Dashboard.
@@ -1240,13 +1213,13 @@ function exportarFeriasExcel(){if(!exigirPermissao('ferias_exportar'))return;
 }
 
 function detalheRegistro(r){return [r.motivo,r.descricao,r.cid?`CID: ${r.cid}`:'',r.observacao].filter(Boolean).join(' • ')}
-function linhaRegistro(r,acoes){const data=(r.inicio||'').split('-').reverse().join('/');const retornoRaw=r.retorno||r.fim||'';const retorno=retornoRaw?dataBR(retornoRaw):'—';const dataCurta=data&&data!=='—'?(data.slice(0,6)+data.slice(-2)):'—';const retornoCurto=retorno&&retorno!=='—'?(retorno.slice(0,6)+retorno.slice(-2)):'—';const funcao=r.funcao_colaborador||r.funcao||'';const badgeAuto=r.origem_homem_frota?'Homem × Frota':(r.origem_programacao?(programacoesAtivasNaData($('dataPainel')?.value||hoje()).some(p=>chavePessoaPeriodo(p)===chavePessoaPeriodo(r))?'Automático':'Histórico'):'Histórico');const temAnexo=!!r.foto_url;return `<div class="record-row ${classeTipo(r.tipo)}${temAnexo?' has-mobile-attachment':''}" data-record-id="${r.id}"><div class="record-cell cell-type"><span class="tag${['Falta não justificada','Falta Não Justificada'].includes(r.tipo)?' tag-falta-farol':''}">${escapar(r.tipo)}</span></div><div class="record-cell cell-person"><strong>${escapar(nomeCompletoRegistro(r))}</strong><small>${[r.matricula,funcao].filter(Boolean).map(escapar).join(' • ')}</small></div><div class="record-cell cell-local">${escapar(r.local||'—')}</div><div class="record-cell cell-date" data-short-date="${escapar(dataCurta)}">${escapar(data||'—')}</div><div class="record-mobile-period"><b>${escapar(dataCurta)}</b><span>→</span><b>${escapar(retornoCurto)}</b></div><div class="record-mobile-return"><span>Retorno</span><b>${escapar(retorno)}</b></div>${temAnexo?`<a class="record-mobile-attachment" href="${escapar(r.foto_url)}" target="_blank" rel="noopener">📎 Anexo</a>`:''}<div class="record-cell cell-detail" title="${escapar(detalheRegistro(r))}">${escapar(detalheRegistro(r)||'—')}</div><div class="record-cell cell-attachment">${temAnexo?`<a class="record-attachment" href="${escapar(r.foto_url)}" target="_blank" rel="noopener">📎 Anexo</a>`:'—'}</div>${acoes?`<div class="record-cell cell-actions"><button class="secondary" data-edit="${r.id}">Editar</button><button class="danger" data-delete="${r.id}">Excluir</button></div><details class="record-mobile-menu"><summary aria-label="Ações do registro">⋮</summary><div><button class="secondary" data-edit="${r.id}">Editar</button><button class="danger" data-delete="${r.id}">Excluir</button></div></details>`:`<div class="record-cell cell-actions"><span class="history-only-badge">${badgeAuto}</span></div><span class="record-mobile-auto">${badgeAuto}</span>`}</div>`}
-function tabelaRegistros(lista){return `<div class="records-table"><div class="records-table-head"><div>Tipo</div><div>Colaborador</div><div>Local</div><div>Data</div><div>Motivo / detalhe</div><div>Anexo</div><div>Ações</div></div><div class="records-table-body">${lista.map(r=>linhaRegistro(r,!r.origem_programacao&&!r.origem_homem_frota)).join('')}</div></div>`}
+function linhaRegistro(r,acoes){const data=(r.inicio||'').split('-').reverse().join('/');const retornoRaw=r.retorno||r.fim||'';const retorno=retornoRaw?dataBR(retornoRaw):'—';const dataCurta=data&&data!=='—'?(data.slice(0,6)+data.slice(-2)):'—';const retornoCurto=retorno&&retorno!=='—'?(retorno.slice(0,6)+retorno.slice(-2)):'—';const funcao=r.funcao_colaborador||r.funcao||'';const badgeAuto=r.origem_programacao?(programacoesAtivasNaData($('dataPainel')?.value||hoje()).some(p=>chavePessoaPeriodo(p)===chavePessoaPeriodo(r))?'Automático':'Histórico'):'Histórico';const temAnexo=!!r.foto_url;return `<div class="record-row ${classeTipo(r.tipo)}${temAnexo?' has-mobile-attachment':''}" data-record-id="${r.id}"><div class="record-cell cell-type"><span class="tag${['Falta não justificada','Falta Não Justificada'].includes(r.tipo)?' tag-falta-farol':''}">${escapar(r.tipo)}</span></div><div class="record-cell cell-person"><strong>${escapar(nomeCompletoRegistro(r))}</strong><small>${[r.matricula,funcao].filter(Boolean).map(escapar).join(' • ')}</small></div><div class="record-cell cell-local">${escapar(r.local||'—')}</div><div class="record-cell cell-date" data-short-date="${escapar(dataCurta)}">${escapar(data||'—')}</div><div class="record-mobile-period"><b>${escapar(dataCurta)}</b><span>→</span><b>${escapar(retornoCurto)}</b></div><div class="record-mobile-return"><span>Retorno</span><b>${escapar(retorno)}</b></div>${temAnexo?`<a class="record-mobile-attachment" href="${escapar(r.foto_url)}" target="_blank" rel="noopener">📎 Anexo</a>`:''}<div class="record-cell cell-detail" title="${escapar(detalheRegistro(r))}">${escapar(detalheRegistro(r)||'—')}</div><div class="record-cell cell-attachment">${temAnexo?`<a class="record-attachment" href="${escapar(r.foto_url)}" target="_blank" rel="noopener">📎 Anexo</a>`:'—'}</div>${acoes?`<div class="record-cell cell-actions"><button class="secondary" data-edit="${r.id}">Editar</button><button class="danger" data-delete="${r.id}">Excluir</button></div><details class="record-mobile-menu"><summary aria-label="Ações do registro">⋮</summary><div><button class="secondary" data-edit="${r.id}">Editar</button><button class="danger" data-delete="${r.id}">Excluir</button></div></details>`:`<div class="record-cell cell-actions"><span class="history-only-badge">${badgeAuto}</span></div><span class="record-mobile-auto">${badgeAuto}</span>`}</div>`}
+function tabelaRegistros(lista){return `<div class="records-table"><div class="records-table-head"><div>Tipo</div><div>Colaborador</div><div>Local</div><div>Data</div><div>Motivo / detalhe</div><div>Anexo</div><div>Ações</div></div><div class="records-table-body">${lista.map(r=>linhaRegistro(r,!r.origem_programacao)).join('')}</div></div>`}
 function registrosFiltrados(){
   const q=$('pesquisa').value.toLowerCase().trim(),t=$('filtroTipo').value,l=$('filtroLocal').value,p=$('filtroPeriodo')?.value||'',mostrarTodos=$('mostrarTodosRegistros').checked,data=$('dataPainel').value;
   // Ativos: usa exatamente a mesma fonte consolidada do Dashboard, incluindo férias automáticas ativas.
   // Todos: histórico até a Data do painel + férias automáticas que ainda estão ativas. Férias futuras ficam apenas em Próximas férias/Programação.
-  const baseOriginal=mostrarTodos?registrosConsultaAteData(data):ativosNaData(data);const base=deduplicarRegistros([...baseOriginal,...hfRegistrosPendentes(data)]);
+  const base=mostrarTodos?registrosConsultaAteData(data):ativosNaData(data);
   return base.filter(r=>(!t||r.tipo===t)&&(!l||r.local===l)&&(!p||periodoFechamento(r.inicio)===p)&&(!q||[r.nome,r.nome_completo,r.matricula,r.funcao_colaborador,r.funcao,r.local,r.tipo,r.motivo,r.observacao,r.descricao,r.cid,periodoFechamento(r.inicio)].join(' ').toLowerCase().includes(q))).sort((a,b)=>(b.inicio||'').localeCompare(a.inicio||'')||(b.created_at||'').localeCompare(a.created_at||''));
 }
 function atualizarFiltroPeriodos(){const el=$('filtroPeriodo');if(!el)return;const atual=el.value;const base=registrosConsultaAteData($('dataPainel')?.value||hoje());const periodos=[...new Set(base.map(r=>periodoFechamento(r.inicio)).filter(Boolean))].sort((a,b)=>{const pa=a.slice(0,10).split('/').reverse().join('-'),pb=b.slice(0,10).split('/').reverse().join('-');return pb.localeCompare(pa)});el.innerHTML='<option value="">Todos os períodos</option>'+periodos.map(p=>`<option value="${escapar(p)}">${escapar(p)}</option>`).join('');if(periodos.includes(atual))el.value=atual}
