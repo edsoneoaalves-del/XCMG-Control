@@ -856,7 +856,12 @@ function iniciarProgramacaoColaborador(id,indiceCiclo=null){
   preencherDadosFerias();
   const c=colaboradorFeriasSelecionado();
   const idx=indiceCiclo===null?null:Number(indiceCiclo);
-  cicloProgramacaoSelecionado=(c&&Number.isInteger(idx))?cicloFeriasPorIndice(c.data_admissao,idx):null;
+  // v6.12.07.13 — correção pontual: ao abrir a programação pela lista de pendências,
+  // usa o ciclo realmente pendente exibido no painel. Evita avançar indevidamente
+  // um período e bloquear datas válidas dentro do período concessivo atual.
+  const cicloSolicitado=(c&&Number.isInteger(idx))?cicloFeriasPorIndice(c.data_admissao,idx):null;
+  const cicloPendenteAtual=c?cicloPendenteFerias(c,$('dataPainel')?.value||hoje()):null;
+  cicloProgramacaoSelecionado=cicloPendenteAtual||cicloSolicitado;
   ['feriasInicio','feriasFim','feriasRetorno','feriasObservacao'].forEach(campoId=>{if($(campoId))$(campoId).value=''});
   if($('feriasDias'))$('feriasDias').value='30';
   if($('feriasAbono'))$('feriasAbono').value='NÃO';
