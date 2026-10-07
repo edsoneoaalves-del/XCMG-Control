@@ -896,7 +896,20 @@ async function salvarFeriasManual(){
   if(!editandoFeriasId&&cicloPlanejado){const existente=programacaoDoCicloFerias(c,cicloPlanejado,$('dataPainel')?.value||hoje());if(existente){const ex=existente.d||existente.r||{};alert(`Já existe uma programação de férias vinculada a este período aquisitivo (${dataBR(cicloPlanejado.inicio)} a ${dataBR(cicloPlanejado.fim)}).\n\nProgramação existente: ${dataBR(ex.inicio)} a ${dataBR(ex.fim)}.\n\nA nova programação não será salva para evitar duplicidade.`);return}}
   const conflitos=conflitoFerias({id:editandoFeriasId,funcao:c.funcao,inicio,fim},editandoFeriasId),ante=diasAntecedenciaFerias(inicio);let justificativa='';if(conflitos.length||(ante>=0&&ante<60)){const motivo=prompt(`${conflitos.length?'Existe conflito com colaborador da mesma função.\n':''}${ante>=0&&ante<60?`A antecedência é de ${ante} dia(s), abaixo de 60.\n`:''}\nInforme uma justificativa para continuar:`);if(!motivo?.trim())return;justificativa=motivo.trim()}
   const payload=payloadProgramacaoFerias({colaborador_id:c.id,nome_completo:c.nome_completo,matricula:c.matricula,funcao:c.funcao,area:c.area,data_admissao:c.data_admissao,inicio,fim,retorno,dias,abono:$('feriasAbono').value,decimo_terceiro:$('feriasDecimo').value,status_aprovacao:'PRÉ-PROGRAMADO',observacao:$('feriasObservacao').value.trim(),justificativa_conflito:justificativa,origem:'aplicativo'});
-  let data,error,acao='Programação cadastrada',anterior='';if(editandoFeriasId){const atual=programacaoFerias.find(x=>String(x.id)===String(editandoFeriasId));anterior=atual?.status_aprovacao||'';({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',editandoFeriasId).select('*').single());acao='Férias editadas / reprogramadas'}else({data,error}=await db.from(FERIAS_TABLE).insert(payload).select('*').single());
+  let data,error,acao='Programação cadastrada',anterior='';if(editandoFeriasId){const atual=programacaoFerias.find(x=>String(x.id)===String(editandoFeriasId));anterior=atual?.status_aprovacao||'';({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',editandoFeriasId).select('*').single());acao='Férias editadas / reprogramadas'}else{
+    // v6.12.07.16 — gravação idempotente: se a mesma programação já existir no Supabase,
+    // atualiza o registro existente em vez de tentar inserir uma chave duplicada.
+    // A constraint do banco permanece intacta e continua protegendo contra duplicidades reais.
+    ({data,error}=await db.from(FERIAS_TABLE).insert(payload).select('*').single());
+    if(error&&(error.code==='23505'||String(error.message||'').includes('xcmg_programacao_ferias_unq'))){
+      const {data:existente,error:erroBusca}=await db.from(FERIAS_TABLE).select('*').eq('nome_chave',payload.nome_chave).eq('inicio',payload.inicio).eq('fim',payload.fim).maybeSingle();
+      if(!erroBusca&&existente?.id){
+        anterior=existente.status_aprovacao||'';
+        ({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',existente.id).select('*').single());
+        acao='Programação existente atualizada';
+      }
+    }
+  }
   if(error){alert(`Não foi possível salvar as férias. ${error.message||''}`);return}await registrarHistoricoFerias(data.id,acao,anterior,'PRÉ-PROGRAMADO',justificativa||payload.observacao);$('statusCadastroFerias').textContent=editandoFeriasId?'Alterações salvas. A programação voltou para aprovação do RH.':'Programação salva. Aguardando o fluxo de aprovação do RH.';limparFormFerias();await carregarProgramacaoFeriasNuvem();renderizarProgramacaoFerias();atualizarDashboard()
 }
 async function alterarStatusFerias(id,novo){
