@@ -344,7 +344,17 @@ async function carregarProgramacaoFeriasNuvem(){
         }
       }
     }
-    const nuvem=(data||[]).filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
+    // v6.12.07.17 — saneamento definitivo: no modelo do XCMG Control existe somente
+    // uma programação ativa por colaborador + período aquisitivo. Se versões anteriores
+    // criaram duas linhas com datas diferentes no mesmo ciclo, mantém a mais recentemente
+    // atualizada e remove a duplicata real do Supabase (não apenas da tela).
+    let dadosAtivos=(data||[]).filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado');
+    const gruposCiclo=new Map();
+    for(const r of dadosAtivos){const k=chaveCicloProgramacaoFerias(r);if(!k)continue;if(!gruposCiclo.has(k))gruposCiclo.set(k,[]);gruposCiclo.get(k).push(r)}
+    const idsRemover=[];
+    for(const grupo of gruposCiclo.values()){if(grupo.length<2)continue;grupo.sort((a,b)=>String(b.atualizado_em||b.created_at||'').localeCompare(String(a.atualizado_em||a.created_at||''))||Number(b.id||0)-Number(a.id||0));idsRemover.push(...grupo.slice(1).map(x=>x.id).filter(Boolean))}
+    if(idsRemover.length){const {error:erroLimpeza}=await db.from(FERIAS_TABLE).delete().in('id',idsRemover);if(erroLimpeza)console.warn('Não foi possível remover duplicidades antigas de férias.',erroLimpeza);else dadosAtivos=dadosAtivos.filter(r=>!idsRemover.some(id=>String(id)===String(r.id)))}
+    const nuvem=dadosAtivos.map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
     const mapa=new Map();
     const inserir=(r,forcar=false)=>{const item=dadosEfetivoFerias(r)||normalizarProgramacaoFerias(r);if(!item)return;const k=chaveProgramacaoFeriasCanonica(item);if(!k)return;if(forcar||!mapa.has(k))mapa.set(k,item)};
     // Legados < cache < nuvem. A nuvem sempre vence para a mesma pessoa/período.
@@ -897,16 +907,25 @@ async function salvarFeriasManual(){
   const conflitos=conflitoFerias({id:editandoFeriasId,funcao:c.funcao,inicio,fim},editandoFeriasId),ante=diasAntecedenciaFerias(inicio);let justificativa='';if(conflitos.length||(ante>=0&&ante<60)){const motivo=prompt(`${conflitos.length?'Existe conflito com colaborador da mesma função.\n':''}${ante>=0&&ante<60?`A antecedência é de ${ante} dia(s), abaixo de 60.\n`:''}\nInforme uma justificativa para continuar:`);if(!motivo?.trim())return;justificativa=motivo.trim()}
   const payload=payloadProgramacaoFerias({colaborador_id:c.id,nome_completo:c.nome_completo,matricula:c.matricula,funcao:c.funcao,area:c.area,data_admissao:c.data_admissao,inicio,fim,retorno,dias,abono:$('feriasAbono').value,decimo_terceiro:$('feriasDecimo').value,status_aprovacao:'PRÉ-PROGRAMADO',observacao:$('feriasObservacao').value.trim(),justificativa_conflito:justificativa,origem:'aplicativo'});
   let data,error,acao='Programação cadastrada',anterior='';if(editandoFeriasId){const atual=programacaoFerias.find(x=>String(x.id)===String(editandoFeriasId));anterior=atual?.status_aprovacao||'';({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',editandoFeriasId).select('*').single());acao='Férias editadas / reprogramadas'}else{
-    // v6.12.07.16 — gravação idempotente: se a mesma programação já existir no Supabase,
-    // atualiza o registro existente em vez de tentar inserir uma chave duplicada.
-    // A constraint do banco permanece intacta e continua protegendo contra duplicidades reais.
-    ({data,error}=await db.from(FERIAS_TABLE).insert(payload).select('*').single());
-    if(error&&(error.code==='23505'||String(error.message||'').includes('xcmg_programacao_ferias_unq'))){
-      const {data:existente,error:erroBusca}=await db.from(FERIAS_TABLE).select('*').eq('nome_chave',payload.nome_chave).eq('inicio',payload.inicio).eq('fim',payload.fim).maybeSingle();
-      if(!erroBusca&&existente?.id){
-        anterior=existente.status_aprovacao||'';
-        ({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',existente.id).select('*').single());
-        acao='Programação existente atualizada';
+    // v6.12.07.17 — antes de inserir, procura no Supabase qualquer programação da mesma
+    // matrícula que pertença ao MESMO período aquisitivo, mesmo que as datas tenham mudado.
+    // Encontrando, atualiza a linha existente; nunca cria uma segunda linha para o mesmo ciclo.
+    const idxNovo=indiceCicloFeriasDaData(c.data_admissao,inicio);
+    let existentesCiclo=[];
+    if(idxNovo!==null){
+      const {data:candidatos,error:erroBusca}=await db.from(FERIAS_TABLE).select('*').eq('matricula',String(c.matricula||'').trim());
+      if(!erroBusca)existentesCiclo=(candidatos||[]).filter(r=>normalizarTexto(r.status_aprovacao)!=='cancelado'&&indiceCicloFeriasDaData(c.data_admissao,r.inicio)===idxNovo);
+    }
+    if(existentesCiclo.length){
+      existentesCiclo.sort((a,b)=>String(b.atualizado_em||b.created_at||'').localeCompare(String(a.atualizado_em||a.created_at||''))||Number(b.id||0)-Number(a.id||0));
+      const existente=existentesCiclo[0];anterior=existente.status_aprovacao||'';
+      ({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',existente.id).select('*').single());acao='Programação existente atualizada';
+      if(!error&&existentesCiclo.length>1){const extras=existentesCiclo.slice(1).map(x=>x.id).filter(Boolean);if(extras.length){const {error:erroLimpeza}=await db.from(FERIAS_TABLE).delete().in('id',extras);if(erroLimpeza)console.warn('Não foi possível limpar duplicidades antigas do ciclo.',erroLimpeza)}}
+    }else{
+      ({data,error}=await db.from(FERIAS_TABLE).insert(payload).select('*').single());
+      if(error&&(error.code==='23505'||String(error.message||'').includes('xcmg_programacao_ferias_unq'))){
+        const {data:existente}=await db.from(FERIAS_TABLE).select('*').eq('nome_chave',payload.nome_chave).eq('inicio',payload.inicio).eq('fim',payload.fim).maybeSingle();
+        if(existente?.id){anterior=existente.status_aprovacao||'';({data,error}=await db.from(FERIAS_TABLE).update(payload).eq('id',existente.id).select('*').single());acao='Programação existente atualizada'}
       }
     }
   }
@@ -992,6 +1011,20 @@ function cicloFeriasPorIndice(dataAdmissao,indice=0){
   const adm=dataISOFlex(dataAdmissao);if(!adm)return null;
   const inicio=adicionarAnosISO(adm,indice),fim=fimPeriodoAquisitivoISO(inicio),inicioConcessao=somarDiasCalendarioISO(fim,1),limite=fimPeriodoAquisitivoISO(inicioConcessao);
   return{indice,inicio,fim,inicioConcessao,limite};
+}
+// v6.12.07.17 — identifica de forma determinística o período aquisitivo pela data real das férias.
+function indiceCicloFeriasDaData(dataAdmissao,dataFerias){
+  const adm=dataISOFlex(dataAdmissao),ini=dataISOFlex(dataFerias);if(!adm||!ini)return null;
+  for(let i=0;i<80;i++){const ciclo=cicloFeriasPorIndice(adm,i);if(!ciclo)break;if(ini>=ciclo.inicioConcessao&&ini<=ciclo.limite)return i;if(ini<ciclo.inicioConcessao)break}
+  return null;
+}
+function colaboradorDaProgramacaoFerias(r){
+  const id=String(r?.colaborador_id||''),mat=String(r?.matricula||'').trim();
+  return (Array.isArray(colaboradores)?colaboradores:[]).find(c=>(id&&String(c.id||'')===id)||(mat&&String(c.matricula||'').trim()===mat))||null;
+}
+function chaveCicloProgramacaoFerias(r){
+  const c=colaboradorDaProgramacaoFerias(r),adm=dataISOFlex(c?.data_admissao||r?.data_admissao),idx=indiceCicloFeriasDaData(adm,r?.inicio);
+  if(idx===null)return'';const pessoa=String(c?.matricula||r?.matricula||r?.colaborador_id||r?.nome_chave||'').trim();return pessoa?`${pessoa}|${idx}`:'';
 }
 // v6.10.24 — férias válidas consomem os períodos aquisitivos em ordem cronológica.
 // Ex.: 1ª férias realizada consome o 1º período; a próxima programação consome o 2º período.
