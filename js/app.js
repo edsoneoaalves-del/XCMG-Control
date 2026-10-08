@@ -280,9 +280,24 @@ function chaveProgramacaoFeriasCanonica(r){
   const pessoa=id?`id:${id}`:mat?`mat:${mat}`:`nome:${nome}`;
   return `${pessoa}|${dataISOFlex(item.inicio)}|${dataISOFlex(item.fim)}`;
 }
+// Correção pontual 6.12.07.18: mantém a programação confirmada de Marley.
+// O registro antigo não deve voltar pelo cache, importação ou reconstrução legada.
+function feriasMarleyRegistroAntigo(r){
+  const mat=String(r?.matricula||'').replace(/\D/g,'');
+  const nome=normalizarTexto(r?.nome_completo||r?.nome||'');
+  return (mat==='3632'||nome==='marley da silva dias')&&
+    dataISOFlex(r?.inicio)==='2026-12-04'&&dataISOFlex(r?.fim)==='2026-12-23';
+}
+function feriasMarleyRegistroCorreto(r){
+  const mat=String(r?.matricula||'').replace(/\D/g,'');
+  const nome=normalizarTexto(r?.nome_completo||r?.nome||'');
+  return (mat==='3632'||nome==='marley da silva dias')&&
+    dataISOFlex(r?.inicio)==='2026-12-05'&&dataISOFlex(r?.fim)==='2026-12-24';
+}
 function consolidarProgramacaoFeriasCanonica(lista){
   const map=new Map();
   for(const bruto of (Array.isArray(lista)?lista:[])){
+    if(feriasMarleyRegistroAntigo(bruto))continue;
     const item=dadosEfetivoFerias(bruto)||normalizarProgramacaoFerias(bruto);if(!item)continue;
     const chave=chaveProgramacaoFeriasCanonica(item);if(!chave)continue;
     const anterior=map.get(chave);
@@ -349,6 +364,16 @@ async function carregarProgramacaoFeriasNuvem(){
     // criaram duas linhas com datas diferentes no mesmo ciclo, mantém a mais recentemente
     // atualizada e remove a duplicata real do Supabase (não apenas da tela).
     let dadosAtivos=(data||[]).filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado');
+    // Só remove a linha antiga da nuvem quando a programação correta já existe.
+    const antigoMarley=dadosAtivos.filter(feriasMarleyRegistroAntigo);
+    if(antigoMarley.length&&dadosAtivos.some(feriasMarleyRegistroCorreto)){
+      const ids=antigoMarley.map(r=>r.id).filter(Boolean);
+      if(ids.length){
+        const {error:erroMarley}=await db.from(FERIAS_TABLE).delete().in('id',ids);
+        if(erroMarley)console.warn('Férias Marley: limpeza da linha antiga pendente.',erroMarley);
+        else dadosAtivos=dadosAtivos.filter(r=>!feriasMarleyRegistroAntigo(r));
+      }
+    }
     const gruposCiclo=new Map();
     for(const r of dadosAtivos){const k=chaveCicloProgramacaoFerias(r);if(!k)continue;if(!gruposCiclo.has(k))gruposCiclo.set(k,[]);gruposCiclo.get(k).push(r)}
     const idsRemover=[];
@@ -356,7 +381,7 @@ async function carregarProgramacaoFeriasNuvem(){
     if(idsRemover.length){const {error:erroLimpeza}=await db.from(FERIAS_TABLE).delete().in('id',idsRemover);if(erroLimpeza)console.warn('Não foi possível remover duplicidades antigas de férias.',erroLimpeza);else dadosAtivos=dadosAtivos.filter(r=>!idsRemover.some(id=>String(id)===String(r.id)))}
     const nuvem=dadosAtivos.map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
     const mapa=new Map();
-    const inserir=(r,forcar=false)=>{const item=dadosEfetivoFerias(r)||normalizarProgramacaoFerias(r);if(!item)return;const k=chaveProgramacaoFeriasCanonica(item);if(!k)return;if(forcar||!mapa.has(k))mapa.set(k,item)};
+    const inserir=(r,forcar=false)=>{if(feriasMarleyRegistroAntigo(r))return;const item=dadosEfetivoFerias(r)||normalizarProgramacaoFerias(r);if(!item)return;const k=chaveProgramacaoFeriasCanonica(item);if(!k)return;if(forcar||!mapa.has(k))mapa.set(k,item)};
     // Legados < cache < nuvem. A nuvem sempre vence para a mesma pessoa/período.
     legados.filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').forEach(r=>inserir(r,false));
     cache.filter(r=>normalizarTexto(r?.status_aprovacao)!=='cancelado').forEach(r=>inserir(r,true));
@@ -716,7 +741,7 @@ async function salvarProgramacaoFeriasREST(lista,onStatus){
   const presentes=new Set((Array.isArray(rows)?rows:[]).map(x=>`${x.nome_chave}|${dataISOFlex(x.inicio)}|${dataISOFlex(x.fim)}`));
   const faltantes=payload.filter(x=>!presentes.has(`${x.nome_chave}|${x.inicio}|${x.fim}`));
   if(faltantes.length)throw new Error(`A conferência encontrou ${faltantes.length} programação(ões) ausente(s) no banco após o envio.`);
-  programacaoFerias=(Array.isArray(rows)?rows:[]).map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean);
+  programacaoFerias=consolidarProgramacaoFeriasCanonica((Array.isArray(rows)?rows:[]).map(r=>normalizarProgramacaoFerias(dadosEfetivoFerias({...r,nome:r.nome_completo,funcao_colaborador:r.funcao||'',local:r.area||''}))).filter(Boolean));
   gravarLocal(FERIAS_KEY,programacaoFerias);feriasNuvemDisponivel=true;atualizarStatusFonteFerias();
   return{gravadas:payload.length,totalTabela:programacaoFerias.length,duplicadasRemovidas:bruto.length-payload.length,projeto};
 }
