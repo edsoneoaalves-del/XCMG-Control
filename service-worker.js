@@ -1,4 +1,4 @@
-const CACHE='xcmg-control-v6.12.07.10';
+const CACHE='xcmg-control-v6.12.07.22';
 const APP_SHELL=['./','./index.html','./css/style.css','./js/app.js','./manifest.json','./logo-3d.png'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE&&k.startsWith('xcmg-control-')).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
