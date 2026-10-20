@@ -7006,3 +7006,12 @@ body.user-editor-open{overflow:hidden}
 #homemfrota.hf-show-filters .hf-list-section>.hf-filters input{width:calc(100% - 95px)!important}
 #homemfrota.hf-show-filters .hf-list-section>.hf-filters select{display:block!important;flex:1 1 45%!important;min-width:0!important;min-height:37px!important;font-size:12px!important}
 }
+
+/* V5.1: Importar e Exportar sempre visíveis no Homem x Frota mobile */
+@media (max-width:767px){
+ #homemfrota .hf-mobile-more-toggle{display:none!important}
+ #homemfrota .hf-main-heading,#homemfrota.hf-show-more .hf-main-heading{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:space-between!important;gap:7px!important}
+ #homemfrota .hf-heading-actions,#homemfrota.hf-show-more .hf-heading-actions{display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;width:auto!important;order:initial!important;margin:0!important}
+ #homemfrota .hf-heading-actions #btnNovaPosicaoHF{width:auto!important;min-height:34px!important;padding:6px 9px!important;font-size:11px!important}
+ #homemfrota .hf-heading-actions #btnAbrirImportacaoHF,#homemfrota .hf-heading-actions #btnExportarHF,#homemfrota.hf-show-more .hf-heading-actions #btnAbrirImportacaoHF,#homemfrota.hf-show-more .hf-heading-actions #btnExportarHF{display:inline-flex!important;align-items:center!important;justify-content:center!important;position:static!important;width:auto!important;min-height:34px!important;padding:6px 9px!important;font-size:11px!important;border-radius:8px!important}
+}
