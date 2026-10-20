@@ -6909,3 +6909,36 @@ body.user-editor-open{overflow:hidden}
 #colaboradores .effective-mobile-buttons{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #colaboradores .effective-mobile-buttons button{min-height:38px!important;font-size:.75rem!important}
 }
+
+/* Efetivo mobile V3 - cabecalho executivo, desktop preservado */
+.effective-mobile-controls{display:none}
+@media(max-width:700px){
+ #colaboradores>.panel{padding:12px!important}
+ #colaboradores .effective-main-heading{display:block!important;margin:0 0 12px!important;padding:0!important}
+ #colaboradores .effective-main-heading>div:first-child h2{font-size:22px!important;margin:0 0 9px!important}
+ #colaboradores .effective-main-heading>div:first-child p{display:none!important}
+ #colaboradores .effective-heading-right{display:block!important;width:100%!important}
+ #colaboradores .effective-summary{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;width:100%!important;margin:0 0 10px!important}
+ #colaboradores .effective-summary>*{display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:57px!important;margin:0!important;padding:8px 5px!important;border:1px solid #284861!important;border-radius:12px!important;background:#0c2a40!important;font-size:15px!important;text-align:center!important}
+ #colaboradores .effective-page-actions{display:flex!important;gap:8px!important;width:100%!important;margin:0!important}
+ #colaboradores .effective-page-actions #btnNovoColaboradorEfetivo{width:100%!important;flex:1!important;min-height:42px!important;padding:8px!important;font-size:14px!important}
+ #colaboradores .effective-page-actions #btnNovoColaboradorEfetivo{font-size:0!important}
+ #colaboradores .effective-page-actions #btnNovoColaboradorEfetivo:after{content:'+ Novo colaborador';font-size:14px}
+ #colaboradores .effective-page-actions #btnAbrirImportacaoEfetivo,#colaboradores .effective-page-actions #btnExportarEfetivo{display:none!important}
+ #colaboradores.ef-mobile-more-open .effective-page-actions #btnAbrirImportacaoEfetivo,#colaboradores.ef-mobile-more-open .effective-page-actions #btnExportarEfetivo{display:block!important;font-size:13px!important;min-height:42px!important;padding:8px!important;flex:1!important}
+ #colaboradores.ef-mobile-more-open .effective-page-actions{flex-wrap:wrap!important}
+ #colaboradores.ef-mobile-more-open .effective-page-actions #btnNovoColaboradorEfetivo{flex-basis:100%!important}
+ #colaboradores .effective-list-section{margin-top:10px!important;padding-top:0!important}
+ #colaboradores .effective-list-heading{margin:0 0 9px!important;padding:0!important}
+ #colaboradores .effective-list-heading h3{font-size:17px!important;margin:0!important}
+ #colaboradores .effective-mobile-controls{display:flex!important;gap:8px!important;margin:0 0 9px!important}
+ #colaboradores .effective-mobile-controls button{flex:1!important;min-height:38px!important;padding:7px!important;font-size:13px!important}
+ #colaboradores .effective-toolbar{display:block!important;margin:0 0 9px!important}
+ #colaboradores .effective-toolbar .collaborator-filter{display:block!important;margin:0!important}
+ #colaboradores #pesquisaColaborador{display:block!important;width:100%!important;min-width:0!important;margin:0!important;min-height:42px!important;font-size:14px!important}
+ #colaboradores #filtroEfetivoArea,#colaboradores #filtroEfetivoTurma,#colaboradores #filtroEfetivoStatus{display:none!important;width:100%!important;margin-top:7px!important;min-height:40px!important}
+ #colaboradores.ef-mobile-filters-open #filtroEfetivoArea,#colaboradores.ef-mobile-filters-open #filtroEfetivoTurma,#colaboradores.ef-mobile-filters-open #filtroEfetivoStatus{display:block!important}
+ #colaboradores .effective-actions{display:none!important}
+ #colaboradores.ef-mobile-more-open .effective-actions{display:flex!important;margin-top:8px!important}
+ #colaboradores.ef-mobile-more-open .effective-actions #btnCopiarEfetivo{width:100%!important;min-height:40px!important;font-size:13px!important}
+}

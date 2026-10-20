@@ -235,6 +235,7 @@
         </div>
         <div class="effective-list-section">
           <div class="effective-list-heading"><div><h3>Relação do efetivo</h3></div></div>
+          <div class="effective-mobile-controls"><button type="button" id="efMobileMore" class="secondary" aria-expanded="false">⋯ Mais opções</button><button type="button" id="efMobileFilters" class="secondary" aria-expanded="false">☷ Filtros</button></div>
           <div class="effective-toolbar">
             <div class="filters collaborator-filter"><input id="pesquisaColaborador" placeholder="Pesquisar nome, matrícula, CPF ou função..."><select id="filtroEfetivoArea"><option value="">Todas as áreas</option></select><select id="filtroEfetivoTurma"><option value="">Todas as turmas</option></select><select id="filtroEfetivoStatus"><option value="">Todos os status</option><option>Ativo</option><option>INSS/Afastado</option><option>Mudança de turma</option><option>Desligado</option><option>Inativo</option></select></div>
             <div class="actions effective-actions"><button id="btnCopiarEfetivo" class="secondary" type="button">Copiar tabela</button></div>
@@ -616,5 +617,22 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="js/app.js?v=6.12.07"></script>
+<script>
+(function(){
+ const mobile=()=>window.matchMedia('(max-width: 700px)').matches;
+ function setup(){
+  const page=document.getElementById('colaboradores');if(!page)return;
+  const more=document.getElementById('efMobileMore'),filters=document.getElementById('efMobileFilters');
+  if(more)more.addEventListener('click',()=>{const open=page.classList.toggle('ef-mobile-more-open');more.setAttribute('aria-expanded',String(open));});
+  if(filters)filters.addEventListener('click',()=>{const open=page.classList.toggle('ef-mobile-filters-open');filters.setAttribute('aria-expanded',String(open));});
+  const actionBox=page.querySelector('.effective-page-actions');
+  if(actionBox){
+   const importBtn=document.getElementById('btnAbrirImportacaoEfetivo'),exportBtn=document.getElementById('btnExportarEfetivo'),copyBtn=document.getElementById('btnCopiarEfetivo');
+   [importBtn,exportBtn,copyBtn].forEach(btn=>{if(btn)btn.addEventListener('click',()=>{page.classList.remove('ef-mobile-more-open');if(more)more.setAttribute('aria-expanded','false');});});
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup);else setup();
+})();
+</script>
 </body>
 </html>
