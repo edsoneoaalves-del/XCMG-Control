@@ -7115,3 +7115,24 @@ body.user-editor-open{overflow:hidden}
  #ferias .vacation-management-table tr.vacation-main-row{column-gap:4px!important;padding:9px 8px!important}
  #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(6),#ferias .vacation-management-table tr.vacation-main-row>td:nth-child(7){font-size:.55rem!important}
 }
+
+/* v5.5 — Painel executivo de férias: apenas telas pequenas */
+@media (max-width:720px){
+  #ferias .vacation-main-heading{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important;align-items:start!important;margin-bottom:8px!important}
+  #ferias .vacation-main-heading>div:first-child{grid-column:1!important;grid-row:1!important}
+  #ferias .vacation-main-heading h2{font-size:1.12rem!important}
+  #ferias .vacation-main-heading p{font-size:.66rem!important;max-width:26ch!important}
+  #ferias .vacation-heading-actions{display:contents!important}
+  #ferias .vacation-heading-actions .records-count{grid-column:2!important;grid-row:1!important;align-self:start!important;justify-self:end!important;max-width:115px!important;text-align:right!important;font-size:.77rem!important;line-height:1.25!important;white-space:normal!important;margin-top:2px!important;color:#28b66e!important}
+  #ferias .vacation-heading-actions button{grid-row:2!important;width:100%!important;min-width:0!important;min-height:38px!important;padding:7px 5px!important;font-size:clamp(.61rem,2.7vw,.79rem)!important;line-height:1.15!important;white-space:normal!important;border-radius:10px!important}
+  #ferias .vacation-export-btn{grid-column:1!important}
+  #ferias .vacation-new-btn{grid-column:2!important}
+  #ferias .vacation-kpis{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;margin:7px 0 9px!important}
+  #ferias .vacation-kpis>div{min-width:0!important;min-height:65px!important;padding:7px 5px!important;gap:4px!important;align-items:center!important;text-align:center!important;border-radius:10px!important}
+  #ferias .vacation-kpis span{font-size:clamp(.53rem,2.1vw,.66rem)!important;line-height:1.12!important;overflow-wrap:anywhere!important;order:2!important}
+  #ferias .vacation-kpis strong{font-size:1.23rem!important;line-height:1!important;order:1!important;margin:0!important}
+  #ferias .vacation-program-title{grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important;align-items:center!important}
+  #ferias .vacation-program-title>strong{justify-self:end!important;text-align:right!important;white-space:normal!important;font-size:.65rem!important}
+  #ferias .vacation-program-filters{gap:6px!important}
+  #ferias .vacation-program-filters input,#ferias .vacation-program-filters select{min-height:40px!important;padding:8px 10px!important;font-size:.81rem!important}
+}
