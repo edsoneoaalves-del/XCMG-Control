@@ -667,26 +667,15 @@ async function exportarEfetivoExcel(){
   if(!window.ExcelJS){alert('A biblioteca de formatação do Excel não carregou. Verifique a conexão e tente novamente.');return}
   try{
     const wb=new ExcelJS.Workbook();wb.creator='XCMG Control';wb.subject='Relatório executivo de efetivo';
-    const ws=wb.addWorksheet('EFETIVO',{views:[{state:'frozen',ySplit:8}],pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:0.2,right:0.2,top:0.4,bottom:0.4,header:0.15,footer:0.2}}});
-    const navy='102B43',green='28C65B',white='FFFFFF',light='EAF2F8',ink='172B40';
+    const ws=wb.addWorksheet('EFETIVO',{views:[{state:'frozen',ySplit:1}],pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:0.2,right:0.2,top:0.4,bottom:0.4,header:0.15,footer:0.2}}});
+    const green='28C65B',light='EAF2F8',ink='172B40';
     ws.columns=[{width:14},{width:15},{width:40},{width:43},{width:16},{width:16},{width:20},{width:11},{width:23}];
-    const merged=(range,value,color=navy,fg=white,size=12)=>{ws.mergeCells(range);const c=ws.getCell(range.split(':')[0]);c.value=value;c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+color}};c.font={name:'Aptos',size,bold:true,color:{argb:'FF'+fg}};c.alignment={vertical:'middle',horizontal:'left',indent:1};};
-    merged('A1:I2','XCMG  |  CONTROL     •     GESTÃO DE PESSOAS',navy,white,14);ws.getRow(1).height=24;ws.getRow(2).height=15;
-    merged('A3:I4','RELATÓRIO EXECUTIVO DE EFETIVO',navy,white,17);ws.getRow(3).height=25;ws.getRow(4).height=17;
-    const ativos=dados.filter(r=>String(r.Status).trim().toUpperCase()==='ATIVO').length;
-    const dataEmissao=new Date().toLocaleString('pt-BR');
-    merged('A5:C5','TOTAL DE COLABORADORES: '+dados.length,'EAF2F8',ink,11);
-    merged('D5:F5','ATIVOS: '+ativos,'DCFCE7','166534',11);
-    merged('G5:I5','DEMAIS SITUAÇÕES: '+(dados.length-ativos),'FCE8E6','9F2828',11);
-    ws.getRow(5).height=28;
-    merged('A6:I6','Emissão: '+dataEmissao+'     |     Dados conforme filtros aplicados no Efetivo','F2F6FA',ink,10);ws.getRow(6).height=24;
-    ws.getRow(7).height=12;
-    const headers=Object.keys(dados[0]);const head=ws.getRow(8);head.values=headers;head.height=31;
+    const headers=Object.keys(dados[0]);const head=ws.getRow(1);head.values=headers;head.height=31;
     head.eachCell(c=>{c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+green}};c.font={name:'Aptos',size:10,bold:true,color:{argb:'FF071E13'}};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};c.border={bottom:{style:'medium',color:{argb:'FF167C38'}}};});
-    dados.forEach((item,i)=>{const row=ws.addRow(headers.map(k=>String(item[k]??'')));row.height=24;row.eachCell((c,j)=>{c.font={name:'Aptos',size:10,color:{argb:'FF'+ink},bold:j===3};c.alignment={vertical:'middle',horizontal:(j===2||j===8)?'center':'left',wrapText:j===3||j===4};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(i%2?'EAF2F8':'FFFFFF')}};c.border={bottom:{style:'hair',color:{argb:'FFD8E3ED'}}};c.numFmt='@';});const st=row.getCell(9);const active=String(item.Status).toUpperCase()==='ATIVO';st.font={name:'Aptos',size:10,bold:true,color:{argb:'FF'+(active?'166534':'991B1B')}};st.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(active?'DCFCE7':'FEE2E2')}};st.alignment={horizontal:'center',vertical:'middle'};});
-    ws.autoFilter={from:{row:8,column:1},to:{row:8+dados.length,column:9}};
-    ws.printTitlesRow='1:8';ws.pageSetup.printArea='A1:I'+(8+dados.length);
-    ws.headerFooter.oddFooter='&LXCMG CONTROL  •  RELATÓRIO DE EFETIVO&CEmissão: '+new Date().toLocaleDateString('pt-BR')+'&RPágina &P de &N';
+    dados.forEach((item,i)=>{const row=ws.addRow(headers.map(k=>String(item[k]??'')));row.height=24;row.eachCell((c,j)=>{c.font={name:'Aptos',size:10,color:{argb:'FF'+ink},bold:j===3};c.alignment={vertical:'middle',horizontal:(j===2||j===8)?'center':'left',wrapText:j===3||j===4};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(i%2?light:'FFFFFF')}};c.border={bottom:{style:'hair',color:{argb:'FFD8E3ED'}}};c.numFmt='@';});const st=row.getCell(9);const active=String(item.Status).toUpperCase()==='ATIVO';st.font={name:'Aptos',size:10,bold:true,color:{argb:'FF'+(active?'166534':'991B1B')}};st.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF'+(active?'DCFCE7':'FEE2E2')}};st.alignment={horizontal:'center',vertical:'middle'};});
+    ws.autoFilter={from:{row:1,column:1},to:{row:1+dados.length,column:9}};
+    ws.printTitlesRow='1:1';ws.pageSetup.printArea='A1:I'+(1+dados.length);
+    ws.headerFooter.oddFooter='&LXCMG CONTROL  •  EFETIVO&CEmissão: '+new Date().toLocaleDateString('pt-BR')+'&RPágina &P de &N';
     const buffer=await wb.xlsx.writeBuffer();const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`XCMG_Efetivo_${hoje()}.xlsx`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
   }catch(error){console.error('Erro ao gerar relatório de efetivo:',error);alert('Não foi possível gerar o relatório formatado. '+(error.message||''));}
