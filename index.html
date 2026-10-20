@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
   <link rel="stylesheet" href="css/style.css?v=6.12.07">
-</head>
+<style>.wa-filtros{display:grid;grid-template-columns:minmax(180px,1.3fr) minmax(220px,1fr);gap:10px;margin:12px 0}.wa-motivos{position:relative;border:1px solid #31516b;border-radius:8px;background:#102c43;color:#fff}.wa-motivos summary{padding:12px;cursor:pointer;font-weight:600}.wa-motivos-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}.wa-motivos-lista label{display:flex;align-items:center;gap:6px;font-size:12px}.wa-motivos-acoes{display:flex;gap:8px;padding:0 10px 10px}.wa-motivos-acoes button{font-size:12px;padding:6px 10px}.wa-datas{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wa-datas label{font-size:12px;color:#cbd9e4}.wa-datas input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border-radius:7px;border:1px solid #31516b;background:#102c43;color:#fff;color-scheme:dark}@media(max-width:650px){.wa-filtros{grid-template-columns:1fr}.wa-motivos-lista{grid-template-columns:1fr 1fr}.wa-datas{grid-template-columns:1fr 1fr}}</style></head>
 <body>
 <div id="loginScreen" class="login-screen login-corporate">
   <section class="login-hero" aria-label="XCMG Control">
@@ -439,7 +439,7 @@
     </section>
 
     <section id="mensagem" class="page">
-      <article class="panel"><h2>Mensagem para WhatsApp</h2><p class="section-subtitle">Relatório automático da data selecionada.</p><div class="actions"><button id="btnGerar" class="primary">Gerar mensagem</button><button id="btnCopiar" class="success">Copiar texto</button><button id="btnWhatsApp" class="success">Abrir no WhatsApp</button></div><pre id="mensagemGerada" class="message-box"></pre><div id="statusMensagem" class="status"></div></article>
+      <article class="panel"><h2>Mensagem para WhatsApp</h2><p class="section-subtitle">Selecione os motivos e o período do relatório.</p><div class="wa-filtros"><details class="wa-motivos"><summary id="waMotivosResumo">Motivos: todos selecionados</summary><div id="waMotivosLista" class="wa-motivos-lista"></div><div class="wa-motivos-acoes"><button type="button" id="waMarcarTodos">Marcar todos</button><button type="button" id="waLimparMotivos">Limpar</button></div></details><div class="wa-datas"><label>Data inicial<input type="date" id="waDataInicio"></label><label>Data final<input type="date" id="waDataFim"></label></div></div><div class="actions"><button id="btnGerar" class="primary">Gerar mensagem</button><button id="btnCopiar" class="success">Copiar texto</button><button id="btnWhatsApp" class="success">Abrir no WhatsApp</button></div><pre id="mensagemGerada" class="message-box"></pre><div id="statusMensagem" class="status"></div></article>
     </section>
 
 
@@ -619,7 +619,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="js/app.js?v=6.12.09"></script>
+<script src="js/app.js?v=6.12.10"></script>
 <script>
 (function(){
  const mobile=()=>window.matchMedia('(max-width: 700px)').matches;
