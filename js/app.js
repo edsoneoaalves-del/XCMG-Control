@@ -1296,6 +1296,40 @@ function renderizarProgramacaoFerias(){
   try{renderizarPendenciasFerias()}catch(e){console.warn('Pendências de férias não renderizadas:',e)}
 }
 
+
+// Exportação corporativa única para Registros, Homem x Frota e as duas abas de Férias.
+async function exportarPlanilhaCorporativa(livro,nomeArquivo){
+  if(!window.ExcelJS){alert('A biblioteca ExcelJS não carregou. Verifique a conexão e tente novamente.');return;}
+  try{
+    const novo=new ExcelJS.Workbook();novo.creator='XCMG Control';
+    livro.SheetNames.forEach(nome=>{
+      const origem=livro.Sheets[nome];
+      const linhas=XLSX.utils.sheet_to_json(origem,{header:1,defval:'',raw:false});
+      const cabecalho=nome==='PENDÊNCIAS E PRÓXIMOS'?4:0;
+      const qtd=Math.max(1,...linhas.map(l=>l.length));
+      const aba=novo.addWorksheet(nome,{views:[{state:'frozen',ySplit:cabecalho+1}],pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:0.2,right:0.2,top:0.4,bottom:0.4,header:0.15,footer:0.15}}});
+      const larguras=origem['!cols']||[];
+      aba.columns=Array.from({length:qtd},(_,i)=>({width:Math.min(48,Math.max(13,larguras[i]?.wch||Math.max(15,...linhas.slice(0,50).map(r=>String(r[i]??'').length+2))))}));
+      linhas.forEach((valores,i)=>{
+        const row=aba.addRow(valores.map(v=>v==null?'':String(v)));row.height=i===cabecalho?30:24;
+        row.eachCell({includeEmpty:true},(c,j)=>{
+          c.numFmt='@';c.font={name:'Aptos',size:10,color:{argb:'FF172B40'},bold:i===cabecalho};
+          c.alignment={vertical:'middle',wrapText:true};
+          c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i===cabecalho?'FF28C65B':i%2===0?'FFEAF2F8':'FFFFFFFF'}};
+          if(i===cabecalho){c.font={name:'Aptos',size:10,bold:true,color:{argb:'FF071E13'}};c.alignment={vertical:'middle',horizontal:'center',wrapText:true};}
+          else if(/^(ativo|disponível|programado|realizado)$/i.test(String(c.value))){c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFD9FBE5'}};c.font={name:'Aptos',size:10,bold:true,color:{argb:'FF166534'}};}
+          else if(/^(inativo|ausente|vencida|férias vencidas)$/i.test(String(c.value))){c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFEE2E2'}};c.font={name:'Aptos',size:10,bold:true,color:{argb:'FF991B1B'}};}
+        });
+      });
+      if(linhas.length>cabecalho+1)aba.autoFilter={from:{row:cabecalho+1,column:1},to:{row:linhas.length,column:qtd}};
+      aba.printTitlesRow=`${cabecalho+1}:${cabecalho+1}`;
+      aba.pageSetup.printArea=`A1:${aba.getColumn(qtd).letter}${Math.max(1,linhas.length)}`;
+      aba.headerFooter.oddFooter='&LXCMG CONTROL&CPágina &P de &N';
+    });
+    const buffer=await novo.xlsx.writeBuffer(),url=URL.createObjectURL(new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    const link=document.createElement('a');link.href=url;link.download=nomeArquivo;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(error){console.error('Erro na exportação corporativa:',error);alert('Não foi possível gerar o Excel. '+(error.message||''));}
+}
 function exportarFeriasExcel(){if(!exigirPermissao('ferias_exportar'))return;
   if(!window.XLSX){alert('A biblioteca de planilha não foi carregada. Verifique a conexão com a internet.');return}
   const refPainel=$('dataPainel')?.value||hoje();
@@ -1340,7 +1374,7 @@ function exportarFeriasExcel(){if(!exigirPermissao('ferias_exportar'))return;
   XLSX.utils.book_append_sheet(wb,wsPend,'PENDÊNCIAS E PRÓXIMOS');
 
   const sufixo=filtro==='Todos'?'TODAS':normalizarTexto(filtro).replace(/[^A-Z0-9]+/g,'_').replace(/^_|_$/g,'');
-  XLSX.writeFile(wb,`XCMG_Ferias_${sufixo}_${refPainel}.xlsx`);
+  exportarPlanilhaCorporativa(wb,`XCMG_Ferias_${sufixo}_${refPainel}.xlsx`);
 }
 
 function detalheRegistro(r){return [r.motivo,r.descricao,r.cid?`CID: ${r.cid}`:'',r.observacao].filter(Boolean).join(' • ')}
@@ -1439,7 +1473,7 @@ function gerarPlanilhaExcel(){if(!exigirPermissao('registros_exportar'))return;
   const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'REGISTROS');
   const dataPainel=$('dataPainel')?.value||hoje();
-  XLSX.writeFile(wb,`XCMG_Registros_${dataPainel}.xlsx`)
+  exportarPlanilhaCorporativa(wb,`XCMG_Registros_${dataPainel}.xlsx`)
 }
 function carregarConfig(){$('turma').value=config.turma||'Turma D';$('efetivoTotal').value=efetivoAtual();$('nomeSistema').value=config.nomeSistema||'XCMG Control';$('desenvolvedor').value=config.desenvolvedor||'Edson de Oliveira Alves';$('estiloSimbolos').value=config.estiloSimbolos||'completo'}
 async function salvarConfig(){if(!exigirPermissao('configuracoes_alterar'))return;const nova={turma:$('turma').value.trim()||'Turma D',efetivoTotal:efetivoAtual(),nomeSistema:$('nomeSistema').value.trim()||'XCMG Control',desenvolvedor:$('desenvolvedor').value.trim()||'Edson de Oliveira Alves',estiloSimbolos:$('estiloSimbolos').value||'completo',periodosFechamento:normalizarPeriodosFechamento()};const payload={id:1,turma:nova.turma,efetivo_total:nova.efetivoTotal,nome_sistema:nova.nomeSistema,desenvolvedor:nova.desenvolvedor,estilo_simbolos:nova.estiloSimbolos,periodos_fechamento:nova.periodosFechamento};if(!estaOnline()){config=nova;gravarLocal(CFG_KEY,config);adicionarFilaOffline({entidade:'config',operacao:'upsert',dados:payload});$('statusConfig').textContent='Configurações salvas offline.';atualizarTudo();return}const {error}=await db.from('xcmg_config').upsert(payload);if(error){config=nova;gravarLocal(CFG_KEY,config);adicionarFilaOffline({entidade:'config',operacao:'upsert',dados:payload});$('statusConfig').textContent='Salvo neste aparelho; sincronização pendente.';atualizarTudo();return}config=nova;gravarLocal(CFG_KEY,config);$('statusConfig').textContent='Configurações salvas e sincronizadas.';atualizarTudo();setTimeout(()=>$('statusConfig').textContent='',2500)}
@@ -1570,7 +1604,7 @@ async function hfImportar(){if(!exigirPermissao('homem_frota_importar','Você n�
     if(estaOnline()&&db){try{const payload=homemFrota.map(p=>({area:p.area,matricula:p.matricula||null,nome_completo:p.nome_completo||null,funcao:p.funcao,equipamento:p.equipamento,observacao:p.observacao||null,updated_at:new Date().toISOString()}));const {error}=await db.from(HF_TABLE).upsert(payload,{onConflict:'area,funcao,equipamento'});if(error)throw error;hfNuvemDisponivel=true;await carregarHomemFrotaNuvem()}catch(e){hfNuvemDisponivel=false;console.warn(e)}}
     st.textContent=`Importação concluída: ${novos} nova(s), ${atualizados} atualizada(s)${ignorados?` e ${ignorados} ignorada(s) por falta de Área/Função/Equipamento`:''}.`;
   }catch(e){console.error(e);st.textContent='Não foi possível importar a planilha.'}}
-function hfExportar(){if(!exigirPermissao('homem_frota_exportar'))return;const data=$('dataPainel')?.value||hoje();const rows=homemFrota.map(p=>{const a=hfAusencia(p,data);return {'Área':p.area,'Matrícula':p.matricula||'','Nome completo':hfNomeAtual(p)||'','Função':p.funcao,'Equipamento':p.equipamento,'Situação':a.status==='DISPONIVEL'?'Disponível':a.status==='AUSENTE'?`Ausente - ${a.motivo}`:'Pendente - Sem profissional','Observação':p.observacao||''}});const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Homem x Frota');XLSX.writeFile(wb,`Homem_x_Frota_${data}.xlsx`)}
+function hfExportar(){if(!exigirPermissao('homem_frota_exportar'))return;const data=$('dataPainel')?.value||hoje();const rows=homemFrota.map(p=>{const a=hfAusencia(p,data);return {'Área':p.area,'Matrícula':p.matricula||'','Nome completo':hfNomeAtual(p)||'','Função':p.funcao,'Equipamento':p.equipamento,'Situação':a.status==='DISPONIVEL'?'Disponível':a.status==='AUSENTE'?`Ausente - ${a.motivo}`:'Pendente - Sem profissional','Observação':p.observacao||''}});const ws=XLSX.utils.json_to_sheet(rows),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Homem x Frota');exportarPlanilhaCorporativa(wb,`Homem_x_Frota_${data}.xlsx`)}
 
 
 // ===== MÓDULO ATIVOS v6.12.00 =====
