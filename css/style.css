@@ -7045,3 +7045,30 @@ body.user-editor-open{overflow:hidden}
  #ferias .vacation-alert-chip{padding:3px 6px!important;font-size:.57rem!important}
  #ferias .vacation-management-table tr.vacation-detail-row>td{padding:9px 10px!important}
 }
+
+/* v5.3 — cartões executivos expansíveis, EXCLUSIVAMENTE celular */
+.vacation-mobile-expand{display:none!important}
+@media(max-width:767px){
+ #ferias .vacation-management-table tr.vacation-main-row{grid-template-columns:minmax(0,1fr) auto!important;gap:6px 8px!important;padding:11px 12px!important;margin-bottom:8px!important;position:relative!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td{padding:0!important;margin:0!important;border:0!important;line-height:1.25!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td::before{display:none!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(3){grid-column:1/-1!important;order:-30!important;position:relative!important;padding-right:32px!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(3) strong{font-size:.81rem!important;line-height:1.3!important;padding-right:22px!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(2){grid-column:1/-1!important;order:-29!important;font-size:.66rem!important;color:#9cb8ce!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(2)::before{display:inline!important;content:'Matrícula '!important;font-size:inherit!important;letter-spacing:0!important;text-transform:none!important;font-weight:400!important;margin:0!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(5){grid-column:1!important;order:-28!important;align-self:center!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(6){grid-column:2!important;order:-28!important;align-self:center!important;text-align:right!important;font-size:.67rem!important;white-space:nowrap!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(6)::after{content:' — '!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(7){grid-column:2!important;order:-27!important;text-align:right!important;font-size:.67rem!important;white-space:nowrap!important;margin-top:-5px!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(8){grid-column:1!important;order:-27!important;align-self:center!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(1),#ferias .vacation-management-table tr.vacation-main-row>td:nth-child(4),#ferias .vacation-management-table tr.vacation-main-row>td:nth-child(9){display:none!important}
+ #ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(1),#ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(4),#ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(9){display:block!important;grid-column:1/-1!important;order:1!important;padding-top:7px!important;border-top:1px solid rgba(143,179,207,.18)!important}
+ #ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(1)::before{display:block!important;content:'Área'!important}
+ #ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(4)::before{display:block!important;content:'Função'!important}
+ #ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded>td:nth-child(9)::before{display:block!important;content:'Ações'!important}
+ #ferias .vacation-mobile-expand{display:flex!important;position:absolute!important;right:0!important;top:0!important;width:29px!important;height:29px!important;align-items:center!important;justify-content:center!important;background:transparent!important;border:0!important;color:#a9c7dd!important;font-size:23px!important;cursor:pointer!important;padding:0!important}
+ #ferias .vacation-details-toggle{display:none!important}
+ #ferias .vacation-management-table tr.vacation-main-row.vacation-mobile-expanded .vacation-details-toggle{display:inline-flex!important;margin-top:7px!important}
+ #ferias .vacation-alert-chips{display:flex!important;gap:3px!important;flex-wrap:wrap!important}
+ #ferias .vacation-alert-chip{font-size:.57rem!important;padding:3px 6px!important}
+}
