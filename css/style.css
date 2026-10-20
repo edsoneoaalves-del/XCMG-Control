@@ -6942,3 +6942,29 @@ body.user-editor-open{overflow:hidden}
  #colaboradores.ef-mobile-more-open .effective-actions{display:flex!important;margin-top:8px!important}
  #colaboradores.ef-mobile-more-open .effective-actions #btnCopiarEfetivo{width:100%!important;min-height:40px!important;font-size:13px!important}
 }
+
+/* Homem x Frota: lista executiva exclusiva para celulares */
+.hf-mobile-list{display:none}
+@media(max-width:767px){
+ #homemfrota #hfLista{display:none!important}
+ #homemfrota .hf-mobile-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+ #homemfrota .hf-mobile-card{background:#0b2539;border:1px solid rgba(130,175,208,.28);border-radius:13px;overflow:hidden;color:#eef6ff}
+ #homemfrota .hf-mobile-card>summary{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:82px;padding:12px;cursor:pointer;list-style:none}
+ #homemfrota .hf-mobile-card>summary::-webkit-details-marker{display:none}
+ #homemfrota .hf-mobile-head{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+ #homemfrota .hf-mobile-head>strong{font-size:16px;color:#f4f9ff}
+ #homemfrota .hf-mobile-person{font-size:12px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+ #homemfrota .hf-mobile-head>small{font-size:11px;color:#9bb8cc}
+ #homemfrota .hf-mobile-side{display:flex;align-items:flex-end;flex-direction:column;gap:8px;flex-shrink:0;max-width:45%}
+ #homemfrota .hf-mobile-side .hf-status{font-size:10px;white-space:normal;text-align:center;padding:5px 7px}
+ #homemfrota .hf-mobile-chevron{font-size:19px;color:#a4c4da}
+ #homemfrota .hf-mobile-card[open] .hf-mobile-chevron{transform:rotate(180deg)}
+ #homemfrota .hf-mobile-details{padding:12px;border-top:1px solid rgba(130,175,208,.22);display:grid;grid-template-columns:1fr 1fr;gap:12px}
+ #homemfrota .hf-mobile-details>div:not(.hf-mobile-actions){display:flex;flex-direction:column;gap:4px;min-width:0;font-size:12px;overflow-wrap:anywhere}
+ #homemfrota .hf-mobile-details small{font-size:10px;text-transform:uppercase;color:#93b1c7}
+ #homemfrota .hf-mobile-details>div:first-child{grid-column:1/-1}
+ #homemfrota .hf-mobile-actions{grid-column:1/-1;display:flex;flex-direction:column;gap:7px}
+ #homemfrota .hf-mobile-actions strong{font-size:11px;text-transform:uppercase;color:#93b1c7}
+ #homemfrota .hf-mobile-actions button{min-height:38px;padding:8px 12px;border-radius:9px;background:#193a53;border:1px solid #355873;color:#f4f9ff;text-align:left;font-size:12px}
+ #homemfrota .hf-mobile-actions button.danger-text{color:#ffb6b6}
+}
