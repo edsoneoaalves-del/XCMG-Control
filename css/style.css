@@ -7015,3 +7015,33 @@ body.user-editor-open{overflow:hidden}
  #homemfrota .hf-heading-actions #btnNovaPosicaoHF{width:auto!important;min-height:34px!important;padding:6px 9px!important;font-size:11px!important}
  #homemfrota .hf-heading-actions #btnAbrirImportacaoHF,#homemfrota .hf-heading-actions #btnExportarHF,#homemfrota.hf-show-more .hf-heading-actions #btnAbrirImportacaoHF,#homemfrota.hf-show-more .hf-heading-actions #btnExportarHF{display:inline-flex!important;align-items:center!important;justify-content:center!important;position:static!important;width:auto!important;min-height:34px!important;padding:6px 9px!important;font-size:11px!important;border-radius:8px!important}
 }
+
+/* XCMG Control — Férias executivo compacto, somente celular (v5.2) */
+@media (max-width:900px){
+ #ferias .vacation-management-table tr.vacation-main-row{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:7px 10px!important;padding:11px 12px!important;margin-bottom:9px!important;
+  border-radius:13px!important;align-items:center!important;
+ }
+ #ferias .vacation-management-table tr.vacation-main-row>td::before{font-size:.54rem!important;margin-bottom:2px!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(3){
+  order:-20!important;grid-column:1/-1!important;margin:0!important;padding:0 0 5px!important;
+  border-bottom:1px solid rgba(143,179,207,.15)!important;
+ }
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(3)::before{display:none!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(3) strong{font-size:.83rem!important;line-height:1.25!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(1){order:-17!important;grid-column:1!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(2){order:-16!important;grid-column:2!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(4){order:-15!important;grid-column:1/-1!important;font-size:.66rem!important;color:var(--muted,#9db6c8)!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(4)::before{display:none!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(5){order:-14!important;grid-column:1/-1!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(6){order:-13!important;grid-column:1!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(7){order:-12!important;grid-column:2!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(8){order:-11!important;grid-column:1!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(9){order:-10!important;grid-column:2!important;align-self:end!important}
+ #ferias .vacation-management-table tr.vacation-main-row>td:nth-child(9)::before{display:none!important}
+ #ferias .vacation-details-toggle{margin:3px 0 0!important;padding:2px 0!important;font-size:.67rem!important}
+ #ferias .vacation-actions-menu>summary{min-height:30px!important;padding:5px 8px!important;font-size:.68rem!important}
+ #ferias .vacation-alert-chip{padding:3px 6px!important;font-size:.57rem!important}
+ #ferias .vacation-management-table tr.vacation-detail-row>td{padding:9px 10px!important}
+}
