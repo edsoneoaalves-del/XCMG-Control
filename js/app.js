@@ -1248,7 +1248,7 @@ function renderizarPendenciasFerias(){
   const lista=base.filter(c=>{if(filtro!=='TODOS'&&c.tipo!==filtro)return false;if(!termo)return true;return normalizarTexto(`${c.matricula||''} ${c.nome_completo||''}`).includes(termo)});
   if(total)total.textContent=`${lista.length} de ${base.length} colaborador(es)`;
   if(!lista.length){el.innerHTML='<div class="empty">Nenhum colaborador encontrado para este filtro.</div>';return}
-  el.innerHTML=`<div class="vacation-control-table vacation-pending-table"><table><thead><tr><th>Matrícula</th><th>Colaborador</th><th>Período aquisitivo</th><th>Fim do concessivo</th><th>Situação</th><th>Ações</th></tr></thead><tbody>${lista.map(c=>{const classe=c.tipo==='VENCIDA'?'danger':c.tipo==='AGUARDANDO'?'waiting':c.tipo==='EMFERIAS'?'inprogress':c.tipo==='PROGRAMADO'?'programmed':c.tipo==='PREPROGRAMADO'?'preprogrammed':'pending';const acaoPrincipal=c.programacao?`<button class="secondary small-button" data-edit-vacation="${c.programacao.id}">Ver programação</button>`:(temPermissao('ferias_cadastrar')?`<button class="primary small-button" data-start-vacation="${c.id}" data-cycle-index="${c.ciclo.indice}">Programar</button>`:'');const acaoAjuste=temPermissao('ferias_cadastrar')?`<button class="secondary small-button" data-adjust-cycle="${c.id}">Ajustar período</button>`:'';return `<tr><td>${escapar(c.matricula||'—')}</td><td><strong>${escapar(String(c.nome_completo||'').toUpperCase())}</strong><small>${escapar(String(c.area||'').toUpperCase())}${c.funcao?' • '+escapar(String(c.funcao).toUpperCase()):''}</small></td><td><strong>${dataBR(c.ciclo.inicio)} – ${dataBR(c.ciclo.fim)}</strong></td><td>${dataBR(c.ciclo.limite)||'—'}</td><td><span class="vacation-pending-status ${classe}">${escapar(c.alerta)}</span></td><td><details class="vacation-actions-menu"><summary>Ações</summary><div class="vacation-actions-popover">${acaoPrincipal}${acaoAjuste}</div></details></td></tr>`}).join('')}</tbody></table></div>`;
+  el.innerHTML=`<div class="vacation-control-table vacation-pending-table"><table><thead><tr><th>Matrícula</th><th>Colaborador</th><th>Período aquisitivo</th><th>Fim do concessivo</th><th>Situação</th><th>Ações</th></tr></thead><tbody>${lista.map(c=>{const classe=c.tipo==='VENCIDA'?'danger':c.tipo==='AGUARDANDO'?'waiting':c.tipo==='EMFERIAS'?'inprogress':c.tipo==='PROGRAMADO'?'programmed':c.tipo==='PREPROGRAMADO'?'preprogrammed':'pending';const acaoPrincipal=c.programacao?`<button class="secondary small-button" data-edit-vacation="${c.programacao.id}">Ver programação</button>`:(temPermissao('ferias_cadastrar')?`<button class="primary small-button" data-start-vacation="${c.id}" data-cycle-index="${c.ciclo.indice}">Programar</button>`:'');const acaoAjuste=temPermissao('ferias_cadastrar')?`<button class="secondary small-button" data-adjust-cycle="${c.id}">Ajustar período</button>`:'';return `<tr><td>${escapar(c.matricula||'—')}</td><td><strong>${escapar(String(c.nome_completo||'').toUpperCase())}</strong><button type="button" class="vacation-pending-expand" aria-label="Expandir pendência" aria-expanded="false">⌄</button><small>${escapar(String(c.area||'').toUpperCase())}${c.funcao?' • '+escapar(String(c.funcao).toUpperCase()):''}</small></td><td><strong>${dataBR(c.ciclo.inicio)} – ${dataBR(c.ciclo.fim)}</strong></td><td>${dataBR(c.ciclo.limite)||'—'}</td><td><span class="vacation-pending-status ${classe}">${escapar(c.alerta)}</span></td><td><details class="vacation-actions-menu"><summary>Ações</summary><div class="vacation-actions-popover">${acaoPrincipal}${acaoAjuste}</div></details></td></tr>`}).join('')}</tbody></table></div>`;
 }
 function renderizarProgramacaoFerias(){
   const el=$('listaProgramacaoFerias'),total=$('totalProgramacaoFerias');if(!el)return;
@@ -2274,4 +2274,13 @@ document.addEventListener('click',function(e){
  const open=card.classList.toggle('vacation-mobile-expanded');
  btn.setAttribute('aria-expanded',String(open));
  btn.textContent=open?'⌃':'⌄';
+});
+
+// v5.4 — expansão visual das pendências no celular; sem alterar registros ou ações.
+document.addEventListener('click',function(e){
+ const btn=e.target.closest('.vacation-pending-expand');
+ if(!btn)return;
+ const tr=btn.closest('tr');if(!tr)return;
+ const open=tr.classList.toggle('vacation-pending-expanded');
+ btn.setAttribute('aria-expanded',String(open));btn.textContent=open?'⌃':'⌄';
 });
