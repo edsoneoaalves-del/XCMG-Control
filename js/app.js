@@ -954,6 +954,25 @@ function resumoSaldoFerias(c,ciclo,ignorarId=''){
  const abono=parcelas.some(r=>['SIM','10','10 DIAS'].includes(String(r.abono||'').toUpperCase()))?10:0;
  return {gozados:programados,abono,saldo:Math.max(0,30-programados-abono),parcelas:parcelas.length};
 }
+// v6.6: alerta concessivo por saldo, sem impedir aquisição de novos períodos.
+function alertaLegalSaldoFerias(c,ciclo,ref=hoje()){
+ if(!c||!ciclo)return null;
+ const resumo=resumoSaldoFerias(c,ciclo);
+ const diasRestantes=diferencaDiasISO(dataISOFlex(ref)||hoje(),ciclo.limite);
+ const pendente=resumo.saldo>0;
+ return { ...resumo, diasRestantes, pendente, criticidade:!pendente?'QUITADO':diasRestantes<0?'VENCIDO':diasRestantes<resumo.saldo?'CRITICO':diasRestantes<=60?'ATENCAO':'REGULAR' };
+}
+function alertaPeriodosAnterioresFerias(c,ciclo){
+ if(!c||!ciclo)return[];
+ const anteriores=[];
+ for(let i=0;i<ciclo.indice;i++){
+  const anterior=cicloFeriasPorIndice(c.data_admissao,i);
+  if(!anterior)continue;
+  const saldo=alertaLegalSaldoFerias(c,anterior);
+  if(saldo?.pendente)anteriores.push({ciclo:anterior,...saldo});
+ }
+ return anteriores;
+}
 function atualizarSaldoFeriasFormulario(){
  const el=$('resumoSaldoFeriasCadastro');if(!el)return;
  const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio')?.value;
@@ -965,12 +984,26 @@ function atualizarSaldoFeriasFormulario(){
  const dias=Number($('feriasDias')?.value)||0;
  const abonoNovo=$('feriasAbono')?.value==='SIM'&&!anterior.abono?10:0;
  const restante=30-anterior.gozados-anterior.abono-dias-abonoNovo;
+ const anteriores=alertaPeriodosAnterioresFerias(c,ciclo);
+ const alertaAntigo=anteriores.length?`<div style="margin-top:7px;color:#fbbf24">⚠ ${anteriores.length} período(s) anterior(es) com saldo pendente. Priorize o mais antigo: ${anteriores[0].saldo} dias, prazo ${dataBR(anteriores[0].ciclo.limite)}.</div>`:'';
+ const alertaPrazo=alertaLegalSaldoFerias(c,ciclo);
+ const avisoConcessivo=alertaPrazo?.pendente&&alertaPrazo.criticidade!=='REGULAR'?`<div style="margin-top:5px;color:#fbbf24">⚠ Prazo concessivo: ${dataBR(ciclo.limite)} • ${alertaPrazo.criticidade}</div>`:'';
  const linhaEdicao=editandoFeriasId?`<div style="font-size:11px;opacity:.85;margin-top:5px">Ao salvar esta edição: <strong style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</strong></div>`:'';
  const linhaNova=!editandoFeriasId&&inicio?`<div style="font-size:11px;opacity:.85;margin-top:5px">Após esta nova programação: <strong style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</strong></div>`:'';
- el.innerHTML=`<strong>Resumo do período aquisitivo</strong><div style="display:flex;flex-wrap:wrap;gap:5px 16px;margin-top:4px"><span>Direito: <b>30 dias</b></span><span>Férias já programadas: <b>${registrado.gozados} dias</b></span><span>Abono registrado: <b>${registrado.abono} dias</b></span><span>Saldo disponível: <b style="color:#4ade80">${registrado.saldo} dias</b></span></div>${linhaEdicao}${linhaNova}`;
+ el.innerHTML=`<strong>Resumo do período aquisitivo</strong><div style="display:flex;flex-wrap:wrap;gap:5px 16px;margin-top:4px"><span>Direito: <b>30 dias</b></span><span>Férias já programadas: <b>${registrado.gozados} dias</b></span><span>Abono registrado: <b>${registrado.abono} dias</b></span><span>Saldo disponível: <b style="color:#4ade80">${registrado.saldo} dias</b></span></div>${linhaEdicao}${linhaNova}${avisoConcessivo}${alertaAntigo}`;
 }
 async function salvarFeriasManual(){
   if(!exigirPermissao(editandoFeriasId?'ferias_editar':'ferias_cadastrar'))return;const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio').value,dias=Number($('feriasDias').value),fim=$('feriasFim').value,retorno=$('feriasRetorno').value;if(!c||!inicio||!fim){alert('Selecione o colaborador e informe a data de início.');return}const validacaoEscala=validarInicioFeriasNaEscala(c,inicio);if(!validacaoEscala.valido){alert(validacaoEscala.mensagem);$('feriasInicio')?.focus();return}let cicloPlanejado=cicloProgramacaoSelecionado;/* v6.12.07.15: valida o ciclo pela data informada, evitando que uma programação já existente faça o sistema avançar indevidamente para o ciclo seguinte. */if(c?.data_admissao&&inicio){const cicloSelecionadoValido=cicloPlanejado&&inicio>=cicloPlanejado.inicioConcessao&&inicio<=cicloPlanejado.limite;if(!cicloSelecionadoValido){cicloPlanejado=null;for(let i=0;i<80;i++){const cx=cicloFeriasPorIndice(c.data_admissao,i);if(cx&&inicio>=cx.inicioConcessao&&inicio<=cx.limite){cicloPlanejado=cx;break}}}}if(!cicloPlanejado)cicloPlanejado=cicloPendenteFerias(c,$('dataPainel')?.value||hoje());const primeiroDiaPermitido=cicloPlanejado?.inicioConcessao||'';if(primeiroDiaPermitido&&inicio<primeiroDiaPermitido){alert(`Data inválida: o período aquisitivo termina em ${dataBR(cicloPlanejado.fim)}. Para este ciclo, as férias podem iniciar a partir de ${dataBR(primeiroDiaPermitido)}.`);$('feriasInicio')?.focus();return}
+  // Trava inteligente: o novo período continua existindo; para programar o mais recente
+  // com saldo antigo, exige justificativa explícita do responsável.
+  const antigosPendentes=alertaPeriodosAnterioresFerias(c,cicloPlanejado);
+  let justificativaPeriodoAnterior='';
+  if(antigosPendentes.length){
+    const antigo=antigosPendentes[0];
+    const motivo=prompt(`ATENÇÃO: existe saldo de ${antigo.saldo} dia(s) no período ${dataBR(antigo.ciclo.inicio)} a ${dataBR(antigo.ciclo.fim)}, com prazo concessivo em ${dataBR(antigo.ciclo.limite)}. Priorize esse saldo. Para continuar no período mais recente, informe a justificativa administrativa:`);
+    if(!motivo?.trim()){alert('Operação cancelada: justificativa obrigatória para priorizar período mais recente.');return}
+    justificativaPeriodoAnterior=motivo.trim();
+  }
   // Permite parcelas adicionais no mesmo período, respeitando o saldo.
   const saldoCiclo=resumoSaldoFerias(c,cicloPlanejado,editandoFeriasId);
   const abonoAdicional=$('feriasAbono').value==='SIM'&&!saldoCiclo.abono?10:0;
@@ -982,6 +1015,7 @@ async function salvarFeriasManual(){
   if(erroPeriodos){alert('Não foi possível validar duplicidades no banco. Tente novamente.');return}
   const duplicado=(periodosExistentes||[]).find(r=>String(r.id)!==String(editandoFeriasId||'')&&normalizarTexto(r.status_aprovacao)!=='cancelado'&&dataISOFlex(r.inicio)<=fim&&dataISOFlex(r.fim)>=inicio);
   if(duplicado){alert(`Programação não salva: já existem férias para esta matrícula entre ${dataBR(duplicado.inicio)} e ${dataBR(duplicado.fim)}. Edite ou exclua o registro existente.`);return}
+  if(justificativaPeriodoAnterior)justificativa=[justificativa,`Período anterior pendente: ${justificativaPeriodoAnterior}`].filter(Boolean).join(' | ');
   const payload=payloadProgramacaoFerias({colaborador_id:c.id,nome_completo:c.nome_completo,matricula:c.matricula,funcao:c.funcao,area:c.area,data_admissao:c.data_admissao,inicio,fim,retorno,dias,abono:$('feriasAbono').value,decimo_terceiro:$('feriasDecimo').value,status_aprovacao:'PRÉ-PROGRAMADO',observacao:$('feriasObservacao').value.trim(),justificativa_conflito:justificativa,origem:'aplicativo'});
   let data,error,acao='Programação cadastrada',anterior='';if(editandoFeriasId){
     // Edição é exclusivamente UPDATE pelo ID original. Nunca INSERT nem UPSERT.
@@ -1295,7 +1329,7 @@ function renderizarPendenciasFerias(){
       }
     }else if(ciclo.inicioConcessao>refPainel){tipo='AGUARDANDO';prioridade=5;ordem=diasAbertura??99999;alerta=`AGUARDANDO ABERTURA • ${diasAbertura} DIA(S)`}
     else if(diasLimite!==null){if(diasLimite<0){tipo='VENCIDA';prioridade=1;ordem=diasLimite;alerta=`FÉRIAS VENCIDAS • ${Math.abs(diasLimite)} DIA(S)`}else if(diasLimite<=60)alerta=`PROGRAMAÇÃO URGENTE • ${diasLimite} DIA(S) PARA O FIM DO CONCESSIVO`;else if(diasLimite<=90)alerta=`PROGRAMAÇÃO PENDENTE • ${diasLimite} DIA(S)`}
-    return{...c,ciclo,programacao:acompanhamento.programacao,alerta,tipo,prioridade,ordem};
+    const saldoLegal=alertaLegalSaldoFerias(c,ciclo,refPainel);if(saldoLegal?.pendente){alerta+=` • SALDO ${saldoLegal.saldo} DIA(S)`;if(saldoLegal.criticidade==='VENCIDO'||saldoLegal.criticidade==='CRITICO'){tipo='VENCIDA';prioridade=1}}return{...c,ciclo,programacao:acompanhamento.programacao,alerta,tipo,prioridade,ordem};
   }).filter(Boolean).sort((a,b)=>a.prioridade-b.prioridade||a.ordem-b.ordem||String(a.nome_completo||'').localeCompare(String(b.nome_completo||''),'pt-BR'));
   const set=(id,v)=>{const n=$(id);if(n)n.textContent=String(v)};
   set('kpiPendVencidas',base.filter(x=>x.tipo==='VENCIDA').length);set('kpiPendProgramacao',base.filter(x=>x.tipo==='PENDENTE').length);set('kpiPendPreProgramado',base.filter(x=>x.tipo==='PREPROGRAMADO').length);set('kpiPendProgramado',base.filter(x=>x.tipo==='PROGRAMADO').length);set('kpiPendEmFerias',base.filter(x=>x.tipo==='EMFERIAS').length);set('kpiPendAguardando',base.filter(x=>x.tipo==='AGUARDANDO').length);
