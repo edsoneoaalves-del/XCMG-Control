@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="pt-BR" data-theme="dark">
 <head>
+<style>
+/* Ocorrências: campos legados permanecem no DOM para preservar integrações e histórico. */
+#ocorrencias .occ-field-local, #ocorrencias label:has(> #cid), #ocorrencias label:has(> #atestadoFisico), #ocorrencias label:has(> #enviadoGrupo) {display:none!important}
+#ocorrencias .occ-field-equipment {display:none!important}
+#ocorrencias .occurrence-workforce-mode .occ-field-equipment {display:flex!important}
+</style>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#061625">
@@ -189,8 +195,9 @@
           <label><span>Motivo da ocorrência</span><input id="motivo" type="text" list="listaMotivosRH" autocomplete="off" placeholder="Primeiro selecione a categoria"><datalist id="listaMotivosRH"></datalist><small class="field-help">Os motivos acompanham a categoria escolhida e são usados em todo o aplicativo.</small><button id="btnGerenciarMotivos" class="secondary small-button motive-manage-button" type="button">⚙ Gerenciar motivos</button></label>
           <label class="occ-field-standard"><span>Colaborador</span><select id="nome"><option value="">Selecione o colaborador</option></select><small class="field-help">Mostra o nome completo; os demais dados são preenchidos automaticamente.</small></label>
           <label class="occ-field-standard"><span>Matrícula</span><input id="matricula" type="text" readonly placeholder="Preenchida automaticamente"></label>
-          <label class="occ-field-standard"><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          
           <label class="occ-field-standard"><span>Área</span><input id="area" type="text" readonly placeholder="Preenchida automaticamente"></label>
+          <label class="occ-field-standard"><span>Função do colaborador</span><input id="funcaoColaborador" type="text" readonly placeholder="Preenchida automaticamente"></label>
           <label class="occ-field-equipment"><span>Equipamento</span><input id="funcao" type="text" placeholder="Ex.: GD 221, Munck, Prancha"></label>
           <label class="occ-field-standard occ-field-local"><span>Local</span><select id="local"><option value="">Não informado</option><option>Mina</option><option>Usina</option><option>Base Externa</option></select></label>
           <div class="occurrence-dates-group full">
