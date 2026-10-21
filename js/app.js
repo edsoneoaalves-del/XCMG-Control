@@ -681,7 +681,18 @@ async function exportarEfetivoExcel(){
     const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`XCMG_Efetivo_${hoje()}.xlsx`;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
   }catch(error){console.error('Erro ao gerar relatório de efetivo:',error);alert('Não foi possível gerar o relatório formatado. '+(error.message||''));}
 }
-async function copiarTabelaEfetivo(){if(!exigirPermissao('colaboradores_exportar'))return;const dados=linhasExportacaoEfetivo();if(!dados.length){alert('Não há colaboradores neste filtro.');return}const cab=Object.keys(dados[0]),texto=[cab.join('\t'),...dados.map(r=>cab.map(k=>r[k]).join('\t'))].join('\n');try{await navigator.clipboard.writeText(texto)}catch{const ta=document.createElement('textarea');ta.value=texto;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}$('statusAcoesEfetivo').textContent=`${dados.length} linha(s) copiadas. Pronto para colar no e-mail ou em uma planilha.`;setTimeout(()=>$('statusAcoesEfetivo').textContent='',4000)}
+async function copiarTabelaEfetivo(){
+  if(!exigirPermissao('colaboradores_exportar'))return;
+  const dados=linhasExportacaoEfetivo();
+  if(!dados.length){alert('Não há colaboradores neste filtro.');return}
+  const texto=dados.map(r=>[r['Matrícula'],r['Nome completo'],r['Função']].map(v=>String(v??'').trim()).join(' - ')).join('\n');
+  try{await navigator.clipboard.writeText(texto)}catch{
+    const ta=document.createElement('textarea');ta.value=texto;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();
+  }
+  $('statusAcoesEfetivo').textContent=`${dados.length} colaborador(es) copiado(s), sem cabeçalho.`;
+  setTimeout(()=>$('statusAcoesEfetivo').textContent='',4000);
+}
+
 async function abrirHistoricoEfetivo(id){const c=colaboradores.find(x=>String(x.id)===String(id));if(!c)return;$('subtituloHistoricoEfetivo').textContent=`${c.nome_completo} • Matrícula ${c.matricula||'não informada'}`;$('listaHistoricoEfetivo').innerHTML='<div class="empty">Carregando histórico...</div>';$('modalHistoricoEfetivo').classList.remove('hidden');if(!estaOnline()){$('listaHistoricoEfetivo').innerHTML='<div class="empty">O histórico detalhado requer conexão.</div>';return}const {data,error}=await db.from('xcmg_efetivo_historico').select('*').eq('colaborador_id',id).order('created_at',{ascending:false});if(error){$('listaHistoricoEfetivo').innerHTML='<div class="empty">Execute a migração do módulo Efetivo para visualizar o histórico.</div>';return}$('listaHistoricoEfetivo').innerHTML=data?.length?data.map(h=>`<div class="effective-history-row"><div><strong>${escapar(h.tipo)}</strong><span>${escapar(h.descricao||`${h.valor_anterior||'—'} → ${h.valor_novo||'—'}`)}</span>${h.motivo?`<small>Motivo: ${escapar(h.motivo)}</small>`:''}</div><time>${new Date(h.created_at).toLocaleString('pt-BR')}</time></div>`).join(''):'<div class="empty">Nenhuma movimentação registrada.</div>'}
 
 function dataPlanilhaISO(valor){
