@@ -427,12 +427,12 @@
                 <label class="full"><span>Função</span><input id="feriasFuncao" readonly placeholder="Automática"></label>
                 <label><span>Data de admissão</span><input id="feriasAdmissao" type="date" readonly></label>
                 <label><span>Início das férias</span><input id="feriasInicio" type="date"></label>
-                <label><span>Dias</span><select id="feriasDias"><option value="30">30 dias</option><option value="20">20 dias</option><option value="15">15 dias</option><option value="10">10 dias</option><option value="5">5 dias</option></select></label>
+                <label><span>Dias</span><input id="feriasDias" type="number" min="1" max="30" step="1" value="30" list="feriasDiasSugestoes" inputmode="numeric" placeholder="Informe os dias"><datalist id="feriasDiasSugestoes"><option value="30"></option><option value="20"></option><option value="15"></option><option value="14"></option><option value="10"></option><option value="6"></option><option value="5"></option></datalist></label>
                 <label><span>Data final</span><input id="feriasFim" type="date" readonly></label>
                 <label><span>Retorno</span><input id="feriasRetorno" type="date" readonly></label>
                 <label><span>Abono</span><select id="feriasAbono"><option>NÃO</option><option>SIM</option></select></label>
                 <label><span>1ª parcela do 13º</span><select id="feriasDecimo"><option>NÃO</option><option>SIM</option></select></label>
-                <label class="full"><span>Observação</span><input id="feriasObservacao" placeholder="Informação complementar"></label>
+                <div id="resumoSaldoFeriasCadastro" class="full" style="padding:10px 12px;border:1px solid #31526b;border-radius:10px;font-size:12px;line-height:1.6;color:#d8e7f4">Selecione o colaborador e o início para consultar o saldo.</div><label class="full"><span>Observação</span><input id="feriasObservacao" placeholder="Informação complementar"></label>
               </div>
               <div id="alertaCadastroFerias" class="vacation-form-alert hidden"></div>
               <div class="actions"><button id="btnSalvarFerias" class="primary" type="button">Salvar como PRÉ-PROGRAMADO</button><button id="btnCancelarFerias" class="secondary hidden" type="button">Cancelar edição</button></div>

@@ -937,10 +937,31 @@ function chaveCancelamentoFerias(r){
   const base=chaveNomeFerias(r?.nome_completo||r?.nome||'colaborador')||'colaborador';
   return `cancelado-${r?.id||Date.now()}-${base}`.slice(0,240);
 }
+// Controle de saldo por período aquisitivo: parcelas e abono contabilizados uma única vez.
+function resumoSaldoFerias(c,ciclo,ignorarId=''){
+ const registros=(programacaoFerias||[]).filter(r=>String(r.matricula||'')===String(c?.matricula||'')&&String(r.id)!==String(ignorarId||'')&&!['CANCELADO','NÃO APROVADO'].includes(String(r.status_aprovacao||'').toUpperCase()));
+ const parcelas=registros.filter(r=>{const ini=dataISOFlex(r.inicio);return ini&&ciclo&&ini>=ciclo.inicioConcessao&&ini<=ciclo.limite});
+ const gozados=parcelas.reduce((n,r)=>n+(Number(r.dias)||0),0);
+ const abono=parcelas.some(r=>['SIM','10','10 DIAS'].includes(String(r.abono||'').toUpperCase()))?10:0;
+ return {gozados,abono,saldo:Math.max(0,30-gozados-abono),parcelas:parcelas.length};
+}
+function atualizarSaldoFeriasFormulario(){
+ const el=$('resumoSaldoFeriasCadastro');if(!el)return;
+ const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio')?.value;
+ let ciclo=cicloProgramacaoSelecionado;
+ if(c?.data_admissao&&inicio){for(let i=0;i<80;i++){const x=cicloFeriasPorIndice(c.data_admissao,i);if(x&&inicio>=x.inicioConcessao&&inicio<=x.limite){ciclo=x;break}}}
+ if(!c||!ciclo){el.textContent='Selecione o colaborador e o início para consultar o saldo.';return}
+ const r=resumoSaldoFerias(c,ciclo,editandoFeriasId),dias=Number($('feriasDias')?.value)||0,abonoNovo=$('feriasAbono')?.value==='SIM'&&!r.abono?10:0;
+ const restante=30-r.gozados-r.abono-dias-abonoNovo;
+ el.innerHTML=`<strong>Saldo do período:</strong> ${r.saldo} dias · <strong>Já programados:</strong> ${r.gozados} dias · <strong>Abono:</strong> ${r.abono} dias · <strong>Após salvar:</strong> <b style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</b>`;
+}
 async function salvarFeriasManual(){
   if(!exigirPermissao(editandoFeriasId?'ferias_editar':'ferias_cadastrar'))return;const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio').value,dias=Number($('feriasDias').value),fim=$('feriasFim').value,retorno=$('feriasRetorno').value;if(!c||!inicio||!fim){alert('Selecione o colaborador e informe a data de início.');return}const validacaoEscala=validarInicioFeriasNaEscala(c,inicio);if(!validacaoEscala.valido){alert(validacaoEscala.mensagem);$('feriasInicio')?.focus();return}let cicloPlanejado=cicloProgramacaoSelecionado;/* v6.12.07.15: valida o ciclo pela data informada, evitando que uma programação já existente faça o sistema avançar indevidamente para o ciclo seguinte. */if(c?.data_admissao&&inicio){const cicloSelecionadoValido=cicloPlanejado&&inicio>=cicloPlanejado.inicioConcessao&&inicio<=cicloPlanejado.limite;if(!cicloSelecionadoValido){cicloPlanejado=null;for(let i=0;i<80;i++){const cx=cicloFeriasPorIndice(c.data_admissao,i);if(cx&&inicio>=cx.inicioConcessao&&inicio<=cx.limite){cicloPlanejado=cx;break}}}}if(!cicloPlanejado)cicloPlanejado=cicloPendenteFerias(c,$('dataPainel')?.value||hoje());const primeiroDiaPermitido=cicloPlanejado?.inicioConcessao||'';if(primeiroDiaPermitido&&inicio<primeiroDiaPermitido){alert(`Data inválida: o período aquisitivo termina em ${dataBR(cicloPlanejado.fim)}. Para este ciclo, as férias podem iniciar a partir de ${dataBR(primeiroDiaPermitido)}.`);$('feriasInicio')?.focus();return}
-  // v6.10.42 — proteção gerencial: uma nova programação não pode ocupar um ciclo já vinculado.
-  if(!editandoFeriasId&&cicloPlanejado){const existente=programacaoDoCicloFerias(c,cicloPlanejado,$('dataPainel')?.value||hoje());if(existente){const ex=existente.d||existente.r||{};alert(`Já existe uma programação de férias vinculada a este período aquisitivo (${dataBR(cicloPlanejado.inicio)} a ${dataBR(cicloPlanejado.fim)}).\n\nProgramação existente: ${dataBR(ex.inicio)} a ${dataBR(ex.fim)}.\n\nA nova programação não será salva para evitar duplicidade.`);return}}
+  // Permite parcelas adicionais no mesmo período, respeitando o saldo.
+  const saldoCiclo=resumoSaldoFerias(c,cicloPlanejado,editandoFeriasId);
+  const abonoAdicional=$('feriasAbono').value==='SIM'&&!saldoCiclo.abono?10:0;
+  if(saldoCiclo.abono&&$('feriasAbono').value==='SIM'){alert('O abono de 10 dias já foi registrado neste período aquisitivo. Selecione NÃO nesta nova parcela.');return}
+  if(!Number.isInteger(dias)||dias<1||dias+abonoAdicional>saldoCiclo.saldo){alert(`Saldo insuficiente neste período aquisitivo. Disponível: ${saldoCiclo.saldo} dias; solicitado: ${dias+abonoAdicional} dias (incluindo abono).`);return}
   const conflitos=conflitoFerias({id:editandoFeriasId,funcao:c.funcao,inicio,fim},editandoFeriasId),ante=diasAntecedenciaFerias(inicio);let justificativa='';if(conflitos.length||(ante>=0&&ante<60)){const motivo=prompt(`${conflitos.length?'Existe conflito com colaborador da mesma função.\n':''}${ante>=0&&ante<60?`A antecedência é de ${ante} dia(s), abaixo de 60.\n`:''}\nInforme uma justificativa para continuar:`);if(!motivo?.trim())return;justificativa=motivo.trim()}
   // Bloqueia sobreposição para a mesma matrícula também no banco, sem afetar conflitos de equipe.
   const {data:periodosExistentes,error:erroPeriodos}=await db.from(FERIAS_TABLE).select('id,inicio,fim,status_aprovacao').eq('matricula',String(c.matricula||'').trim());
@@ -1987,7 +2008,7 @@ $('listaColaboradores')?.addEventListener('click',e=>{const editarId=e.target.da
 $('btnFecharHistoricoEfetivo')?.addEventListener('click',()=>$('modalHistoricoEfetivo').classList.add('hidden'));$('modalHistoricoEfetivo')?.addEventListener('click',e=>{if(e.target===$('modalHistoricoEfetivo'))e.currentTarget.classList.add('hidden')});
 $('novoColaboradorCpf')?.addEventListener('input',e=>{let d=e.target.value.replace(/\D/g,'').slice(0,11);e.target.value=d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2')});
 $('feriasColaborador')?.addEventListener('change',preencherDadosFerias);
-$('feriasInicio')?.addEventListener('change',calcularDatasFerias);$('feriasDias')?.addEventListener('change',calcularDatasFerias);
+$('feriasInicio')?.addEventListener('change',calcularDatasFerias);$('feriasDias')?.addEventListener('change',calcularDatasFerias);$('feriasDias')?.addEventListener('input',calcularDatasFerias);['feriasDias','feriasAbono','feriasInicio','feriasColaborador'].forEach(id=>$(id)?.addEventListener('change',atualizarSaldoFeriasFormulario));$('feriasDias')?.addEventListener('input',atualizarSaldoFeriasFormulario);
 $('btnSalvarFerias')?.addEventListener('click',salvarFeriasManual);$('btnCancelarFerias')?.addEventListener('click',limparFormFerias);
 async function excluirProgramacaoFerias(id){
   if(!usuarioAtual?.administrador){alert('Somente o administrador pode excluir programações de férias.');return}
