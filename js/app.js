@@ -939,21 +939,35 @@ function chaveCancelamentoFerias(r){
 }
 // Controle de saldo por período aquisitivo: parcelas e abono contabilizados uma única vez.
 function resumoSaldoFerias(c,ciclo,ignorarId=''){
- const registros=(programacaoFerias||[]).filter(r=>String(r.matricula||'')===String(c?.matricula||'')&&String(r.id)!==String(ignorarId||'')&&!['CANCELADO','NÃO APROVADO'].includes(String(r.status_aprovacao||'').toUpperCase()));
- const parcelas=registros.filter(r=>{const ini=dataISOFlex(r.inicio);return ini&&ciclo&&ini>=ciclo.inicioConcessao&&ini<=ciclo.limite});
- const gozados=parcelas.reduce((n,r)=>n+(Number(r.dias)||0),0);
+ const matricula=String(c?.matricula||'').replace(/\D/g,'');
+ const id=String(c?.id||'');
+ const registros=(programacaoFerias||[]).map(dadosEfetivoFerias).filter(Boolean).filter(r=>{
+  const mesmaPessoa=(matricula&&String(r.matricula||'').replace(/\D/g,'')===matricula)||(id&&String(r.colaborador_id||'')===id);
+  const status=normalizarTexto(r.status_aprovacao||r.status||'');
+  return mesmaPessoa&&String(r.id)!==String(ignorarId||'')&&!['cancelado','nao aprovado','excluido'].includes(status);
+ });
+ const parcelas=registros.filter(r=>{
+  const ini=dataISOFlex(r.inicio);
+  return ini&&ciclo&&ini>=ciclo.inicioConcessao&&ini<=ciclo.limite;
+ });
+ const programados=parcelas.reduce((n,r)=>n+(Number(r.dias)||diasInclusivosISO(r.inicio,r.fim)||0),0);
  const abono=parcelas.some(r=>['SIM','10','10 DIAS'].includes(String(r.abono||'').toUpperCase()))?10:0;
- return {gozados,abono,saldo:Math.max(0,30-gozados-abono),parcelas:parcelas.length};
+ return {gozados:programados,abono,saldo:Math.max(0,30-programados-abono),parcelas:parcelas.length};
 }
 function atualizarSaldoFeriasFormulario(){
  const el=$('resumoSaldoFeriasCadastro');if(!el)return;
  const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio')?.value;
  let ciclo=cicloProgramacaoSelecionado;
- if(c?.data_admissao&&inicio){for(let i=0;i<80;i++){const x=cicloFeriasPorIndice(c.data_admissao,i);if(x&&inicio>=x.inicioConcessao&&inicio<=x.limite){ciclo=x;break}}}
+ if(c?.data_admissao&&inicio){const indice=indiceCicloFeriasDaData(c.data_admissao,inicio);if(indice!==null)ciclo=cicloFeriasPorIndice(c.data_admissao,indice)}
  if(!c||!ciclo){el.textContent='Selecione o colaborador e o início para consultar o saldo.';return}
- const r=resumoSaldoFerias(c,ciclo,editandoFeriasId),dias=Number($('feriasDias')?.value)||0,abonoNovo=$('feriasAbono')?.value==='SIM'&&!r.abono?10:0;
- const restante=30-r.gozados-r.abono-dias-abonoNovo;
- el.innerHTML=`<strong>Saldo do período:</strong> ${r.saldo} dias · <strong>Já programados:</strong> ${r.gozados} dias · <strong>Abono:</strong> ${r.abono} dias · <strong>Após salvar:</strong> <b style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</b>`;
+ const registrado=resumoSaldoFerias(c,ciclo);
+ const anterior=editandoFeriasId?resumoSaldoFerias(c,ciclo,editandoFeriasId):registrado;
+ const dias=Number($('feriasDias')?.value)||0;
+ const abonoNovo=$('feriasAbono')?.value==='SIM'&&!anterior.abono?10:0;
+ const restante=30-anterior.gozados-anterior.abono-dias-abonoNovo;
+ const linhaEdicao=editandoFeriasId?`<div style="font-size:11px;opacity:.85;margin-top:5px">Ao salvar esta edição: <strong style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</strong></div>`:'';
+ const linhaNova=!editandoFeriasId&&inicio?`<div style="font-size:11px;opacity:.85;margin-top:5px">Após esta nova programação: <strong style="color:${restante<0?'#f87171':'#4ade80'}">${restante} dias</strong></div>`:'';
+ el.innerHTML=`<strong>Resumo do período aquisitivo</strong><div style="display:flex;flex-wrap:wrap;gap:5px 16px;margin-top:4px"><span>Direito: <b>30 dias</b></span><span>Férias já programadas: <b>${registrado.gozados} dias</b></span><span>Abono registrado: <b>${registrado.abono} dias</b></span><span>Saldo disponível: <b style="color:#4ade80">${registrado.saldo} dias</b></span></div>${linhaEdicao}${linhaNova}`;
 }
 async function salvarFeriasManual(){
   if(!exigirPermissao(editandoFeriasId?'ferias_editar':'ferias_cadastrar'))return;const c=colaboradorFeriasSelecionado(),inicio=$('feriasInicio').value,dias=Number($('feriasDias').value),fim=$('feriasFim').value,retorno=$('feriasRetorno').value;if(!c||!inicio||!fim){alert('Selecione o colaborador e informe a data de início.');return}const validacaoEscala=validarInicioFeriasNaEscala(c,inicio);if(!validacaoEscala.valido){alert(validacaoEscala.mensagem);$('feriasInicio')?.focus();return}let cicloPlanejado=cicloProgramacaoSelecionado;/* v6.12.07.15: valida o ciclo pela data informada, evitando que uma programação já existente faça o sistema avançar indevidamente para o ciclo seguinte. */if(c?.data_admissao&&inicio){const cicloSelecionadoValido=cicloPlanejado&&inicio>=cicloPlanejado.inicioConcessao&&inicio<=cicloPlanejado.limite;if(!cicloSelecionadoValido){cicloPlanejado=null;for(let i=0;i<80;i++){const cx=cicloFeriasPorIndice(c.data_admissao,i);if(cx&&inicio>=cx.inicioConcessao&&inicio<=cx.limite){cicloPlanejado=cx;break}}}}if(!cicloPlanejado)cicloPlanejado=cicloPendenteFerias(c,$('dataPainel')?.value||hoje());const primeiroDiaPermitido=cicloPlanejado?.inicioConcessao||'';if(primeiroDiaPermitido&&inicio<primeiroDiaPermitido){alert(`Data inválida: o período aquisitivo termina em ${dataBR(cicloPlanejado.fim)}. Para este ciclo, as férias podem iniciar a partir de ${dataBR(primeiroDiaPermitido)}.`);$('feriasInicio')?.focus();return}
