@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="icons/icon-192-v61079.png">
   <link rel="manifest" href="manifest.json">
   <script>try{document.documentElement.dataset.theme=localStorage.getItem('xcmg_tema_v6')||'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
-  <link rel="stylesheet" href="css/style.css?v=6.12.21">
+  <link rel="stylesheet" href="css/style.css?v=6.12.22">
 <style>.wa-filtros{display:grid;grid-template-columns:minmax(180px,1.3fr) minmax(220px,1fr);gap:10px;margin:12px 0}.wa-motivos{position:relative;border:1px solid #31516b;border-radius:8px;background:#102c43;color:#fff}.wa-motivos summary{padding:12px;cursor:pointer;font-weight:600}.wa-motivos-lista{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px}.wa-motivos-lista label{display:flex;align-items:center;gap:6px;font-size:12px}.wa-motivos-acoes{display:flex;gap:8px;padding:0 10px 10px}.wa-motivos-acoes button{font-size:12px;padding:6px 10px}.wa-datas{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wa-datas label{font-size:12px;color:#cbd9e4}.wa-datas input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;border-radius:7px;border:1px solid #31516b;background:#102c43;color:#fff;color-scheme:dark}@media(max-width:650px){.wa-filtros{grid-template-columns:1fr}.wa-motivos-lista{grid-template-columns:1fr 1fr}.wa-datas{grid-template-columns:1fr 1fr}}</style><style id="wa-mobile-fix-v62">
 @media (max-width:767px){
  #mensagem .panel{min-width:0!important;max-width:100%!important;box-sizing:border-box!important;overflow:hidden!important;padding:12px!important}
@@ -522,6 +522,9 @@
 
           <div class="permissions-title-row"><h3>Permissões</h3><span class="critical-legend">● Acesso crítico</span></div>
           <div id="permissoesUsuario" class="permissions-groups">
+<details class="permission-group"><summary><span>Ativos</span><small>Cadastro e controle da frota</small></summary><div class="permission-items"><label><input type="checkbox" value="ativos_ver"><span>Visualizar ativos</span></label><label><input type="checkbox" value="ativos_cadastrar"><span>Cadastrar ativos</span></label><label><input type="checkbox" value="ativos_editar"><span>Editar ativos</span></label><label><input type="checkbox" value="ativos_importar"><span>Importar ativos</span></label><label><input type="checkbox" value="ativos_exportar"><span>Exportar ativos</span></label></div></details>
+<details class="permission-group"><summary><span>Exame Periódico</span><small>Vencimentos, programação e renovação</small></summary><div class="permission-items"><label><input type="checkbox" value="aso_ver"><span>Visualizar exames periódicos</span></label><label><input type="checkbox" value="aso_editar"><span>Cadastrar, editar, programar e confirmar realização / renovação</span></label><label><input type="checkbox" value="aso_exportar"><span>Exportar controle geral e solicitação mensal</span></label><label><input type="checkbox" value="aso_configurar"><span>Configurar regras de programação</span></label></div></details>
+
             <details class="permission-group" open>
               <summary><span>Dashboard</span><small>Visão geral do sistema</small></summary>
               <div class="permission-items">
@@ -650,7 +653,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="js/app.js?v=6.12.21"></script>
+<script src="js/app.js?v=6.12.22"></script>
 <script>
 (function(){
  const mobile=()=>window.matchMedia('(max-width: 700px)').matches;

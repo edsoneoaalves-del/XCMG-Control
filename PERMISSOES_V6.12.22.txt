@@ -1,0 +1,1 @@
+Novos grupos Ativos e Exame Periódico. Ativos passa a exigir autorização explícita; conceda aos usuários necessários. Exames usa permissões existentes aso_ver, aso_editar, aso_exportar; aso_configurar é nova. Histórico e renovação compartilham edição; exportações compartilham exportação. Ativos permanece local, sem segurança de servidor. Execute a migração após v6.12.21.
