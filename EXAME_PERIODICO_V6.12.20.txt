@@ -1,0 +1,1 @@
+v6.12.20: executar migração 6.12.19 (se pendente) e 6.12.20 antes de abrir. Sugestões recalculadas globalmente; reservas manuais e confirmadas preservadas. Conflitos manuais permitidos mediante confirmação. Configuração compartilhada via RPC. Domingos sempre excluídos.

@@ -1,0 +1,1 @@
+Execute primeiro supabase_migracao_v6.12.19_renovacao.sql no Supabase. Depois publique os arquivos. A migração substitui apenas a função de gravação, sem apagar registros. Realizado confirma a data efetiva e reinicia o ciclo. Renovado é exibido até 34 dias antes do vencimento, salvo agendamento confirmado.

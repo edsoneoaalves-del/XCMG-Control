@@ -1,0 +1,4 @@
+Alteração de nomenclatura do módulo ASO para Exame Periódico.
+Menu desktop e móvel, título, permissões visíveis, formulário e exportação atualizados.
+Identificadores internos, RPCs, permissões e banco de dados mantidos.
+Não requer migração SQL adicional.

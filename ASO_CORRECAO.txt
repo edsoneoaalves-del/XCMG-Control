@@ -1,0 +1,1 @@
+6.12.14: módulo ASO movido para dentro do escopo principal, antes da restauração de sessão. Nenhuma nova migração SQL. Teste a abertura e atualização do menu.

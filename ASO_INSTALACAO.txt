@@ -1,0 +1,9 @@
+XCMG CONTROL — módulo ASO
+1. Faça backup do banco e do projeto publicado.
+2. Execute supabase_migracao_v6.12.12_aso.sql no SQL Editor do Supabase existente.
+3. Publique o conteúdo deste projeto no mesmo ambiente de homologação primeiro.
+4. Entre como administrador; conceda as permissões ASO aos usuários autorizados.
+5. Cadastre as datas reais dos exames emitidos; nenhuma data foi inventada ou importada.
+6. Teste renovação, exportação, escala, permissões e sincronização antes de produção.
+O módulo exige conexão para leitura e gravação; não armazena dados ASO offline.
+Sugestão de data é calculada ao abrir/atualizar a lista, não é confirmação de agendamento.

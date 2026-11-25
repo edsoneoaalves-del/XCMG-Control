@@ -1,0 +1,1 @@
+Versão 6.12.18: Último exame e Exame previsto; exportação geral sem filtros e solicitação mensal por data prevista, excluindo realizados e aguardando emissão. Oito colunas, padrão Excel anterior. Sem alteração de banco. Validar no ambiente real antes da publicação.
