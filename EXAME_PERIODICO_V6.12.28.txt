@@ -1,0 +1,1 @@
+6.12.28: antecedência máxima padrão e compartilhada de 30 dias. Mínimo padrão de 15 dias preservado. Execute a migração 6.12.28 após as anteriores.
