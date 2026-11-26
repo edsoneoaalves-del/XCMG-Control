@@ -1,0 +1,1 @@
+V6.12.48: filtros de mês e ano do exame previsto, sem data e limpar filtros. Somente visualização; sem migração SQL.

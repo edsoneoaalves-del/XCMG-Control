@@ -7149,3 +7149,9 @@ body.user-editor-open{overflow:hidden}
 
 /* v6.12.29 — Dia do ciclo na previsão de exame */
 .aso-day-label{display:inline-block;color:#15803d;font-weight:700;white-space:nowrap}.aso-day-off{color:#a16207}html[data-theme="dark"] .aso-day-label{color:#4ade80}html[data-theme="dark"] .aso-day-off{color:#facc15}
+
+/* Filtros de visualização do Exame previsto */
+#aso .filters{grid-template-columns:minmax(190px,1.6fr) repeat(3,minmax(125px,1fr)) repeat(2,minmax(105px,.7fr));align-items:center}
+#aso .filters>*{min-width:0}
+@media(max-width:1200px){#aso .filters{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){#aso .filters{grid-template-columns:repeat(2,minmax(0,1fr))}#asoBusca{grid-column:1/-1}}
