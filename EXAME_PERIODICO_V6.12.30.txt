@@ -1,0 +1,1 @@
+Primeiro dia obrigatório para sugestões da turma D, editável por turma. Reservas existentes preservadas e sinalizadas; exceções manuais exigem confirmação. Execute a migração 6.12.30 antes de publicar. Demais parâmetros preservados.

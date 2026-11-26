@@ -1,0 +1,1 @@
+6.12.35: limite diário padrão 3, máximo 40 dias, agrupamento de operadores de guindaste independentemente da capacidade. Mínimo e turmas obrigatórias preservados. Execute a migração 6.12.35 após as anteriores. Reservas fixadas preservadas; conflitos sinalizados.

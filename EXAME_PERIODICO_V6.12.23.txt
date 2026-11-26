@@ -1,0 +1,1 @@
+6.12.23: configuração vinculada junto aos demais eventos ASO; reprogramação automática em cada renderização, preservando datas fixadas. Sem nova migração SQL.

@@ -1,0 +1,1 @@
+Custo progressivo de antecedência, diagnóstico de bloqueios, matching de funções ausentes em datas vazias, cálculo único por renderização. Regras e SQL preservados.

@@ -1,0 +1,1 @@
+Ordenação visual por Exame previsto crescente; sem programação ao final. Desempate por vencimento, nome e ID. Algoritmo e exportações preservados. Sem migração SQL.

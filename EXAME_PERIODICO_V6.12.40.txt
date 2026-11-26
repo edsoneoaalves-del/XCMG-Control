@@ -1,0 +1,1 @@
+Antecedência máxima padrão: 60 dias. Demais regras preservadas. Para banco existente, ajustar pela engrenagem ou executar a migração 6.12.40.

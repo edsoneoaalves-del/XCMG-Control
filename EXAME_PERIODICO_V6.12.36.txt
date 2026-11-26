@@ -1,0 +1,1 @@
+6.12.36: antecedência máxima padrão 50 dias. Demais regras preservadas. Execute a migração 6.12.36 após as anteriores.

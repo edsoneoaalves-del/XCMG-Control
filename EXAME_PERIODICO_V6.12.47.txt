@@ -1,0 +1,1 @@
+Migração SQL obrigatória, testar em homologação. Valida parâmetros das três funções de regras, revisão nula, renovação e férias sem aprovação. Não resolve conflitos posteriores originados em outros módulos. Sem alteração de dados existentes.

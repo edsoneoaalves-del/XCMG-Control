@@ -1,0 +1,16 @@
+PASS ano bissexto
+PASS mudança de ano
+PASS antecedência
+PASS vencido
+PASS vence hoje
+PASS alerta 34
+PASS alerta 35
+PASS guindaste
+PASS limite diário
+PASS função repetida
+PASS disponível
+PASS afastamento sem fim
+PASS férias no último dia
+PASS férias canceladas
+PASS inativo
+15 testes aprovados

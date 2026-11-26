@@ -1,0 +1,1 @@
+Busca pela menor antecedência. Otimização global das funções conhecidas: maximiza vagas e minimiza soma de antecedências; primeiro dia preferencial desempata para turmas não obrigatórias. Turma D continua restrita ao primeiro dia. Funções ausentes usam somente datas vazias após a otimização. Reservas preservadas. Sem migração SQL.

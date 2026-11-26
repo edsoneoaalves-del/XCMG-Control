@@ -1,0 +1,1 @@
+6.12.33: antecedência máxima padrão e compartilhada de 55 dias. Mínimo padrão de 15 dias e primeiro dia obrigatório da turma D preservados. Execute a migração 6.12.33 após as anteriores.

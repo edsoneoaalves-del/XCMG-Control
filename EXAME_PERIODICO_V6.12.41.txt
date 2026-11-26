@@ -1,0 +1,1 @@
+Alteração exclusivamente visual: datas automáticas exibem (sugestão), datas manuais exibem (fixada). Algoritmo e regras preservados. Nenhuma migração SQL nova.

@@ -1,0 +1,1 @@
+6.12.24: antecedência máxima padrão e configuração compartilhada de 50 dias. Mínimo padrão de 15 dias; demais regras e edição preservadas. Execute a migração 6.12.24 após as anteriores.

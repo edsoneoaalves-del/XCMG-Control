@@ -1,0 +1,1 @@
+Programação complementar: o otimizador já aceita 1 a 3 pessoas por data. Sugestões em datas parcialmente ocupadas recebem identificação complementar; grupos completos recebem sugestão. Diagnóstico distingue ausência de datas livres. Datas fixadas preservadas. Sugestões continuam recalculáveis; sem migração SQL.
